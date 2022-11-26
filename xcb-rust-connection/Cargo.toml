@@ -1,0 +1,43 @@
+[package]
+name = "xcb-rust-connection"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sc = { version = "0.2.7" }
+smallmap = { version = "1.4.0", default-features = false }
+tiny-std = { path = "../../linux-syscalls/tiny-std" }
+rusl = { path = "../../linux-syscalls/rusl", features = ["alloc"]}
+unix-print = "0.1.0"
+xcb-rust-protocol = { path = "../xcb-rust-protocol", features = ["xproto", "xc_misc", "render", "bigreq"] }
+
+[features]
+default = []
+debug = []
+all = ["xcb-rust-protocol/all"]
+composite = ["xcb-rust-protocol/composite"]
+damage = ["xcb-rust-protocol/damage"]
+dbe = ["xcb-rust-protocol/dbe"]
+dpms = ["xcb-rust-protocol/dpms"]
+dri2 = ["xcb-rust-protocol/dri2"]
+dri3 = ["xcb-rust-protocol/dri3"]
+ge = ["xcb-rust-protocol/ge"]
+present = ["xcb-rust-protocol/present"]
+randr = ["xcb-rust-protocol/randr"]
+record = ["xcb-rust-protocol/record"]
+screensaver = ["xcb-rust-protocol/screensaver"]
+shape = ["xcb-rust-protocol/shape"]
+shm = ["xcb-rust-protocol/shm"]
+sync = ["xcb-rust-protocol/sync"]
+xevie = ["xcb-rust-protocol/xevie"]
+xf86vidmode = ["xcb-rust-protocol/xf86vidmode"]
+xinerama = ["xcb-rust-protocol/xinerama"]
+xinput = ["xcb-rust-protocol/xinput"]
+xkb = ["xcb-rust-protocol/xkb"]
+xprint = ["xcb-rust-protocol/xprint"]
+xtest = ["xcb-rust-protocol/xtest"]
+xv = ["xcb-rust-protocol/xv"]
+xvmc = ["xcb-rust-protocol/xvmc"]

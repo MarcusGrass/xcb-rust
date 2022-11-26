@@ -1,0 +1,5 @@
+[workspace]
+members = ["xcb-code-generator", "xcb-rust-connection", "xcb-rust-protocol", "xcb-xsd", "xcb-xsd-parser"]
+
+[patch.crates-io]
+smallmap = { git = "https://github.com/MarcusGrass/smallmap.git", rev = "a0e7399d09a22753ef9c80aa1f1a34009b364357" }

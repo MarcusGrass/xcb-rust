@@ -1,0 +1,45 @@
+[package]
+name = "xcb-rust-protocol"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+tiny-std = { path = "../../linux-syscalls/tiny-std" }
+unix-print = "0.1.0"
+
+[features]
+debug = []
+all = ["bigreq", "composite", "damage", "dbe", "dpms", "dri2", "dri3", "ge", "glx", "present", "randr", "record", "render", "res", "screensaver", "shape", "shm", "sync", "xc_misc", "xevie", "xf86dri", "xf86vidmode", "xfixes", "xinerama", "xinput", "xkb", "xprint", "xproto", "xselinux", "xtest", "xv", "xvmc"]
+bigreq = []
+composite = ["xproto", "xfixes"]
+damage = ["xproto", "xfixes"]
+dbe = ["xproto"]
+dpms = []
+dri2 = ["xproto"]
+dri3 = ["xproto"]
+ge = []
+glx = ["xproto"]
+present = ["xproto", "randr", "xfixes", "sync"]
+randr = ["xproto", "render"]
+record = []
+render = ["xproto"]
+res = ["xproto"]
+screensaver = ["xproto"]
+shape = ["xproto"]
+shm = ["xproto"]
+sync = ["xproto"]
+xc_misc = []
+xevie = []
+xf86dri = []
+xf86vidmode = []
+xfixes = ["xproto", "render", "shape"]
+xinerama = ["xproto"]
+xinput = ["xfixes", "xproto"]
+xkb = ["xproto"]
+xprint = ["xproto"]
+xproto = []
+xselinux = ["xproto"]
+xtest = ["xproto"]
+xv = ["xproto", "shm"]
+xvmc = ["xv"]

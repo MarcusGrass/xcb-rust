@@ -1,0 +1,54 @@
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "x86_64-unknown-linux-musl" },
+    { triple = "aarch64-unknown-linux-gnu" },
+    { triple = "aarch64-unknown-linux-musl" },
+]
+
+[advisories]
+vulnerability = "deny"
+unmaintained = "deny"
+unsound = "deny"
+yanked = "deny"
+notice = "deny"
+ignore = [
+    # `xml-rs` unmaintained, at least before ownership is transferred https://github.com/netvl/xml-rs/issues/221
+    # We're the data we're parsing isn't really untrusted, and it's not part of the application code.
+    # If the maintainer-change doesn't happen migrating to quick-xml isn't too harsch but a bit of a pain
+    "RUSTSEC-2022-0048",
+]
+
+[bans]
+multiple-versions = "deny"
+deny = [
+]
+skip = [
+    # Clash in build deps between heapless and smallmap
+    { name = "semver", version = "0.9.0" },
+    { name = "rustc_version", version = "0.2.3" },
+]
+
+[sources]
+allow-git = [
+    "https://github.com/MarcusGrass/smallmap",
+]
+
+[licenses]
+unlicensed = "deny"
+allow-osi-fsf-free = "neither"
+confidence-threshold = 1.0
+# I'd like to know if they pop into my dependency graph
+copyleft = "deny"
+allow = [
+    "Apache-2.0",
+    "MIT",
+    "Unicode-DFS-2016",
+]
+exceptions = [
+    { name = "linux-syscalls", allow = ["MPL-2.0"] },
+    { name = "xcb-code-generator", allow = ["MPL-2.0"] },
+    { name = "xcb-rust-connection", allow = ["MPL-2.0"] },
+    { name = "xcb-rust-protocol", allow = ["MPL-2.0"] },
+    { name = "xcb-xsd", allow = ["MPL-2.0"] },
+    { name = "xcb-xsd-parser", allow = ["MPL-2.0"] },
+]

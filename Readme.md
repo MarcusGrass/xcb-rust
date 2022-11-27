@@ -1,4 +1,4 @@
-# 
+# xcb-rust 
 A worse version of [x11rb](https://github.com/psychon/x11rb) trying to generate 
 more optimizable code.
 

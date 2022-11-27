@@ -195,7 +195,7 @@ edition = \"2021\"
 license = \"MIT\"
 
 [dependencies]
-tiny-std = { path = \"../../linux-syscalls/tiny-std\" }
+tiny-std = { version = \"0.1\" }
 unix-print = \"0.1.0\"
 
 [features]

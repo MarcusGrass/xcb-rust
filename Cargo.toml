@@ -3,3 +3,5 @@ members = ["xcb-code-generator", "xcb-rust-connection", "xcb-rust-protocol", "xc
 
 [patch.crates-io]
 smallmap = { git = "https://github.com/MarcusGrass/smallmap.git", rev = "a0e7399d09a22753ef9c80aa1f1a34009b364357" }
+rusl = { git = "https://github.com/MarcusGrass/tiny-std.git", rev = "bbd7244a48d6f4e168ae35137222cbca75840be1"}
+tiny-std = { git = "https://github.com/MarcusGrass/tiny-std.git", rev = "bbd7244a48d6f4e168ae35137222cbca75840be1"}

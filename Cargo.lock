@@ -36,6 +36,7 @@ dependencies = [
 [[package]]
 name = "rusl"
 version = "0.1.0"
+source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=bbd7244a48d6f4e168ae35137222cbca75840be1#bbd7244a48d6f4e168ae35137222cbca75840be1"
 dependencies = [
  "sc",
  "unix-print",
@@ -113,6 +114,7 @@ dependencies = [
 [[package]]
 name = "tiny-std"
 version = "0.1.0"
+source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=bbd7244a48d6f4e168ae35137222cbca75840be1#bbd7244a48d6f4e168ae35137222cbca75840be1"
 dependencies = [
  "rusl",
  "sc",

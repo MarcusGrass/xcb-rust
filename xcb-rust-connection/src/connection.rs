@@ -3,9 +3,8 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use alloc::{format, vec};
 use core::time::Duration;
-use rusl::platform::TimeSpec;
-use rusl::select::{PollEvents, PollFd};
-use rusl::EAGAIN;
+use rusl::error::Errno;
+use rusl::platform::{PollEvents, PollFd, TimeSpec};
 
 use smallmap::{Map, Set};
 use tiny_std::io::{AsRawFd, Read, Write};
@@ -93,6 +92,7 @@ impl SocketConnection {
                     let family = Family::LOCAL;
                     let host =
                         tiny_std::env::host_name().unwrap_or_else(|_| "localhost".to_string());
+                    crate::debug!("Got host");
                     let (mut connect, setup_request) =
                         Connect::new(xcb_env, family, host.as_bytes(), parsed_display.display)?;
                     // write the connect() setup request
@@ -533,7 +533,7 @@ impl SocketBuffer {
                         match &e {
                             tiny_std::error::Error::Uncategorized(_) => {}
                             tiny_std::error::Error::Os { code, .. } => {
-                                if *code == EAGAIN {
+                                if *code == Errno::EAGAIN {
                                     continue;
                                 }
                             }
@@ -559,8 +559,8 @@ impl SocketBuffer {
                     match &e {
                         tiny_std::error::Error::Uncategorized(e) => {}
                         tiny_std::error::Error::Os { code, msg } => match *code {
-                            rusl::EINTR => continue,
-                            rusl::EAGAIN => break,
+                            Errno::EINTR => continue,
+                            Errno::EAGAIN => break,
                             _ => {}
                         },
                     }
@@ -656,7 +656,7 @@ fn poll_readable(fd: RawFd, deadline: Duration) -> Result<bool, rusl::Error> {
                     return Ok(true);
                 }
                 Err(ref e) => {
-                    if matches!(e.code, Some(rusl::EINTR)) {
+                    if matches!(e.code, Some(Errno::EINTR)) {
                         continue;
                     }
                 }

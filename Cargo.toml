@@ -1,7 +1,8 @@
 [workspace]
 members = ["xcb-code-generator", "xcb-rust-connection", "xcb-rust-protocol", "xcb-xsd", "xcb-xsd-parser"]
 
-[patch.crates-io]
+[workspace.dependencies]
+rusl = { git = "https://github.com/MarcusGrass/tiny-std", rev = "cd187948215492f155326e25d497a657a63e6849" }
 smallmap = { git = "https://github.com/MarcusGrass/smallmap.git", rev = "a0e7399d09a22753ef9c80aa1f1a34009b364357" }
-rusl = { git = "https://github.com/MarcusGrass/tiny-std.git", rev = "bbd7244a48d6f4e168ae35137222cbca75840be1"}
-tiny-std = { git = "https://github.com/MarcusGrass/tiny-std.git", rev = "bbd7244a48d6f4e168ae35137222cbca75840be1"}
+tiny-std = { git = "https://github.com/MarcusGrass/tiny-std", rev = "cd187948215492f155326e25d497a657a63e6849" }
+unix-print = "0.1.0"

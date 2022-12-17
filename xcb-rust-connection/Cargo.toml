@@ -8,10 +8,10 @@ license = "MPL-2.0"
 
 [dependencies]
 sc = { version = "0.2.7" }
-smallmap = { version = "1.4.0", default-features = false }
-tiny-std = { version = "0.1" }
-rusl = { version = "0.1" , features = ["alloc"]}
-unix-print = "0.1.0"
+smallmap = { workspace = true, default-features = false }
+tiny-std = { workspace = true }
+rusl = { workspace = true, features = ["alloc"] }
+unix-print = { workspace = true }
 xcb-rust-protocol = { path = "../xcb-rust-protocol", features = ["xproto", "xc_misc", "render", "bigreq"] }
 
 [features]

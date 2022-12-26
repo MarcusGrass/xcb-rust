@@ -7,10 +7,10 @@ use rusl::error::Errno;
 use rusl::platform::{PollEvents, PollFd, TimeSpec};
 
 use smallmap::{Map, Set};
-use tiny_std::io::{AsRawFd, Read, Write};
+use tiny_std::io::{Read, Write};
 use tiny_std::net::UnixStream;
 use tiny_std::time::MonotonicInstant;
-use tiny_std::unix::fd::{OwnedFd, RawFd};
+use tiny_std::unix::fd::{AsRawFd, OwnedFd, RawFd};
 
 use xcb_rust_protocol::connection::xc_misc::XcMiscConnection;
 use xcb_rust_protocol::connection::xproto::XprotoConnection;
@@ -163,6 +163,35 @@ impl SocketConnection {
         }
         crate::debug!("Panicking because of leak!");
         panic!("Leaked replies;")
+    }
+
+    pub fn try_next(&mut self) -> Result<Option<Vec<u8>>, ConnectionError> {
+        if let Some(cached) = self.event_cache.pop_front() {
+            Ok(Some(cached))
+        } else {
+            for rr in self.buf.read_next()? {
+                match rr {
+                    ReadResult::Event(e) => {
+                        self.event_cache.push_back(e);
+                    }
+                    ReadResult::Reply(seq, buf) => {
+                        crate::debug!("Got reply on seq {seq}");
+                        if self.keep_seqs.remove(&seq).is_some() {
+                            self.reply_cache.insert(seq, buf);
+                        }
+                        self.seq_count.record_seen(seq);
+                    }
+                    ReadResult::Error(seq, buf) => {
+                        crate::debug!("Got err {:?}", parse_error(&buf, &self.extensions));
+                        if self.keep_seqs.remove(&seq).is_some() {
+                            self.reply_cache.insert(seq, buf);
+                        }
+                        self.seq_count.record_seen(seq);
+                    }
+                }
+            }
+            Ok(self.event_cache.pop_front())
+        }
     }
 
     pub fn read_next_event(
@@ -367,6 +396,13 @@ impl SocketConnection {
             keep_seqs: Set::new(),
             extensions: BasicExtensionInfoProvider::default(),
         }
+    }
+}
+
+impl AsRawFd for SocketConnection {
+    #[inline]
+    fn as_raw_fd(&self) -> RawFd {
+        self.buf.sock.as_raw_fd()
     }
 }
 

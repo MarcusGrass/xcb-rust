@@ -20,8 +20,8 @@ macro_rules! property_cookie {
         impl $cookie_name
         {
             /// Get the reply that the server sent.
-            pub fn reply<C>(self, con: &mut C, buffer: &mut [u8]) -> Result<$struct_name, Error> where C: $crate::con::XcbConnection{
-                $from_reply(self.0.reply(con, buffer)?)
+            pub fn reply<C>(self, con: &mut C, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<$struct_name, Error> where C: $crate::con::XcbConnection{
+                $from_reply(self.0.reply(con, in_buffer, out_buffer)?)
             }
         }
     }

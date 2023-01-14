@@ -44,15 +44,15 @@ impl XcbConnection for BasicCon {
         self.offset += step;
     }
 
-    fn generate_id(&mut self, _buf: &mut [u8]) -> Result<u32, Error> {
+    fn generate_id(&mut self, _in_buf: &mut [u8], _out_buf: &mut [u8]) -> Result<u32, Error> {
         todo!()
     }
 
-    fn block_for_reply(&mut self, _buf: &mut [u8], _seq: u16) -> Result<Vec<u8>, Error> {
+    fn block_for_reply(&mut self, _in_buf: &mut [u8], _out_buf: &mut [u8], _seq: u16) -> Result<Vec<u8>, Error> {
         todo!()
     }
 
-    fn block_check_for_err(&mut self, _buf: &mut [u8], _seq: u16) -> Result<(), Error> {
+    fn block_check_for_err(&mut self, _in_buf: &mut [u8], _out_buf: &mut [u8], _seq: u16) -> Result<(), Error> {
         Ok(())
     }
 

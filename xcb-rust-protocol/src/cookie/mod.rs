@@ -26,11 +26,11 @@ where
     }
 
     #[inline]
-    pub fn reply<C>(self, con: &mut C, buffer: &mut [u8]) -> crate::Result<REPLY>
+    pub fn reply<C>(self, con: &mut C, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> crate::Result<REPLY>
     where
         C: XcbConnection,
     {
-        let reply_buf = con.block_for_reply(buffer, self.seq)?;
+        let reply_buf = con.block_for_reply(in_buffer, out_buffer, self.seq)?;
         let (reply, _offset) = REPLY::from_bytes(&reply_buf)?;
         Ok(reply)
     }
@@ -67,11 +67,11 @@ where
     }
 
     #[inline]
-    pub fn reply<C>(self, con: &mut C, buffer: &mut [u8]) -> crate::Result<REPLY>
+    pub fn reply<C>(self, con: &mut C, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> crate::Result<REPLY>
     where
         C: XcbConnection,
     {
-        let reply_buf = con.block_for_reply(buffer, self.seq)?;
+        let reply_buf = con.block_for_reply(in_buffer, out_buffer, self.seq)?;
         let reply = REPLY::from_bytes(&reply_buf)?;
         Ok(reply)
     }
@@ -97,11 +97,11 @@ impl VoidCookie {
     }
 
     #[inline]
-    pub fn check<C>(self, con: &mut C, buffer: &mut [u8]) -> crate::Result<()>
+    pub fn check<C>(self, con: &mut C, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> crate::Result<()>
     where
         C: XcbConnection,
     {
-        con.block_check_for_err(buffer, self.seq)?;
+        con.block_check_for_err(in_buffer, out_buffer, self.seq)?;
         Ok(())
     }
     #[inline]

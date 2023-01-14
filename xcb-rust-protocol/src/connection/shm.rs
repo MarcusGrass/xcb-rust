@@ -11,11 +11,13 @@ use crate::util::VariableLengthSerialize;
 pub trait ShmConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shm::QueryVersionReply, 32>>;
 
     fn attach(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         shmid: u32,
         read_only: u8,
@@ -24,12 +26,14 @@ pub trait ShmConnection {
 
     fn detach(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn put_image(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
         total_width: u16,
@@ -50,6 +54,7 @@ pub trait ShmConnection {
 
     fn get_image(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         x: i16,
         y: i16,
@@ -64,6 +69,7 @@ pub trait ShmConnection {
 
     fn create_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         pid: crate::proto::xproto::Pixmap,
         drawable: crate::proto::xproto::Drawable,
         width: u16,
@@ -76,6 +82,7 @@ pub trait ShmConnection {
 
     fn attach_fd(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         shm_fd: (),
         read_only: u8,
@@ -84,6 +91,7 @@ pub trait ShmConnection {
 
     fn create_segment(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         size: u32,
         read_only: u8,
@@ -96,13 +104,14 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shm::QueryVersionReply, 32>> {
         let major_opcode = self.major_opcode(crate::proto::shm::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::shm::EXTENSION_NAME),
         )?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -119,6 +128,7 @@ where
 
     fn attach(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         shmid: u32,
         read_only: u8,
@@ -130,7 +140,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let shmseg_bytes = shmseg.serialize_fixed();
         let shmid_bytes = shmid.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -162,6 +172,7 @@ where
 
     fn detach(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -170,7 +181,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let shmseg_bytes = shmseg.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -194,6 +205,7 @@ where
 
     fn put_image(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
         total_width: u16,
@@ -227,7 +239,7 @@ where
         let dst_y_bytes = dst_y.serialize_fixed();
         let shmseg_bytes = shmseg.serialize_fixed();
         let offset_bytes = offset.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..40)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -283,6 +295,7 @@ where
 
     fn get_image(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         x: i16,
         y: i16,
@@ -306,7 +319,7 @@ where
         let plane_mask_bytes = plane_mask.serialize_fixed();
         let shmseg_bytes = shmseg.serialize_fixed();
         let offset_bytes = offset.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -354,6 +367,7 @@ where
 
     fn create_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         pid: crate::proto::xproto::Pixmap,
         drawable: crate::proto::xproto::Drawable,
         width: u16,
@@ -373,7 +387,7 @@ where
         let height_bytes = height.serialize_fixed();
         let shmseg_bytes = shmseg.serialize_fixed();
         let offset_bytes = offset.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -417,6 +431,7 @@ where
 
     fn attach_fd(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         shm_fd: (),
         read_only: u8,
@@ -427,7 +442,7 @@ where
         )?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let shmseg_bytes = shmseg.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -455,6 +470,7 @@ where
 
     fn create_segment(
         &mut self,
+        socket_buffer: &mut [u8],
         shmseg: crate::proto::shm::Seg,
         size: u32,
         read_only: u8,
@@ -466,7 +482,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let shmseg_bytes = shmseg.serialize_fixed();
         let size_bytes = size.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

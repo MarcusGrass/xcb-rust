@@ -11,11 +11,13 @@ use crate::util::VariableLengthSerialize;
 pub trait ShapeConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryVersionReply, 12>>;
 
     fn rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         operation: crate::proto::shape::SoEnum,
         destination_kind: crate::proto::shape::SkEnum,
         ordering: crate::proto::xproto::ClipOrderingEnum,
@@ -28,6 +30,7 @@ pub trait ShapeConnection {
 
     fn mask(
         &mut self,
+        socket_buffer: &mut [u8],
         operation: crate::proto::shape::SoEnum,
         destination_kind: crate::proto::shape::SkEnum,
         destination_window: crate::proto::xproto::Window,
@@ -39,6 +42,7 @@ pub trait ShapeConnection {
 
     fn combine(
         &mut self,
+        socket_buffer: &mut [u8],
         operation: crate::proto::shape::SoEnum,
         destination_kind: crate::proto::shape::SkEnum,
         source_kind: crate::proto::shape::SkEnum,
@@ -51,6 +55,7 @@ pub trait ShapeConnection {
 
     fn offset(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_kind: crate::proto::shape::SkEnum,
         destination_window: crate::proto::xproto::Window,
         x_offset: i16,
@@ -60,12 +65,14 @@ pub trait ShapeConnection {
 
     fn query_extents(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryExtentsReply, 28>>;
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_window: crate::proto::xproto::Window,
         enable: u8,
         forget: bool,
@@ -73,12 +80,14 @@ pub trait ShapeConnection {
 
     fn input_selected(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shape::InputSelectedReply, 8>>;
 
     fn get_rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         source_kind: crate::proto::shape::SkEnum,
         forget: bool,
@@ -90,6 +99,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryVersionReply, 12>> {
         let major_opcode = self
@@ -98,7 +108,7 @@ where
                 crate::proto::shape::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -115,6 +125,7 @@ where
 
     fn rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         operation: crate::proto::shape::SoEnum,
         destination_kind: crate::proto::shape::SkEnum,
         ordering: crate::proto::xproto::ClipOrderingEnum,
@@ -129,7 +140,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::shape::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 1 bytes
         buf_ptr
             .get_mut(4..5)
@@ -180,7 +191,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -208,6 +219,7 @@ where
 
     fn mask(
         &mut self,
+        socket_buffer: &mut [u8],
         operation: crate::proto::shape::SoEnum,
         destination_kind: crate::proto::shape::SkEnum,
         destination_window: crate::proto::xproto::Window,
@@ -226,7 +238,7 @@ where
         let x_offset_bytes = x_offset.serialize_fixed();
         let y_offset_bytes = y_offset.serialize_fixed();
         let source_bitmap_bytes = (source_bitmap.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -262,6 +274,7 @@ where
 
     fn combine(
         &mut self,
+        socket_buffer: &mut [u8],
         operation: crate::proto::shape::SoEnum,
         destination_kind: crate::proto::shape::SkEnum,
         source_kind: crate::proto::shape::SkEnum,
@@ -281,7 +294,7 @@ where
         let x_offset_bytes = x_offset.serialize_fixed();
         let y_offset_bytes = y_offset.serialize_fixed();
         let source_window_bytes = source_window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -317,6 +330,7 @@ where
 
     fn offset(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_kind: crate::proto::shape::SkEnum,
         destination_window: crate::proto::xproto::Window,
         x_offset: i16,
@@ -332,7 +346,7 @@ where
         let destination_window_bytes = destination_window.serialize_fixed();
         let x_offset_bytes = x_offset.serialize_fixed();
         let y_offset_bytes = y_offset.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -364,6 +378,7 @@ where
 
     fn query_extents(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryExtentsReply, 28>> {
@@ -374,7 +389,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let destination_window_bytes = destination_window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -398,6 +413,7 @@ where
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_window: crate::proto::xproto::Window,
         enable: u8,
         forget: bool,
@@ -409,7 +425,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let destination_window_bytes = destination_window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -437,6 +453,7 @@ where
 
     fn input_selected(
         &mut self,
+        socket_buffer: &mut [u8],
         destination_window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::shape::InputSelectedReply, 8>> {
@@ -447,7 +464,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let destination_window_bytes = destination_window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -471,6 +488,7 @@ where
 
     fn get_rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         source_kind: crate::proto::shape::SkEnum,
         forget: bool,
@@ -482,7 +500,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

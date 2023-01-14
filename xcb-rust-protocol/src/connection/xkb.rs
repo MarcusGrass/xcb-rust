@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait XkbConnection {
     fn use_extension(
         &mut self,
+        socket_buffer: &mut [u8],
         wanted_major: u16,
         wanted_minor: u16,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait XkbConnection {
 
     fn select_events(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         affect_which: crate::proto::xkb::EventType,
         clear: crate::proto::xkb::EventType,
@@ -30,6 +32,7 @@ pub trait XkbConnection {
 
     fn bell(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         bell_class: crate::proto::xkb::BellClassSpec,
         bell_i_d: crate::proto::xkb::IDSpec,
@@ -45,12 +48,14 @@ pub trait XkbConnection {
 
     fn get_state(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xkb::GetStateReply, 32>>;
 
     fn latch_lock_state(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         affect_mod_locks: crate::proto::xproto::ModMask,
         mod_locks: crate::proto::xproto::ModMask,
@@ -64,12 +69,14 @@ pub trait XkbConnection {
 
     fn get_controls(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xkb::GetControlsReply, 92>>;
 
     fn set_controls(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         affect_internal_real_mods: crate::proto::xproto::ModMask,
         internal_real_mods: crate::proto::xproto::ModMask,
@@ -105,6 +112,7 @@ pub trait XkbConnection {
 
     fn get_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         full: crate::proto::xkb::MapPart,
         partial: crate::proto::xkb::MapPart,
@@ -128,6 +136,7 @@ pub trait XkbConnection {
 
     fn set_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         flags: crate::proto::xkb::SetMapFlags,
         min_key_code: crate::proto::xproto::Keycode,
@@ -159,6 +168,7 @@ pub trait XkbConnection {
 
     fn get_compat_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         groups: crate::proto::xkb::SetOfGroup,
         get_all_s_i: u8,
@@ -169,6 +179,7 @@ pub trait XkbConnection {
 
     fn set_compat_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         recompute_actions: u8,
         truncate_s_i: u8,
@@ -181,12 +192,14 @@ pub trait XkbConnection {
 
     fn get_indicator_state(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xkb::GetIndicatorStateReply, 32>>;
 
     fn get_indicator_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         which: u32,
         forget: bool,
@@ -194,6 +207,7 @@ pub trait XkbConnection {
 
     fn set_indicator_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         which: u32,
         maps: &[crate::proto::xkb::IndicatorMap],
@@ -202,6 +216,7 @@ pub trait XkbConnection {
 
     fn get_named_indicator(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         led_class: crate::proto::xkb::LedClassEnum,
         led_i_d: crate::proto::xkb::IdEnum,
@@ -211,6 +226,7 @@ pub trait XkbConnection {
 
     fn set_named_indicator(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         led_class: crate::proto::xkb::LedClassEnum,
         led_i_d: crate::proto::xkb::IdEnum,
@@ -231,6 +247,7 @@ pub trait XkbConnection {
 
     fn get_names(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         which: crate::proto::xkb::NameDetail,
         forget: bool,
@@ -238,6 +255,7 @@ pub trait XkbConnection {
 
     fn set_names(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         virtual_mods: crate::proto::xkb::VMod,
         first_type: u8,
@@ -257,6 +275,7 @@ pub trait XkbConnection {
 
     fn per_client_flags(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         change: crate::proto::xkb::PerClientFlag,
         value: crate::proto::xkb::PerClientFlag,
@@ -268,6 +287,7 @@ pub trait XkbConnection {
 
     fn list_components(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         max_names: u16,
         forget: bool,
@@ -275,6 +295,7 @@ pub trait XkbConnection {
 
     fn get_kbd_by_name(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         need: crate::proto::xkb::GBNDetail,
         want: crate::proto::xkb::GBNDetail,
@@ -284,6 +305,7 @@ pub trait XkbConnection {
 
     fn get_device_info(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         wanted: crate::proto::xkb::XIFeature,
         all_buttons: u8,
@@ -296,6 +318,7 @@ pub trait XkbConnection {
 
     fn set_device_info(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         first_btn: u8,
         n_btns: u8,
@@ -308,6 +331,7 @@ pub trait XkbConnection {
 
     fn set_debugging_flags(
         &mut self,
+        socket_buffer: &mut [u8],
         affect_flags: u32,
         flags: u32,
         affect_ctrls: u32,
@@ -322,6 +346,7 @@ where
 {
     fn use_extension(
         &mut self,
+        socket_buffer: &mut [u8],
         wanted_major: u16,
         wanted_minor: u16,
         forget: bool,
@@ -332,7 +357,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let wanted_major_bytes = wanted_major.serialize_fixed();
         let wanted_minor_bytes = wanted_minor.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -356,6 +381,7 @@ where
 
     fn select_events(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         affect_which: crate::proto::xkb::EventType,
         clear: crate::proto::xkb::EventType,
@@ -368,7 +394,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xkb::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xkb::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -422,6 +448,7 @@ where
 
     fn bell(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         bell_class: crate::proto::xkb::BellClassSpec,
         bell_i_d: crate::proto::xkb::IDSpec,
@@ -446,7 +473,7 @@ where
         let duration_bytes = duration.serialize_fixed();
         let name_bytes = name.serialize_fixed();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -490,6 +517,7 @@ where
 
     fn get_state(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xkb::GetStateReply, 32>> {
@@ -498,7 +526,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let device_spec_bytes = device_spec.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -522,6 +550,7 @@ where
 
     fn latch_lock_state(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         affect_mod_locks: crate::proto::xproto::ModMask,
         mod_locks: crate::proto::xproto::ModMask,
@@ -538,7 +567,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let device_spec_bytes = device_spec.serialize_fixed();
         let group_latch_bytes = group_latch.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -570,6 +599,7 @@ where
 
     fn get_controls(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xkb::GetControlsReply, 92>> {
@@ -578,7 +608,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let device_spec_bytes = device_spec.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -602,6 +632,7 @@ where
 
     fn set_controls(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         affect_internal_real_mods: crate::proto::xproto::ModMask,
         internal_real_mods: crate::proto::xproto::ModMask,
@@ -665,7 +696,7 @@ where
             (access_x_timeout_options_mask.0 as u16).serialize_fixed();
         let access_x_timeout_options_values_bytes =
             (access_x_timeout_options_values.0 as u16).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..100)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -781,6 +812,7 @@ where
 
     fn get_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         full: crate::proto::xkb::MapPart,
         partial: crate::proto::xkb::MapPart,
@@ -815,7 +847,7 @@ where
         let first_key_explicit_bytes = first_key_explicit.serialize_fixed();
         let first_mod_map_key_bytes = first_mod_map_key.serialize_fixed();
         let first_v_mod_map_key_bytes = first_v_mod_map_key.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -859,6 +891,7 @@ where
 
     fn set_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         flags: crate::proto::xkb::SetMapFlags,
         min_key_code: crate::proto::xproto::Keycode,
@@ -890,7 +923,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xkb::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xkb::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -1017,7 +1050,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1045,6 +1078,7 @@ where
 
     fn get_compat_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         groups: crate::proto::xkb::SetOfGroup,
         get_all_s_i: u8,
@@ -1059,7 +1093,7 @@ where
         let device_spec_bytes = device_spec.serialize_fixed();
         let first_s_i_bytes = first_s_i.serialize_fixed();
         let n_s_i_bytes = n_s_i.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1087,6 +1121,7 @@ where
 
     fn set_compat_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         recompute_actions: u8,
         truncate_s_i: u8,
@@ -1099,7 +1134,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xkb::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xkb::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 1 bytes
         let groups = u8::try_from(groups.0).map_err(|_| crate::error::Error::Serialize)?;
         let n_s_i = u16::try_from(si.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -1167,7 +1202,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1195,6 +1230,7 @@ where
 
     fn get_indicator_state(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xkb::GetIndicatorStateReply, 32>> {
@@ -1203,7 +1239,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let device_spec_bytes = device_spec.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1227,6 +1263,7 @@ where
 
     fn get_indicator_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         which: u32,
         forget: bool,
@@ -1237,7 +1274,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let device_spec_bytes = device_spec.serialize_fixed();
         let which_bytes = which.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1265,6 +1302,7 @@ where
 
     fn set_indicator_map(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         which: u32,
         maps: &[crate::proto::xkb::IndicatorMap],
@@ -1273,7 +1311,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xkb::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xkb::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         let which = u32::try_from(which).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -1312,7 +1350,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1340,6 +1378,7 @@ where
 
     fn get_named_indicator(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         led_class: crate::proto::xkb::LedClassEnum,
         led_i_d: crate::proto::xkb::IdEnum,
@@ -1354,7 +1393,7 @@ where
         let led_class_bytes = (led_class.0 as u16).serialize_fixed();
         let led_i_d_bytes = (led_i_d.0 as u16).serialize_fixed();
         let indicator_bytes = indicator.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1386,6 +1425,7 @@ where
 
     fn set_named_indicator(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         led_class: crate::proto::xkb::LedClassEnum,
         led_i_d: crate::proto::xkb::IdEnum,
@@ -1413,7 +1453,7 @@ where
         let indicator_bytes = indicator.serialize_fixed();
         let map_vmods_bytes = (map_vmods.0 as u16).serialize_fixed();
         let map_ctrls_bytes = (map_ctrls.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1461,6 +1501,7 @@ where
 
     fn get_names(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         which: crate::proto::xkb::NameDetail,
         forget: bool,
@@ -1471,7 +1512,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let device_spec_bytes = device_spec.serialize_fixed();
         let which_bytes = (which.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1499,6 +1540,7 @@ where
 
     fn set_names(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         virtual_mods: crate::proto::xkb::VMod,
         first_type: u8,
@@ -1518,7 +1560,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xkb::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xkb::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 1 bytes
         buf_ptr
             .get_mut(0..2)
@@ -1598,7 +1640,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1626,6 +1668,7 @@ where
 
     fn per_client_flags(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         change: crate::proto::xkb::PerClientFlag,
         value: crate::proto::xkb::PerClientFlag,
@@ -1644,7 +1687,7 @@ where
         let ctrls_to_change_bytes = (ctrls_to_change.0 as u32).serialize_fixed();
         let auto_ctrls_bytes = (auto_ctrls.0 as u32).serialize_fixed();
         let auto_ctrls_values_bytes = (auto_ctrls_values.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1688,6 +1731,7 @@ where
 
     fn list_components(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         max_names: u16,
         forget: bool,
@@ -1698,7 +1742,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let device_spec_bytes = device_spec.serialize_fixed();
         let max_names_bytes = max_names.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1722,6 +1766,7 @@ where
 
     fn get_kbd_by_name(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         need: crate::proto::xkb::GBNDetail,
         want: crate::proto::xkb::GBNDetail,
@@ -1735,7 +1780,7 @@ where
         let device_spec_bytes = device_spec.serialize_fixed();
         let need_bytes = (need.0 as u16).serialize_fixed();
         let want_bytes = (want.0 as u16).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1763,6 +1808,7 @@ where
 
     fn get_device_info(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         wanted: crate::proto::xkb::XIFeature,
         all_buttons: u8,
@@ -1780,7 +1826,7 @@ where
         let wanted_bytes = (wanted.0 as u16).serialize_fixed();
         let led_class_bytes = (led_class.0 as u16).serialize_fixed();
         let led_i_d_bytes = (led_i_d.0 as u16).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1812,6 +1858,7 @@ where
 
     fn set_device_info(
         &mut self,
+        socket_buffer: &mut [u8],
         device_spec: crate::proto::xkb::DeviceSpec,
         first_btn: u8,
         n_btns: u8,
@@ -1824,7 +1871,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xkb::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xkb::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let n_btns = u8::try_from(n_btns).map_err(|_| crate::error::Error::Serialize)?;
         let n_device_led_f_bs =
             u16::try_from(n_device_led_f_bs).map_err(|_| crate::error::Error::Serialize)?;
@@ -1885,7 +1932,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1913,6 +1960,7 @@ where
 
     fn set_debugging_flags(
         &mut self,
+        socket_buffer: &mut [u8],
         affect_flags: u32,
         flags: u32,
         affect_ctrls: u32,
@@ -1923,7 +1971,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xkb::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xkb::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let msg_length =
             u16::try_from(message.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
@@ -1975,7 +2023,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?

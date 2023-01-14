@@ -4,15 +4,13 @@ use xcb_rust_protocol::util::VariableLengthFromBytes;
 use xcb_rust_protocol::{Error, XcbConnection};
 
 pub(crate) struct BasicCon {
-    pub(crate) inner: Vec<u8>,
     pub(crate) offset: usize,
     pub(crate) seq: u16,
 }
 
 impl BasicCon {
-    pub fn new(size: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            inner: vec![0; size],
             offset: 0,
             seq: 0,
         }
@@ -20,8 +18,8 @@ impl BasicCon {
 }
 
 impl XcbConnection for BasicCon {
-    fn write_buf(&mut self) -> &mut [u8] {
-        &mut self.inner[self.offset..]
+    fn apply_offset<'a>(&mut self, buffer: &'a mut [u8]) -> &'a mut [u8] {
+        &mut buffer[self.offset..]
     }
 
     fn max_request_size(&self) -> usize {
@@ -46,15 +44,15 @@ impl XcbConnection for BasicCon {
         self.offset += step;
     }
 
-    fn generate_id(&mut self) -> Result<u32, Error> {
+    fn generate_id(&mut self, _buf: &mut [u8]) -> Result<u32, Error> {
         todo!()
     }
 
-    fn block_for_reply(&mut self, _seq: u16) -> Result<Vec<u8>, Error> {
+    fn block_for_reply(&mut self, _buf: &mut [u8], _seq: u16) -> Result<Vec<u8>, Error> {
         todo!()
     }
 
-    fn block_check_for_err(&mut self, _seq: u16) -> Result<(), Error> {
+    fn block_check_for_err(&mut self, _buf: &mut [u8], _seq: u16) -> Result<(), Error> {
         Ok(())
     }
 
@@ -69,8 +67,9 @@ impl XcbConnection for BasicCon {
 
 #[test]
 fn test_one() {
-    let mut con = BasicCon::new(u32::MAX as usize);
-    let cookie = con.get_input_focus(false).unwrap();
+    let mut con = BasicCon::new();
+    let mut buf = vec![0u8; u32::MAX as usize];
+    let cookie = con.get_input_focus(&mut buf, false).unwrap();
     assert_eq!(4, con.offset);
     assert_eq!(1, cookie.seq);
 }

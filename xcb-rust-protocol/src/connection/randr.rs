@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait RandrConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait RandrConnection {
 
     fn set_screen_config(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         timestamp: crate::proto::xproto::Timestamp,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -29,6 +31,7 @@ pub trait RandrConnection {
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         enable: crate::proto::randr::NotifyMask,
         forget: bool,
@@ -36,18 +39,21 @@ pub trait RandrConnection {
 
     fn get_screen_info(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetScreenInfoReply>>;
 
     fn get_screen_size_range(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetScreenSizeRangeReply, 32>>;
 
     fn set_screen_size(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         width: u16,
         height: u16,
@@ -58,12 +64,14 @@ pub trait RandrConnection {
 
     fn get_screen_resources(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetScreenResourcesReply>>;
 
     fn get_output_info(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         config_timestamp: crate::proto::xproto::Timestamp,
         forget: bool,
@@ -71,12 +79,14 @@ pub trait RandrConnection {
 
     fn list_output_properties(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::ListOutputPropertiesReply>>;
 
     fn query_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         forget: bool,
@@ -84,6 +94,7 @@ pub trait RandrConnection {
 
     fn configure_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         pending: u8,
@@ -94,6 +105,7 @@ pub trait RandrConnection {
 
     fn change_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         r#type: u32,
@@ -106,6 +118,7 @@ pub trait RandrConnection {
 
     fn delete_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         forget: bool,
@@ -113,6 +126,7 @@ pub trait RandrConnection {
 
     fn get_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         r#type: crate::proto::xproto::GetPropertyTypeEnum,
@@ -125,6 +139,7 @@ pub trait RandrConnection {
 
     fn create_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         mode_info: crate::proto::randr::ModeInfo,
         name: &[u8],
@@ -133,12 +148,14 @@ pub trait RandrConnection {
 
     fn destroy_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         mode: crate::proto::randr::Mode,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn add_output_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         mode: crate::proto::randr::Mode,
         forget: bool,
@@ -146,6 +163,7 @@ pub trait RandrConnection {
 
     fn delete_output_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         mode: crate::proto::randr::Mode,
         forget: bool,
@@ -153,6 +171,7 @@ pub trait RandrConnection {
 
     fn get_crtc_info(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         config_timestamp: crate::proto::xproto::Timestamp,
         forget: bool,
@@ -160,6 +179,7 @@ pub trait RandrConnection {
 
     fn set_crtc_config(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         timestamp: crate::proto::xproto::Timestamp,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -173,18 +193,21 @@ pub trait RandrConnection {
 
     fn get_crtc_gamma_size(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetCrtcGammaSizeReply, 32>>;
 
     fn get_crtc_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetCrtcGammaReply>>;
 
     fn set_crtc_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         size: u16,
         red: &[u16],
@@ -195,12 +218,14 @@ pub trait RandrConnection {
 
     fn get_screen_resources_current(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetScreenResourcesCurrentReply>>;
 
     fn set_crtc_transform(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         transform: crate::proto::render::Transform,
         filter_name: &[u8],
@@ -210,18 +235,21 @@ pub trait RandrConnection {
 
     fn get_crtc_transform(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetCrtcTransformReply>>;
 
     fn get_panning(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetPanningReply, 36>>;
 
     fn set_panning(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         timestamp: crate::proto::xproto::Timestamp,
         left: u16,
@@ -241,6 +269,7 @@ pub trait RandrConnection {
 
     fn set_output_primary(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         output: crate::proto::randr::Output,
         forget: bool,
@@ -248,18 +277,21 @@ pub trait RandrConnection {
 
     fn get_output_primary(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetOutputPrimaryReply, 12>>;
 
     fn get_providers(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetProvidersReply>>;
 
     fn get_provider_info(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         config_timestamp: crate::proto::xproto::Timestamp,
         forget: bool,
@@ -267,6 +299,7 @@ pub trait RandrConnection {
 
     fn set_provider_offload_sink(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         sink_provider: crate::proto::randr::Provider,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -275,6 +308,7 @@ pub trait RandrConnection {
 
     fn set_provider_output_source(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         source_provider: crate::proto::randr::Provider,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -283,12 +317,14 @@ pub trait RandrConnection {
 
     fn list_provider_properties(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::ListProviderPropertiesReply>>;
 
     fn query_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         forget: bool,
@@ -296,6 +332,7 @@ pub trait RandrConnection {
 
     fn configure_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         pending: u8,
@@ -306,6 +343,7 @@ pub trait RandrConnection {
 
     fn change_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         r#type: u32,
@@ -318,6 +356,7 @@ pub trait RandrConnection {
 
     fn delete_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         forget: bool,
@@ -325,6 +364,7 @@ pub trait RandrConnection {
 
     fn get_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         r#type: u32,
@@ -337,6 +377,7 @@ pub trait RandrConnection {
 
     fn get_monitors(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         get_active: u8,
         forget: bool,
@@ -344,6 +385,7 @@ pub trait RandrConnection {
 
     fn set_monitor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         monitorinfo: crate::proto::randr::MonitorInfo,
         forget: bool,
@@ -351,6 +393,7 @@ pub trait RandrConnection {
 
     fn delete_monitor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         name: u32,
         forget: bool,
@@ -358,6 +401,7 @@ pub trait RandrConnection {
 
     fn create_lease(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         lid: crate::proto::randr::Lease,
         num_crtcs: u16,
@@ -369,6 +413,7 @@ pub trait RandrConnection {
 
     fn free_lease(
         &mut self,
+        socket_buffer: &mut [u8],
         lid: crate::proto::randr::Lease,
         terminate: u8,
         forget: bool,
@@ -380,6 +425,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -392,7 +438,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let major_version_bytes = major_version.serialize_fixed();
         let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -420,6 +466,7 @@ where
 
     fn set_screen_config(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         timestamp: crate::proto::xproto::Timestamp,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -440,7 +487,7 @@ where
         let size_i_d_bytes = size_i_d.serialize_fixed();
         let rotation_bytes = (rotation.0 as u16).serialize_fixed();
         let rate_bytes = rate.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -480,6 +527,7 @@ where
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         enable: crate::proto::randr::NotifyMask,
         forget: bool,
@@ -492,7 +540,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let enable_bytes = (enable.0 as u16).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -520,6 +568,7 @@ where
 
     fn get_screen_info(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetScreenInfoReply>> {
@@ -530,7 +579,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -554,6 +603,7 @@ where
 
     fn get_screen_size_range(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetScreenSizeRangeReply, 32>> {
@@ -564,7 +614,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -588,6 +638,7 @@ where
 
     fn set_screen_size(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         width: u16,
         height: u16,
@@ -606,7 +657,7 @@ where
         let height_bytes = height.serialize_fixed();
         let mm_width_bytes = mm_width.serialize_fixed();
         let mm_height_bytes = mm_height.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -642,6 +693,7 @@ where
 
     fn get_screen_resources(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetScreenResourcesReply>> {
@@ -652,7 +704,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -676,6 +728,7 @@ where
 
     fn get_output_info(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         config_timestamp: crate::proto::xproto::Timestamp,
         forget: bool,
@@ -688,7 +741,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let output_bytes = output.serialize_fixed();
         let config_timestamp_bytes = config_timestamp.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -716,6 +769,7 @@ where
 
     fn list_output_properties(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::ListOutputPropertiesReply>> {
@@ -726,7 +780,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let output_bytes = output.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -750,6 +804,7 @@ where
 
     fn query_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         forget: bool,
@@ -762,7 +817,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let output_bytes = output.serialize_fixed();
         let property_bytes = property.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -790,6 +845,7 @@ where
 
     fn configure_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         pending: u8,
@@ -802,7 +858,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         buf_ptr
             .get_mut(4..8)
@@ -845,7 +901,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -873,6 +929,7 @@ where
 
     fn change_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         r#type: u32,
@@ -887,7 +944,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         buf_ptr
             .get_mut(4..8)
@@ -938,7 +995,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -966,6 +1023,7 @@ where
 
     fn delete_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         forget: bool,
@@ -978,7 +1036,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let output_bytes = output.serialize_fixed();
         let property_bytes = property.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1006,6 +1064,7 @@ where
 
     fn get_output_property(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         property: u32,
         r#type: crate::proto::xproto::GetPropertyTypeEnum,
@@ -1026,7 +1085,7 @@ where
         let r#type_bytes = (r#type.0 as u32).serialize_fixed();
         let long_offset_bytes = long_offset.serialize_fixed();
         let long_length_bytes = long_length.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1070,6 +1129,7 @@ where
 
     fn create_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         mode_info: crate::proto::randr::ModeInfo,
         name: &[u8],
@@ -1080,7 +1140,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1114,7 +1174,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1142,6 +1202,7 @@ where
 
     fn destroy_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         mode: crate::proto::randr::Mode,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1152,7 +1213,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let mode_bytes = mode.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1176,6 +1237,7 @@ where
 
     fn add_output_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         mode: crate::proto::randr::Mode,
         forget: bool,
@@ -1188,7 +1250,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let output_bytes = output.serialize_fixed();
         let mode_bytes = mode.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1216,6 +1278,7 @@ where
 
     fn delete_output_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         output: crate::proto::randr::Output,
         mode: crate::proto::randr::Mode,
         forget: bool,
@@ -1228,7 +1291,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let output_bytes = output.serialize_fixed();
         let mode_bytes = mode.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1256,6 +1319,7 @@ where
 
     fn get_crtc_info(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         config_timestamp: crate::proto::xproto::Timestamp,
         forget: bool,
@@ -1268,7 +1332,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let crtc_bytes = crtc.serialize_fixed();
         let config_timestamp_bytes = config_timestamp.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1296,6 +1360,7 @@ where
 
     fn set_crtc_config(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         timestamp: crate::proto::xproto::Timestamp,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -1311,7 +1376,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         buf_ptr
             .get_mut(4..8)
@@ -1366,7 +1431,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1394,6 +1459,7 @@ where
 
     fn get_crtc_gamma_size(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetCrtcGammaSizeReply, 32>> {
@@ -1404,7 +1470,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let crtc_bytes = crtc.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1428,6 +1494,7 @@ where
 
     fn get_crtc_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetCrtcGammaReply>> {
@@ -1438,7 +1505,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let crtc_bytes = crtc.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1462,6 +1529,7 @@ where
 
     fn set_crtc_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         size: u16,
         red: &[u16],
@@ -1474,7 +1542,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let size = u16::try_from(size).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -1529,7 +1597,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1557,6 +1625,7 @@ where
 
     fn get_screen_resources_current(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetScreenResourcesCurrentReply>> {
@@ -1567,7 +1636,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1591,6 +1660,7 @@ where
 
     fn set_crtc_transform(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         transform: crate::proto::render::Transform,
         filter_name: &[u8],
@@ -1602,7 +1672,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let filter_len =
             u16::try_from(filter_name.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
@@ -1655,7 +1725,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1683,6 +1753,7 @@ where
 
     fn get_crtc_transform(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetCrtcTransformReply>> {
@@ -1693,7 +1764,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let crtc_bytes = crtc.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1717,6 +1788,7 @@ where
 
     fn get_panning(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetPanningReply, 36>> {
@@ -1727,7 +1799,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let crtc_bytes = crtc.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1751,6 +1823,7 @@ where
 
     fn set_panning(
         &mut self,
+        socket_buffer: &mut [u8],
         crtc: crate::proto::randr::Crtc,
         timestamp: crate::proto::xproto::Timestamp,
         left: u16,
@@ -1787,7 +1860,7 @@ where
         let border_top_bytes = border_top.serialize_fixed();
         let border_right_bytes = border_right.serialize_fixed();
         let border_bottom_bytes = border_bottom.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..36)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1839,6 +1912,7 @@ where
 
     fn set_output_primary(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         output: crate::proto::randr::Output,
         forget: bool,
@@ -1851,7 +1925,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let output_bytes = output.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1879,6 +1953,7 @@ where
 
     fn get_output_primary(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::randr::GetOutputPrimaryReply, 12>> {
@@ -1889,7 +1964,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1913,6 +1988,7 @@ where
 
     fn get_providers(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::GetProvidersReply>> {
@@ -1923,7 +1999,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1947,6 +2023,7 @@ where
 
     fn get_provider_info(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         config_timestamp: crate::proto::xproto::Timestamp,
         forget: bool,
@@ -1959,7 +2036,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let provider_bytes = provider.serialize_fixed();
         let config_timestamp_bytes = config_timestamp.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1987,6 +2064,7 @@ where
 
     fn set_provider_offload_sink(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         sink_provider: crate::proto::randr::Provider,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -2001,7 +2079,7 @@ where
         let provider_bytes = provider.serialize_fixed();
         let sink_provider_bytes = sink_provider.serialize_fixed();
         let config_timestamp_bytes = config_timestamp.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2033,6 +2111,7 @@ where
 
     fn set_provider_output_source(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         source_provider: crate::proto::randr::Provider,
         config_timestamp: crate::proto::xproto::Timestamp,
@@ -2047,7 +2126,7 @@ where
         let provider_bytes = provider.serialize_fixed();
         let source_provider_bytes = source_provider.serialize_fixed();
         let config_timestamp_bytes = config_timestamp.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2079,6 +2158,7 @@ where
 
     fn list_provider_properties(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::randr::ListProviderPropertiesReply>> {
@@ -2089,7 +2169,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let provider_bytes = provider.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2113,6 +2193,7 @@ where
 
     fn query_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         forget: bool,
@@ -2125,7 +2206,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let provider_bytes = provider.serialize_fixed();
         let property_bytes = property.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2153,6 +2234,7 @@ where
 
     fn configure_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         pending: u8,
@@ -2165,7 +2247,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         buf_ptr
             .get_mut(4..8)
@@ -2208,7 +2290,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2236,6 +2318,7 @@ where
 
     fn change_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         r#type: u32,
@@ -2250,7 +2333,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         buf_ptr
             .get_mut(4..8)
@@ -2301,7 +2384,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2329,6 +2412,7 @@ where
 
     fn delete_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         forget: bool,
@@ -2341,7 +2425,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let provider_bytes = provider.serialize_fixed();
         let property_bytes = property.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2369,6 +2453,7 @@ where
 
     fn get_provider_property(
         &mut self,
+        socket_buffer: &mut [u8],
         provider: crate::proto::randr::Provider,
         property: u32,
         r#type: u32,
@@ -2389,7 +2474,7 @@ where
         let r#type_bytes = r#type.serialize_fixed();
         let long_offset_bytes = long_offset.serialize_fixed();
         let long_length_bytes = long_length.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2433,6 +2518,7 @@ where
 
     fn get_monitors(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         get_active: u8,
         forget: bool,
@@ -2444,7 +2530,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2472,6 +2558,7 @@ where
 
     fn set_monitor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         monitorinfo: crate::proto::randr::MonitorInfo,
         forget: bool,
@@ -2481,7 +2568,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -2504,7 +2591,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2532,6 +2619,7 @@ where
 
     fn delete_monitor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         name: u32,
         forget: bool,
@@ -2544,7 +2632,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let name_bytes = name.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2572,6 +2660,7 @@ where
 
     fn create_lease(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         lid: crate::proto::randr::Lease,
         num_crtcs: u16,
@@ -2585,7 +2674,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::randr::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_crtcs = u16::try_from(num_crtcs).map_err(|_| crate::error::Error::Serialize)?;
         let num_outputs = u16::try_from(num_outputs).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -2643,7 +2732,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2671,6 +2760,7 @@ where
 
     fn free_lease(
         &mut self,
+        socket_buffer: &mut [u8],
         lid: crate::proto::randr::Lease,
         terminate: u8,
         forget: bool,
@@ -2682,7 +2772,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let lid_bytes = lid.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

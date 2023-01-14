@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait CompositeConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait CompositeConnection {
 
     fn redirect_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -25,6 +27,7 @@ pub trait CompositeConnection {
 
     fn redirect_subwindows(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -32,6 +35,7 @@ pub trait CompositeConnection {
 
     fn unredirect_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -39,6 +43,7 @@ pub trait CompositeConnection {
 
     fn unredirect_subwindows(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -46,6 +51,7 @@ pub trait CompositeConnection {
 
     fn create_region_from_border_clip(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         window: crate::proto::xproto::Window,
         forget: bool,
@@ -53,6 +59,7 @@ pub trait CompositeConnection {
 
     fn name_window_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         pixmap: crate::proto::xproto::Pixmap,
         forget: bool,
@@ -60,12 +67,14 @@ pub trait CompositeConnection {
 
     fn get_overlay_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::composite::GetOverlayWindowReply, 32>>;
 
     fn release_overlay_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
@@ -76,6 +85,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -88,7 +98,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let client_major_version_bytes = client_major_version.serialize_fixed();
         let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -116,6 +126,7 @@ where
 
     fn redirect_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -127,7 +138,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -155,6 +166,7 @@ where
 
     fn redirect_subwindows(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -166,7 +178,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -194,6 +206,7 @@ where
 
     fn unredirect_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -205,7 +218,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -233,6 +246,7 @@ where
 
     fn unredirect_subwindows(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         update: crate::proto::composite::RedirectEnum,
         forget: bool,
@@ -244,7 +258,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -272,6 +286,7 @@ where
 
     fn create_region_from_border_clip(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         window: crate::proto::xproto::Window,
         forget: bool,
@@ -284,7 +299,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let region_bytes = region.serialize_fixed();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -312,6 +327,7 @@ where
 
     fn name_window_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         pixmap: crate::proto::xproto::Pixmap,
         forget: bool,
@@ -324,7 +340,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let pixmap_bytes = pixmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -352,6 +368,7 @@ where
 
     fn get_overlay_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::composite::GetOverlayWindowReply, 32>> {
@@ -362,7 +379,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -386,6 +403,7 @@ where
 
     fn release_overlay_window(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -396,7 +414,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

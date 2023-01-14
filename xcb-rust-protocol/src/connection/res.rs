@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait ResConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major: u8,
         client_minor: u8,
         forget: bool,
@@ -18,29 +19,34 @@ pub trait ResConnection {
 
     fn query_clients(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::res::QueryClientsReply>>;
 
     fn query_client_resources(
         &mut self,
+        socket_buffer: &mut [u8],
         xid: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::res::QueryClientResourcesReply>>;
 
     fn query_client_pixmap_bytes(
         &mut self,
+        socket_buffer: &mut [u8],
         xid: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::res::QueryClientPixmapBytesReply, 16>>;
 
     fn query_client_ids(
         &mut self,
+        socket_buffer: &mut [u8],
         specs: &[crate::proto::res::ClientIdSpec],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::res::QueryClientIdsReply>>;
 
     fn query_resource_bytes(
         &mut self,
+        socket_buffer: &mut [u8],
         client: u32,
         specs: &[crate::proto::res::ResourceIdSpec],
         forget: bool,
@@ -52,6 +58,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major: u8,
         client_minor: u8,
         forget: bool,
@@ -60,7 +67,7 @@ where
             crate::error::Error::MissingExtension(crate::proto::res::EXTENSION_NAME),
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -84,13 +91,14 @@ where
 
     fn query_clients(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::res::QueryClientsReply>> {
         let major_opcode = self.major_opcode(crate::proto::res::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::res::EXTENSION_NAME),
         )?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -107,6 +115,7 @@ where
 
     fn query_client_resources(
         &mut self,
+        socket_buffer: &mut [u8],
         xid: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::res::QueryClientResourcesReply>> {
@@ -115,7 +124,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let xid_bytes = xid.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -139,6 +148,7 @@ where
 
     fn query_client_pixmap_bytes(
         &mut self,
+        socket_buffer: &mut [u8],
         xid: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::res::QueryClientPixmapBytesReply, 16>> {
@@ -147,7 +157,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let xid_bytes = xid.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -171,13 +181,14 @@ where
 
     fn query_client_ids(
         &mut self,
+        socket_buffer: &mut [u8],
         specs: &[crate::proto::res::ClientIdSpec],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::res::QueryClientIdsReply>> {
         let major_opcode = self.major_opcode(crate::proto::res::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::res::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_specs = u32::try_from(specs.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -209,7 +220,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -237,6 +248,7 @@ where
 
     fn query_resource_bytes(
         &mut self,
+        socket_buffer: &mut [u8],
         client: u32,
         specs: &[crate::proto::res::ResourceIdSpec],
         forget: bool,
@@ -244,7 +256,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::res::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::res::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_specs = u32::try_from(specs.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -282,7 +294,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?

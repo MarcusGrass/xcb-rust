@@ -109,13 +109,20 @@ pub(crate) fn implement_fixed_req_serialize(
     let bs = member_size(members).unwrap();
     let mut body = String::new();
     let mut mb = MethodBuilder::new(&name).set_self_ownership(Ownership::MutRef);
+    mb = mb.add_argument(Argument::new(
+        Ownership::MutRef,
+        NamedComponentSignature::new(
+            "socket_buffer",
+            ComponentSignature::Signature(Signature::simple(RustType::in_scope("[u8]"))),
+        ),
+    ));
     add_major_opcode(xproto, &mut body, xcb);
     // We don't need to do anything on an empty-body request essentially
     if bs == 0 {
         // We measure length in words here
         dump!(
             body,
-            "let buf = self.write_buf().get_mut(..4).ok_or({})?\n;",
+            "let buf = self.apply_offset(socket_buffer).get_mut(..4).ok_or({})?\n;",
             SERIALIZE_ERROR
         );
         if xproto {
@@ -163,7 +170,7 @@ pub(crate) fn implement_fixed_req_serialize(
                 }
             }
         }
-        dump!(body, "let buf = self.write_buf();\n");
+        dump!(body, "let buf = self.apply_offset(socket_buffer);\n");
         dump!(
             body,
             "buf.get_mut(..{}).ok_or({})?.copy_from_slice(&[\n",
@@ -340,8 +347,15 @@ pub(crate) fn implement_var_len_req_serialize(
     let mut body = String::new();
     let name = RustCase::convert_to_valid_rust(&name, RustCase::Snake).unwrap();
     let mut mb = MethodBuilder::new(&name).set_self_ownership(Ownership::MutRef);
+    mb = mb.add_argument(Argument::new(
+        Ownership::MutRef,
+        NamedComponentSignature::new(
+            "socket_buffer",
+            ComponentSignature::Signature(Signature::simple(RustType::in_scope("[u8]"))),
+        ),
+    ));
     add_major_opcode(xproto, &mut body, xcb);
-    dump!(body, "let buf_ptr = self.write_buf();\n");
+    dump!(body, "let buf_ptr = self.apply_offset(socket_buffer);\n");
     let mut known_offset = 4;
     let mut header = String::new();
     let mut skip_first = false;
@@ -720,7 +734,7 @@ pub(crate) fn implement_var_len_req_serialize(
             REQ_TO_BIG_ERROR
         );
 
-        dump!(body, "let buf_ptr = self.write_buf();\n");
+        dump!(body, "let buf_ptr = self.apply_offset(socket_buffer);\n");
         dump!(
             body,
             "buf_ptr.get_mut(2..4).ok_or({})?.copy_from_slice(&[0, 0]);\n",

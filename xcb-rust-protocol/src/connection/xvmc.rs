@@ -11,17 +11,20 @@ use crate::util::VariableLengthSerialize;
 pub trait XvmcConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xvmc::QueryVersionReply, 16>>;
 
     fn list_surface_types(
         &mut self,
+        socket_buffer: &mut [u8],
         port_id: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xvmc::ListSurfaceTypesReply>>;
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context_id: crate::proto::xvmc::Context,
         port_id: crate::proto::xv::Port,
         surface_id: crate::proto::xvmc::Surface,
@@ -33,12 +36,14 @@ pub trait XvmcConnection {
 
     fn destroy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context_id: crate::proto::xvmc::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn create_surface(
         &mut self,
+        socket_buffer: &mut [u8],
         surface_id: crate::proto::xvmc::Surface,
         context_id: crate::proto::xvmc::Context,
         forget: bool,
@@ -46,12 +51,14 @@ pub trait XvmcConnection {
 
     fn destroy_surface(
         &mut self,
+        socket_buffer: &mut [u8],
         surface_id: crate::proto::xvmc::Surface,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn create_subpicture(
         &mut self,
+        socket_buffer: &mut [u8],
         subpicture_id: crate::proto::xvmc::Subpicture,
         context: crate::proto::xvmc::Context,
         xvimage_id: u32,
@@ -62,12 +69,14 @@ pub trait XvmcConnection {
 
     fn destroy_subpicture(
         &mut self,
+        socket_buffer: &mut [u8],
         subpicture_id: crate::proto::xvmc::Subpicture,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn list_subpicture_types(
         &mut self,
+        socket_buffer: &mut [u8],
         port_id: crate::proto::xv::Port,
         surface_id: crate::proto::xvmc::Surface,
         forget: bool,
@@ -79,6 +88,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xvmc::QueryVersionReply, 16>> {
         let major_opcode = self
@@ -87,7 +97,7 @@ where
                 crate::proto::xvmc::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -104,6 +114,7 @@ where
 
     fn list_surface_types(
         &mut self,
+        socket_buffer: &mut [u8],
         port_id: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xvmc::ListSurfaceTypesReply>> {
@@ -114,7 +125,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let port_id_bytes = port_id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -138,6 +149,7 @@ where
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context_id: crate::proto::xvmc::Context,
         port_id: crate::proto::xv::Port,
         surface_id: crate::proto::xvmc::Surface,
@@ -158,7 +170,7 @@ where
         let width_bytes = width.serialize_fixed();
         let height_bytes = height.serialize_fixed();
         let flags_bytes = flags.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -198,6 +210,7 @@ where
 
     fn destroy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context_id: crate::proto::xvmc::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -208,7 +221,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_id_bytes = context_id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -232,6 +245,7 @@ where
 
     fn create_surface(
         &mut self,
+        socket_buffer: &mut [u8],
         surface_id: crate::proto::xvmc::Surface,
         context_id: crate::proto::xvmc::Context,
         forget: bool,
@@ -244,7 +258,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let surface_id_bytes = surface_id.serialize_fixed();
         let context_id_bytes = context_id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -272,6 +286,7 @@ where
 
     fn destroy_surface(
         &mut self,
+        socket_buffer: &mut [u8],
         surface_id: crate::proto::xvmc::Surface,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -282,7 +297,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let surface_id_bytes = surface_id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -306,6 +321,7 @@ where
 
     fn create_subpicture(
         &mut self,
+        socket_buffer: &mut [u8],
         subpicture_id: crate::proto::xvmc::Subpicture,
         context: crate::proto::xvmc::Context,
         xvimage_id: u32,
@@ -324,7 +340,7 @@ where
         let xvimage_id_bytes = xvimage_id.serialize_fixed();
         let width_bytes = width.serialize_fixed();
         let height_bytes = height.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -360,6 +376,7 @@ where
 
     fn destroy_subpicture(
         &mut self,
+        socket_buffer: &mut [u8],
         subpicture_id: crate::proto::xvmc::Subpicture,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -370,7 +387,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let subpicture_id_bytes = subpicture_id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -394,6 +411,7 @@ where
 
     fn list_subpicture_types(
         &mut self,
+        socket_buffer: &mut [u8],
         port_id: crate::proto::xv::Port,
         surface_id: crate::proto::xvmc::Surface,
         forget: bool,
@@ -406,7 +424,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let port_id_bytes = port_id.serialize_fixed();
         let surface_id_bytes = surface_id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

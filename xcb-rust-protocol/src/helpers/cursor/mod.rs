@@ -56,6 +56,7 @@ impl Handle {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<C>(
         conn: &mut C,
+        buffer: &mut [u8],
         screen: usize,
         resource_database: &Database,
         env: XcbEnv,
@@ -65,10 +66,13 @@ impl Handle {
     {
         let screen = conn.setup().roots[screen].clone();
         let render_info = if conn.major_opcode(render::EXTENSION_NAME).is_some() {
-            let render_version =
-                crate::connection::render::RenderConnection::query_version(conn, 0, 8, false)?;
+            let render_version = crate::connection::render::RenderConnection::query_version(
+                conn, buffer, 0, 8, false,
+            )?;
             let render_pict_format =
-                crate::connection::render::RenderConnection::query_pict_formats(conn, false)?;
+                crate::connection::render::RenderConnection::query_pict_formats(
+                    conn, buffer, false,
+                )?;
             Some((render_version, render_pict_format))
         } else {
             None
@@ -76,9 +80,9 @@ impl Handle {
         let mut render_version = (0, 0);
         let mut picture_format = NONE;
         if let Some((version, formats)) = render_info {
-            let version = version.reply(conn)?;
+            let version = version.reply(conn, buffer)?;
             render_version = (version.major_version, version.minor_version);
-            picture_format = find_format(&formats.reply(conn)?);
+            picture_format = find_format(&formats.reply(conn, buffer)?);
         }
         let render_support = if render_version.0 >= 1 || render_version.1 >= 8 {
             RenderSupport::AnimatedCursor
@@ -99,9 +103,9 @@ impl Handle {
             _ => 0,
         };
         let cursor_size = get_cursor_size(cursor_size, xft_dpi, &screen, env);
-        let cursor_font = conn.generate_id()?;
+        let cursor_font = conn.generate_id(buffer)?;
 
-        let _ = conn.open_font(cursor_font, b"cursor", true)?;
+        let _ = conn.open_font(buffer, cursor_font, b"cursor", true)?;
         Ok(Handle {
             root: screen.root,
             cursor_font,
@@ -116,6 +120,7 @@ impl Handle {
     /// "cursor" font.
     pub fn load_cursor<C>(
         &self,
+        buffer: &mut [u8],
         conn: &mut C,
         name: &str,
         env: XcbEnv,
@@ -123,7 +128,7 @@ impl Handle {
     where
         C: XcbConnection,
     {
-        load_cursor(conn, self, name, env)
+        load_cursor(conn, buffer, self, name, env)
     }
 }
 
@@ -146,14 +151,16 @@ fn open_cursor(
 
 fn create_core_cursor<C>(
     conn: &mut C,
+    buffer: &mut [u8],
     cursor_font: Font,
     cursor: u16,
 ) -> Result<xproto::Cursor, Error>
 where
     C: XcbConnection,
 {
-    let result = conn.generate_id()?;
+    let result = conn.generate_id(buffer)?;
     conn.create_glyph_cursor(
+        buffer,
         result,
         cursor_font,
         FontEnum(cursor_font),
@@ -174,6 +181,7 @@ where
 
 fn create_render_cursor<C>(
     conn: &mut C,
+    buffer: &mut [u8],
     handle: &Handle,
     image: &parse_cursor::Image,
     storage: &mut Option<(xproto::Pixmap, xproto::Gcontext, u16, u16)>,
@@ -181,21 +189,29 @@ fn create_render_cursor<C>(
 where
     C: XcbConnection,
 {
-    let (cursor, picture) = (conn.generate_id()?, conn.generate_id()?);
+    let (cursor, picture) = (conn.generate_id(buffer)?, conn.generate_id(buffer)?);
 
     // Get a pixmap of the right size and a gc for it
     let (pixmap, gc) = if storage.map(|(_, _, w, h)| (w, h)) == Some((image.width, image.height)) {
         storage.map(|(pixmap, gc, _, _)| (pixmap, gc)).unwrap()
     } else {
         let (pixmap, gc) = if let Some((pixmap, gc, _, _)) = storage {
-            conn.free_g_c(*gc, true)?;
-            conn.free_pixmap(*pixmap, true)?;
+            conn.free_g_c(buffer, *gc, true)?;
+            conn.free_pixmap(buffer, *pixmap, true)?;
             (*pixmap, *gc)
         } else {
-            (conn.generate_id()?, conn.generate_id()?)
+            (conn.generate_id(buffer)?, conn.generate_id(buffer)?)
         };
-        conn.create_pixmap(32, pixmap, handle.root, image.width, image.height, true)?;
-        conn.create_g_c(gc, pixmap, CreateGCValueList::default(), true)?;
+        conn.create_pixmap(
+            buffer,
+            32,
+            pixmap,
+            handle.root,
+            image.width,
+            image.height,
+            true,
+        )?;
+        conn.create_g_c(buffer, gc, pixmap, CreateGCValueList::default(), true)?;
 
         *storage = Some((pixmap, gc, image.width, image.height));
         (pixmap, gc)
@@ -206,6 +222,7 @@ where
     crate::util::fixed_vec_serialize_into(&mut pixels, &image.pixels)?;
     let _ = XprotoConnection::put_image(
         conn,
+        buffer,
         xproto::ImageFormatEnum::Z_PIXMAP,
         pixmap,
         gc,
@@ -220,14 +237,23 @@ where
     )?;
 
     let _ = conn.create_picture(
+        buffer,
         picture,
         pixmap,
         handle.picture_format,
         CreatePictureValueList::default(),
         true,
     )?;
-    RenderConnection::create_cursor(conn, cursor, picture, image.x_hot, image.y_hot, true)?;
-    let _ = conn.free_picture(picture, true)?;
+    RenderConnection::create_cursor(
+        conn,
+        buffer,
+        cursor,
+        picture,
+        image.x_hot,
+        image.y_hot,
+        true,
+    )?;
+    let _ = conn.free_picture(buffer, picture, true)?;
 
     Ok(render::Animcursorelt {
         cursor,
@@ -237,6 +263,7 @@ where
 
 fn load_cursor<C>(
     conn: &mut C,
+    buffer: &mut [u8],
     handle: &Handle,
     name: &str,
     env: XcbEnv,
@@ -248,7 +275,7 @@ where
     let cursor_file = match open_cursor(&handle.theme, name, env) {
         None => return Ok(NONE),
         Some(find_cursor::Cursor::CoreChar(c)) => {
-            return create_core_cursor(conn, handle.cursor_font, c);
+            return create_core_cursor(conn, buffer, handle.cursor_font, c);
         }
         Some(find_cursor::Cursor::File(f)) => f,
     };
@@ -273,20 +300,20 @@ where
     let mut storage = None;
     let cursors = images
         .iter()
-        .map(|image| create_render_cursor(conn, handle, image, &mut storage))
+        .map(|image| create_render_cursor(conn, buffer, handle, image, &mut storage))
         .collect::<Result<Vec<_>, _>>()?;
     if let Some((pixmap, gc, _, _)) = storage {
-        let _ = conn.free_g_c(gc, true)?;
-        let _ = conn.free_pixmap(pixmap, true)?;
+        let _ = conn.free_g_c(buffer, gc, true)?;
+        let _ = conn.free_pixmap(buffer, pixmap, true)?;
     }
 
     if cursors.len() == 1 {
         Ok(cursors[0].cursor)
     } else {
-        let result = conn.generate_id()?;
-        let _ = conn.create_anim_cursor(result, &cursors, true)?;
+        let result = conn.generate_id(buffer)?;
+        let _ = conn.create_anim_cursor(buffer, result, &cursors, true)?;
         for elem in cursors {
-            let _ = conn.free_cursor(elem.cursor, true)?;
+            let _ = conn.free_cursor(buffer, elem.cursor, true)?;
         }
         Ok(result)
     }

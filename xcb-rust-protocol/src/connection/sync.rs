@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait SyncConnection {
     fn initialize(
         &mut self,
+        socket_buffer: &mut [u8],
         desired_major_version: u8,
         desired_minor_version: u8,
         forget: bool,
@@ -18,11 +19,13 @@ pub trait SyncConnection {
 
     fn list_system_counters(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::sync::ListSystemCountersReply>>;
 
     fn create_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         id: crate::proto::sync::Counter,
         initial_value: crate::proto::sync::Int64,
         forget: bool,
@@ -30,24 +33,28 @@ pub trait SyncConnection {
 
     fn destroy_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn query_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryCounterReply, 16>>;
 
     fn r#await(
         &mut self,
+        socket_buffer: &mut [u8],
         wait_list: &[crate::proto::sync::Waitcondition],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn change_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         amount: crate::proto::sync::Int64,
         forget: bool,
@@ -55,6 +62,7 @@ pub trait SyncConnection {
 
     fn set_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         value: crate::proto::sync::Int64,
         forget: bool,
@@ -62,6 +70,7 @@ pub trait SyncConnection {
 
     fn create_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         id: crate::proto::sync::Alarm,
         create_alarm_value_list: crate::proto::sync::CreateAlarmValueList,
         forget: bool,
@@ -69,6 +78,7 @@ pub trait SyncConnection {
 
     fn change_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         id: crate::proto::sync::Alarm,
         change_alarm_value_list: crate::proto::sync::ChangeAlarmValueList,
         forget: bool,
@@ -76,18 +86,21 @@ pub trait SyncConnection {
 
     fn destroy_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         alarm: crate::proto::sync::Alarm,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn query_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         alarm: crate::proto::sync::Alarm,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryAlarmReply, 40>>;
 
     fn set_priority(
         &mut self,
+        socket_buffer: &mut [u8],
         id: u32,
         priority: i32,
         forget: bool,
@@ -95,12 +108,14 @@ pub trait SyncConnection {
 
     fn get_priority(
         &mut self,
+        socket_buffer: &mut [u8],
         id: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::GetPriorityReply, 12>>;
 
     fn create_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         fence: crate::proto::sync::Fence,
         initially_triggered: u8,
@@ -109,30 +124,35 @@ pub trait SyncConnection {
 
     fn trigger_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn reset_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn destroy_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn query_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryFenceReply, 32>>;
 
     fn await_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence_list: &[crate::proto::sync::Fence],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
@@ -143,6 +163,7 @@ where
 {
     fn initialize(
         &mut self,
+        socket_buffer: &mut [u8],
         desired_major_version: u8,
         desired_minor_version: u8,
         forget: bool,
@@ -153,7 +174,7 @@ where
                 crate::proto::sync::EXTENSION_NAME,
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -177,6 +198,7 @@ where
 
     fn list_system_counters(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::sync::ListSystemCountersReply>> {
         let major_opcode = self
@@ -185,7 +207,7 @@ where
                 crate::proto::sync::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -202,6 +224,7 @@ where
 
     fn create_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         id: crate::proto::sync::Counter,
         initial_value: crate::proto::sync::Int64,
         forget: bool,
@@ -214,7 +237,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let id_bytes = id.serialize_fixed();
         let initial_value_bytes = initial_value.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -246,6 +269,7 @@ where
 
     fn destroy_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -256,7 +280,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let counter_bytes = counter.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -280,6 +304,7 @@ where
 
     fn query_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryCounterReply, 16>> {
@@ -290,7 +315,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let counter_bytes = counter.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -314,6 +339,7 @@ where
 
     fn r#await(
         &mut self,
+        socket_buffer: &mut [u8],
         wait_list: &[crate::proto::sync::Waitcondition],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -322,7 +348,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::sync::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let list_len = wait_list.len() * 28;
         crate::util::fixed_vec_serialize_into(
             buf_ptr.get_mut(0..).ok_or(crate::error::Error::Serialize)?,
@@ -346,7 +372,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -374,6 +400,7 @@ where
 
     fn change_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         amount: crate::proto::sync::Int64,
         forget: bool,
@@ -386,7 +413,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let counter_bytes = counter.serialize_fixed();
         let amount_bytes = amount.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -418,6 +445,7 @@ where
 
     fn set_counter(
         &mut self,
+        socket_buffer: &mut [u8],
         counter: crate::proto::sync::Counter,
         value: crate::proto::sync::Int64,
         forget: bool,
@@ -430,7 +458,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let counter_bytes = counter.serialize_fixed();
         let value_bytes = value.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -462,6 +490,7 @@ where
 
     fn create_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         id: crate::proto::sync::Alarm,
         create_alarm_value_list: crate::proto::sync::CreateAlarmValueList,
         forget: bool,
@@ -471,7 +500,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::sync::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -509,6 +538,7 @@ where
 
     fn change_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         id: crate::proto::sync::Alarm,
         change_alarm_value_list: crate::proto::sync::ChangeAlarmValueList,
         forget: bool,
@@ -518,7 +548,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::sync::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -556,6 +586,7 @@ where
 
     fn destroy_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         alarm: crate::proto::sync::Alarm,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -566,7 +597,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let alarm_bytes = alarm.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -590,6 +621,7 @@ where
 
     fn query_alarm(
         &mut self,
+        socket_buffer: &mut [u8],
         alarm: crate::proto::sync::Alarm,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryAlarmReply, 40>> {
@@ -600,7 +632,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let alarm_bytes = alarm.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -624,6 +656,7 @@ where
 
     fn set_priority(
         &mut self,
+        socket_buffer: &mut [u8],
         id: u32,
         priority: i32,
         forget: bool,
@@ -636,7 +669,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let id_bytes = id.serialize_fixed();
         let priority_bytes = priority.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -664,6 +697,7 @@ where
 
     fn get_priority(
         &mut self,
+        socket_buffer: &mut [u8],
         id: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::GetPriorityReply, 12>> {
@@ -674,7 +708,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let id_bytes = id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -698,6 +732,7 @@ where
 
     fn create_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         fence: crate::proto::sync::Fence,
         initially_triggered: u8,
@@ -711,7 +746,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
         let fence_bytes = fence.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -743,6 +778,7 @@ where
 
     fn trigger_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -753,7 +789,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let fence_bytes = fence.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -777,6 +813,7 @@ where
 
     fn reset_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -787,7 +824,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let fence_bytes = fence.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -811,6 +848,7 @@ where
 
     fn destroy_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -821,7 +859,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let fence_bytes = fence.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -845,6 +883,7 @@ where
 
     fn query_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence: crate::proto::sync::Fence,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryFenceReply, 32>> {
@@ -855,7 +894,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let fence_bytes = fence.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -879,6 +918,7 @@ where
 
     fn await_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         fence_list: &[crate::proto::sync::Fence],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -887,7 +927,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::sync::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let list_len = fence_list.len() * 4;
         crate::util::fixed_vec_serialize_into(
             buf_ptr.get_mut(0..).ok_or(crate::error::Error::Serialize)?,
@@ -911,7 +951,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?

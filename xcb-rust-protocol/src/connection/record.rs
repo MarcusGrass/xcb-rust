@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait RecordConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u16,
         minor_version: u16,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait RecordConnection {
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         element_header: crate::proto::record::ElementHeader,
         num_client_specs: u32,
@@ -29,6 +31,7 @@ pub trait RecordConnection {
 
     fn register_clients(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         element_header: crate::proto::record::ElementHeader,
         num_client_specs: u32,
@@ -40,6 +43,7 @@ pub trait RecordConnection {
 
     fn unregister_clients(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         client_specs: &[crate::proto::record::ClientSpec],
         forget: bool,
@@ -47,24 +51,28 @@ pub trait RecordConnection {
 
     fn get_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::record::GetContextReply>>;
 
     fn enable_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::record::EnableContextReply>>;
 
     fn disable_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn free_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
@@ -75,6 +83,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u16,
         minor_version: u16,
         forget: bool,
@@ -87,7 +96,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let major_version_bytes = major_version.serialize_fixed();
         let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -111,6 +120,7 @@ where
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         element_header: crate::proto::record::ElementHeader,
         num_client_specs: u32,
@@ -124,7 +134,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::record::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         let num_client_specs =
             u32::try_from(num_client_specs).map_err(|_| crate::error::Error::Serialize)?;
@@ -184,7 +194,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -212,6 +222,7 @@ where
 
     fn register_clients(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         element_header: crate::proto::record::ElementHeader,
         num_client_specs: u32,
@@ -225,7 +236,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::record::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         let num_client_specs =
             u32::try_from(num_client_specs).map_err(|_| crate::error::Error::Serialize)?;
@@ -285,7 +296,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -313,6 +324,7 @@ where
 
     fn unregister_clients(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         client_specs: &[crate::proto::record::ClientSpec],
         forget: bool,
@@ -322,7 +334,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::record::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_client_specs =
             u32::try_from(client_specs.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -361,7 +373,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -389,6 +401,7 @@ where
 
     fn get_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::record::GetContextReply>> {
@@ -399,7 +412,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -423,6 +436,7 @@ where
 
     fn enable_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::record::EnableContextReply>> {
@@ -433,7 +447,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -457,6 +471,7 @@ where
 
     fn disable_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -467,7 +482,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -491,6 +506,7 @@ where
 
     fn free_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::record::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -501,7 +517,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

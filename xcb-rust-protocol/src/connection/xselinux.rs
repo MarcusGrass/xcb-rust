@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait XselinuxConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major: u8,
         client_minor: u8,
         forget: bool,
@@ -18,17 +19,20 @@ pub trait XselinuxConnection {
 
     fn set_device_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_device_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetDeviceCreateContextReply>>;
 
     fn set_device_context(
         &mut self,
+        socket_buffer: &mut [u8],
         device: u32,
         context: &[u8],
         forget: bool,
@@ -36,51 +40,60 @@ pub trait XselinuxConnection {
 
     fn get_device_context(
         &mut self,
+        socket_buffer: &mut [u8],
         device: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetDeviceContextReply>>;
 
     fn set_window_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_window_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetWindowCreateContextReply>>;
 
     fn get_window_context(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetWindowContextReply>>;
 
     fn set_property_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_property_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetPropertyCreateContextReply>>;
 
     fn set_property_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_property_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetPropertyUseContextReply>>;
 
     fn get_property_context(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         property: u32,
         forget: bool,
@@ -88,6 +101,7 @@ pub trait XselinuxConnection {
 
     fn get_property_data_context(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         property: u32,
         forget: bool,
@@ -95,51 +109,60 @@ pub trait XselinuxConnection {
 
     fn list_properties(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::ListPropertiesReply>>;
 
     fn set_selection_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_selection_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionCreateContextReply>>;
 
     fn set_selection_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_selection_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionUseContextReply>>;
 
     fn get_selection_context(
         &mut self,
+        socket_buffer: &mut [u8],
         selection: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionContextReply>>;
 
     fn get_selection_data_context(
         &mut self,
+        socket_buffer: &mut [u8],
         selection: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionDataContextReply>>;
 
     fn list_selections(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::ListSelectionsReply>>;
 
     fn get_client_context(
         &mut self,
+        socket_buffer: &mut [u8],
         resource: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetClientContextReply>>;
@@ -150,6 +173,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major: u8,
         client_minor: u8,
         forget: bool,
@@ -160,7 +184,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -184,6 +208,7 @@ where
 
     fn set_device_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -192,7 +217,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let context_len =
             u32::try_from(context.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -225,7 +250,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -253,6 +278,7 @@ where
 
     fn get_device_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetDeviceCreateContextReply>> {
         let major_opcode = self
@@ -261,7 +287,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -278,6 +304,7 @@ where
 
     fn set_device_context(
         &mut self,
+        socket_buffer: &mut [u8],
         device: u32,
         context: &[u8],
         forget: bool,
@@ -287,7 +314,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let context_len =
             u32::try_from(context.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -326,7 +353,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -354,6 +381,7 @@ where
 
     fn get_device_context(
         &mut self,
+        socket_buffer: &mut [u8],
         device: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetDeviceContextReply>> {
@@ -364,7 +392,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let device_bytes = device.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -388,6 +416,7 @@ where
 
     fn set_window_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -396,7 +425,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let context_len =
             u32::try_from(context.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -429,7 +458,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -457,6 +486,7 @@ where
 
     fn get_window_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetWindowCreateContextReply>> {
         let major_opcode = self
@@ -465,7 +495,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -482,6 +512,7 @@ where
 
     fn get_window_context(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetWindowContextReply>> {
@@ -492,7 +523,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -516,6 +547,7 @@ where
 
     fn set_property_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -524,7 +556,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let context_len =
             u32::try_from(context.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -557,7 +589,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -585,6 +617,7 @@ where
 
     fn get_property_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetPropertyCreateContextReply>> {
         let major_opcode = self
@@ -593,7 +626,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -610,6 +643,7 @@ where
 
     fn set_property_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -618,7 +652,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let context_len =
             u32::try_from(context.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -651,7 +685,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -679,6 +713,7 @@ where
 
     fn get_property_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetPropertyUseContextReply>> {
         let major_opcode = self
@@ -687,7 +722,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -704,6 +739,7 @@ where
 
     fn get_property_context(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         property: u32,
         forget: bool,
@@ -716,7 +752,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let property_bytes = property.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -744,6 +780,7 @@ where
 
     fn get_property_data_context(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         property: u32,
         forget: bool,
@@ -756,7 +793,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let property_bytes = property.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -784,6 +821,7 @@ where
 
     fn list_properties(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::ListPropertiesReply>> {
@@ -794,7 +832,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -818,6 +856,7 @@ where
 
     fn set_selection_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -826,7 +865,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let context_len =
             u32::try_from(context.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -859,7 +898,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -887,6 +926,7 @@ where
 
     fn get_selection_create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionCreateContextReply>> {
         let major_opcode = self
@@ -895,7 +935,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -912,6 +952,7 @@ where
 
     fn set_selection_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: &[u8],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -920,7 +961,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let context_len =
             u32::try_from(context.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -953,7 +994,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -981,6 +1022,7 @@ where
 
     fn get_selection_use_context(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionUseContextReply>> {
         let major_opcode = self
@@ -989,7 +1031,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -1006,6 +1048,7 @@ where
 
     fn get_selection_context(
         &mut self,
+        socket_buffer: &mut [u8],
         selection: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionContextReply>> {
@@ -1016,7 +1059,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let selection_bytes = selection.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1040,6 +1083,7 @@ where
 
     fn get_selection_data_context(
         &mut self,
+        socket_buffer: &mut [u8],
         selection: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetSelectionDataContextReply>> {
@@ -1050,7 +1094,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let selection_bytes = selection.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1074,6 +1118,7 @@ where
 
     fn list_selections(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::ListSelectionsReply>> {
         let major_opcode = self
@@ -1082,7 +1127,7 @@ where
                 crate::proto::xselinux::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -1099,6 +1144,7 @@ where
 
     fn get_client_context(
         &mut self,
+        socket_buffer: &mut [u8],
         resource: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xselinux::GetClientContextReply>> {
@@ -1109,7 +1155,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let resource_bytes = resource.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

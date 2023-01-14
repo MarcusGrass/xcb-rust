@@ -11,31 +11,41 @@ use crate::util::VariableLengthSerialize;
 pub trait Xf86driConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86dri::QueryVersionReply, 16>>;
 
     fn query_direct_rendering_capable(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86dri::QueryDirectRenderingCapableReply, 9>>;
 
     fn open_connection(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86dri::OpenConnectionReply>>;
 
-    fn close_connection(&mut self, screen: u32, forget: bool) -> crate::error::Result<VoidCookie>;
+    fn close_connection(
+        &mut self,
+        socket_buffer: &mut [u8],
+        screen: u32,
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie>;
 
     fn get_client_driver_name(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86dri::GetClientDriverNameReply>>;
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         visual: u32,
         context: u32,
@@ -44,6 +54,7 @@ pub trait Xf86driConnection {
 
     fn destroy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         context: u32,
         forget: bool,
@@ -51,6 +62,7 @@ pub trait Xf86driConnection {
 
     fn create_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         drawable: u32,
         forget: bool,
@@ -58,6 +70,7 @@ pub trait Xf86driConnection {
 
     fn destroy_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         drawable: u32,
         forget: bool,
@@ -65,6 +78,7 @@ pub trait Xf86driConnection {
 
     fn get_drawable_info(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         drawable: u32,
         forget: bool,
@@ -72,12 +86,14 @@ pub trait Xf86driConnection {
 
     fn get_device_info(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86dri::GetDeviceInfoReply>>;
 
     fn auth_connection(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         magic: u32,
         forget: bool,
@@ -89,6 +105,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86dri::QueryVersionReply, 16>> {
         let major_opcode = self
@@ -97,7 +114,7 @@ where
                 crate::proto::xf86dri::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -114,6 +131,7 @@ where
 
     fn query_direct_rendering_capable(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86dri::QueryDirectRenderingCapableReply, 9>>
@@ -125,7 +143,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -149,6 +167,7 @@ where
 
     fn open_connection(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86dri::OpenConnectionReply>> {
@@ -159,7 +178,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -181,7 +200,12 @@ where
         Ok(Cookie::new(seq))
     }
 
-    fn close_connection(&mut self, screen: u32, forget: bool) -> crate::error::Result<VoidCookie> {
+    fn close_connection(
+        &mut self,
+        socket_buffer: &mut [u8],
+        screen: u32,
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie> {
         let major_opcode = self
             .major_opcode(crate::proto::xf86dri::EXTENSION_NAME)
             .ok_or(crate::error::Error::MissingExtension(
@@ -189,7 +213,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -213,6 +237,7 @@ where
 
     fn get_client_driver_name(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86dri::GetClientDriverNameReply>> {
@@ -223,7 +248,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -247,6 +272,7 @@ where
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         visual: u32,
         context: u32,
@@ -261,7 +287,7 @@ where
         let screen_bytes = screen.serialize_fixed();
         let visual_bytes = visual.serialize_fixed();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -293,6 +319,7 @@ where
 
     fn destroy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         context: u32,
         forget: bool,
@@ -305,7 +332,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -333,6 +360,7 @@ where
 
     fn create_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         drawable: u32,
         forget: bool,
@@ -345,7 +373,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -373,6 +401,7 @@ where
 
     fn destroy_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         drawable: u32,
         forget: bool,
@@ -385,7 +414,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -413,6 +442,7 @@ where
 
     fn get_drawable_info(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         drawable: u32,
         forget: bool,
@@ -425,7 +455,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -453,6 +483,7 @@ where
 
     fn get_device_info(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86dri::GetDeviceInfoReply>> {
@@ -463,7 +494,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -487,6 +518,7 @@ where
 
     fn auth_connection(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         magic: u32,
         forget: bool,
@@ -499,7 +531,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let magic_bytes = magic.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

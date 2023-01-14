@@ -20,8 +20,8 @@ macro_rules! property_cookie {
         impl $cookie_name
         {
             /// Get the reply that the server sent.
-            pub fn reply<C>(self, con: &mut C) -> Result<$struct_name, Error> where C: $crate::con::XcbConnection{
-                $from_reply(self.0.reply(con)?)
+            pub fn reply<C>(self, con: &mut C, buffer: &mut [u8]) -> Result<$struct_name, Error> where C: $crate::con::XcbConnection{
+                $from_reply(self.0.reply(con, buffer)?)
             }
         }
     }
@@ -39,11 +39,12 @@ property_cookie! {
 
 impl WmClassCookie {
     /// Send a `GetProperty` request for the `WM_CLASS` property of the given window
-    pub fn new<C>(conn: &mut C, window: Window) -> Result<Self, Error>
+    pub fn new<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<Self, Error>
     where
         C: XcbConnection,
     {
         Ok(Self(conn.get_property(
+            buffer,
             0,
             window,
             AtomEnum::WM_CLASS.0,
@@ -61,11 +62,11 @@ pub struct WmClass(GetPropertyReply, usize);
 
 impl WmClass {
     /// Send a `GetProperty` request for the `WM_CLASS` property of the given window
-    pub fn get<C>(conn: &mut C, window: Window) -> Result<WmClassCookie, Error>
+    pub fn get<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<WmClassCookie, Error>
     where
         C: XcbConnection,
     {
-        WmClassCookie::new(conn, window)
+        WmClassCookie::new(conn, buffer, window)
     }
 
     /// Construct a new `WmClass` instance from a `GetPropertyReply`.
@@ -128,11 +129,17 @@ const NUM_WM_SIZE_HINTS_ELEMENTS: u32 = 18;
 
 impl WmSizeHintsCookie {
     /// Send a `GetProperty` request for the given property of the given window
-    pub fn new<C>(conn: &mut C, window: Window, property: Atom) -> Result<Self, Error>
+    pub fn new<C>(
+        conn: &mut C,
+        buffer: &mut [u8],
+        window: Window,
+        property: Atom,
+    ) -> Result<Self, Error>
     where
         C: XcbConnection,
     {
         Ok(Self(conn.get_property(
+            buffer,
             0,
             window,
             property,
@@ -245,19 +252,28 @@ impl WmSizeHints {
     }
 
     /// Send a `GetProperty` request for the given property of the given window
-    pub fn get<C>(conn: &mut C, window: Window, property: Atom) -> Result<WmSizeHintsCookie, Error>
+    pub fn get<C>(
+        conn: &mut C,
+        buffer: &mut [u8],
+        window: Window,
+        property: Atom,
+    ) -> Result<WmSizeHintsCookie, Error>
     where
         C: XcbConnection,
     {
-        WmSizeHintsCookie::new(conn, window, property)
+        WmSizeHintsCookie::new(conn, buffer, window, property)
     }
 
     /// Send a `GetProperty` request for the `WM_NORMAL_HINTS` property of the given window
-    pub fn get_normal_hints<C>(conn: &mut C, window: Window) -> Result<WmSizeHintsCookie, Error>
+    pub fn get_normal_hints<C>(
+        conn: &mut C,
+        buffer: &mut [u8],
+        window: Window,
+    ) -> Result<WmSizeHintsCookie, Error>
     where
         C: XcbConnection,
     {
-        Self::get(conn, window, AtomEnum::WM_NORMAL_HINTS.0)
+        Self::get(conn, buffer, window, AtomEnum::WM_NORMAL_HINTS.0)
     }
 
     /// Construct a new `WmSizeHints` instance from a `GetPropertyReply`.
@@ -275,19 +291,21 @@ impl WmSizeHints {
     pub fn set_normal_hints<C>(
         &self,
         conn: &mut C,
+        buffer: &mut [u8],
         window: Window,
         forget: bool,
     ) -> Result<VoidCookie, Error>
     where
         C: XcbConnection,
     {
-        self.set(conn, window, AtomEnum::WM_NORMAL_HINTS.0, forget)
+        self.set(conn, buffer, window, AtomEnum::WM_NORMAL_HINTS.0, forget)
     }
 
     /// Set these `WM_SIZE_HINTS` on some window as the given property.
     pub fn set<C>(
         &self,
         conn: &mut C,
+        buffer: &mut [u8],
         window: Window,
         property: Atom,
         forget: bool,
@@ -297,6 +315,7 @@ impl WmSizeHints {
     {
         let data = self.serialize_fixed();
         conn.change_property(
+            buffer,
             xproto::PropModeEnum::REPLACE,
             window,
             property,
@@ -545,11 +564,12 @@ const NUM_WM_HINTS_ELEMENTS: u32 = 9;
 
 impl WmHintsCookie {
     /// Send a `GetProperty` request for the `WM_CLASS` property of the given window
-    pub fn new<C>(conn: &mut C, window: Window) -> Result<Self, Error>
+    pub fn new<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<Self, Error>
     where
         C: XcbConnection,
     {
         Ok(Self(conn.get_property(
+            buffer,
             0,
             window,
             AtomEnum::WM_HINTS.0,
@@ -635,11 +655,11 @@ impl WmHints {
     }
 
     /// Send a `GetProperty` request for the `WM_HINTS` property of the given window
-    pub fn get<C>(conn: &mut C, window: Window) -> Result<WmHintsCookie, Error>
+    pub fn get<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<WmHintsCookie, Error>
     where
         C: XcbConnection,
     {
-        WmHintsCookie::new(conn, window)
+        WmHintsCookie::new(conn, buffer, window)
     }
 
     /// Construct a new `WmHints` instance from a `GetPropertyReply`.
@@ -655,12 +675,19 @@ impl WmHints {
     }
 
     /// Set these `WM_HINTS` on some window.
-    pub fn set<C>(&self, conn: &mut C, window: Window, forget: bool) -> Result<VoidCookie, Error>
+    pub fn set<C>(
+        &self,
+        conn: &mut C,
+        buffer: &mut [u8],
+        window: Window,
+        forget: bool,
+    ) -> Result<VoidCookie, Error>
     where
         C: XcbConnection,
     {
         let data = self.serialize_fixed();
         conn.change_property(
+            buffer,
             xproto::PropModeEnum::REPLACE,
             window,
             AtomEnum::WM_HINTS.0,

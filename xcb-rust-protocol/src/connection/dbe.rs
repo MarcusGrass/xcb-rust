@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait DbeConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u8,
         minor_version: u8,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait DbeConnection {
 
     fn allocate_back_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         buffer: crate::proto::dbe::BackBuffer,
         swap_action: u8,
@@ -26,28 +28,40 @@ pub trait DbeConnection {
 
     fn deallocate_back_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         buffer: crate::proto::dbe::BackBuffer,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn swap_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         actions: &[crate::proto::dbe::SwapInfo],
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
-    fn begin_idiom(&mut self, forget: bool) -> crate::error::Result<VoidCookie>;
+    fn begin_idiom(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie>;
 
-    fn end_idiom(&mut self, forget: bool) -> crate::error::Result<VoidCookie>;
+    fn end_idiom(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie>;
 
     fn get_visual_info(
         &mut self,
+        socket_buffer: &mut [u8],
         drawables: &[crate::proto::xproto::Drawable],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::dbe::GetVisualInfoReply>>;
 
     fn get_back_buffer_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         buffer: crate::proto::dbe::BackBuffer,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dbe::GetBackBufferAttributesReply, 32>>;
@@ -58,6 +72,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u8,
         minor_version: u8,
         forget: bool,
@@ -66,7 +81,7 @@ where
             crate::error::Error::MissingExtension(crate::proto::dbe::EXTENSION_NAME),
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -90,6 +105,7 @@ where
 
     fn allocate_back_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         buffer: crate::proto::dbe::BackBuffer,
         swap_action: u8,
@@ -101,7 +117,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let buffer_bytes = buffer.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -133,6 +149,7 @@ where
 
     fn deallocate_back_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         buffer: crate::proto::dbe::BackBuffer,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -141,7 +158,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let buffer_bytes = buffer.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -165,13 +182,14 @@ where
 
     fn swap_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         actions: &[crate::proto::dbe::SwapInfo],
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
         let major_opcode = self.major_opcode(crate::proto::dbe::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::dbe::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let n_actions = u32::try_from(actions.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -203,7 +221,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -229,12 +247,16 @@ where
         Ok(VoidCookie::new(seq))
     }
 
-    fn begin_idiom(&mut self, forget: bool) -> crate::error::Result<VoidCookie> {
+    fn begin_idiom(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie> {
         let major_opcode = self.major_opcode(crate::proto::dbe::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::dbe::EXTENSION_NAME),
         )?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -249,12 +271,16 @@ where
         Ok(VoidCookie::new(seq))
     }
 
-    fn end_idiom(&mut self, forget: bool) -> crate::error::Result<VoidCookie> {
+    fn end_idiom(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie> {
         let major_opcode = self.major_opcode(crate::proto::dbe::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::dbe::EXTENSION_NAME),
         )?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -271,13 +297,14 @@ where
 
     fn get_visual_info(
         &mut self,
+        socket_buffer: &mut [u8],
         drawables: &[crate::proto::xproto::Drawable],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::dbe::GetVisualInfoReply>> {
         let major_opcode = self.major_opcode(crate::proto::dbe::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::dbe::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let n_drawables =
             u32::try_from(drawables.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -310,7 +337,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -338,6 +365,7 @@ where
 
     fn get_back_buffer_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         buffer: crate::proto::dbe::BackBuffer,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dbe::GetBackBufferAttributesReply, 32>>
@@ -347,7 +375,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let buffer_bytes = buffer.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

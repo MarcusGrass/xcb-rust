@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait XfixesConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait XfixesConnection {
 
     fn change_save_set(
         &mut self,
+        socket_buffer: &mut [u8],
         mode: crate::proto::xfixes::SaveSetModeEnum,
         target: crate::proto::xfixes::SaveSetTargetEnum,
         map: crate::proto::xfixes::SaveSetMappingEnum,
@@ -27,6 +29,7 @@ pub trait XfixesConnection {
 
     fn select_selection_input(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         selection: u32,
         event_mask: crate::proto::xfixes::SelectionEventMask,
@@ -35,6 +38,7 @@ pub trait XfixesConnection {
 
     fn select_cursor_input(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         event_mask: crate::proto::xfixes::CursorNotifyMask,
         forget: bool,
@@ -42,11 +46,13 @@ pub trait XfixesConnection {
 
     fn get_cursor_image(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::GetCursorImageReply>>;
 
     fn create_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         rectangles: &[crate::proto::xproto::Rectangle],
         forget: bool,
@@ -54,6 +60,7 @@ pub trait XfixesConnection {
 
     fn create_region_from_bitmap(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         bitmap: crate::proto::xproto::Pixmap,
         forget: bool,
@@ -61,6 +68,7 @@ pub trait XfixesConnection {
 
     fn create_region_from_window(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         window: crate::proto::xproto::Window,
         kind: crate::proto::shape::SkEnum,
@@ -69,6 +77,7 @@ pub trait XfixesConnection {
 
     fn create_region_from_g_c(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         gc: crate::proto::xproto::Gcontext,
         forget: bool,
@@ -76,6 +85,7 @@ pub trait XfixesConnection {
 
     fn create_region_from_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         picture: crate::proto::render::Picture,
         forget: bool,
@@ -83,12 +93,14 @@ pub trait XfixesConnection {
 
     fn destroy_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn set_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         rectangles: &[crate::proto::xproto::Rectangle],
         forget: bool,
@@ -96,6 +108,7 @@ pub trait XfixesConnection {
 
     fn copy_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
         forget: bool,
@@ -103,6 +116,7 @@ pub trait XfixesConnection {
 
     fn union_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source1: crate::proto::xfixes::Region,
         source2: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
@@ -111,6 +125,7 @@ pub trait XfixesConnection {
 
     fn intersect_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source1: crate::proto::xfixes::Region,
         source2: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
@@ -119,6 +134,7 @@ pub trait XfixesConnection {
 
     fn subtract_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source1: crate::proto::xfixes::Region,
         source2: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
@@ -127,6 +143,7 @@ pub trait XfixesConnection {
 
     fn invert_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         bounds: crate::proto::xproto::Rectangle,
         destination: crate::proto::xfixes::Region,
@@ -135,6 +152,7 @@ pub trait XfixesConnection {
 
     fn translate_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         dx: i16,
         dy: i16,
@@ -143,6 +161,7 @@ pub trait XfixesConnection {
 
     fn region_extents(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
         forget: bool,
@@ -150,12 +169,14 @@ pub trait XfixesConnection {
 
     fn fetch_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::FetchRegionReply>>;
 
     fn set_g_c_clip_region(
         &mut self,
+        socket_buffer: &mut [u8],
         gc: crate::proto::xproto::Gcontext,
         region: crate::proto::xfixes::RegionEnum,
         x_origin: i16,
@@ -165,6 +186,7 @@ pub trait XfixesConnection {
 
     fn set_window_shape_region(
         &mut self,
+        socket_buffer: &mut [u8],
         dest: crate::proto::xproto::Window,
         dest_kind: crate::proto::shape::SkEnum,
         x_offset: i16,
@@ -175,6 +197,7 @@ pub trait XfixesConnection {
 
     fn set_picture_clip_region(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         region: crate::proto::xfixes::RegionEnum,
         x_origin: i16,
@@ -184,6 +207,7 @@ pub trait XfixesConnection {
 
     fn set_cursor_name(
         &mut self,
+        socket_buffer: &mut [u8],
         cursor: crate::proto::xproto::Cursor,
         name: &[u8],
         forget: bool,
@@ -191,17 +215,20 @@ pub trait XfixesConnection {
 
     fn get_cursor_name(
         &mut self,
+        socket_buffer: &mut [u8],
         cursor: crate::proto::xproto::Cursor,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::GetCursorNameReply>>;
 
     fn get_cursor_image_and_name(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::GetCursorImageAndNameReply>>;
 
     fn change_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xproto::Cursor,
         destination: crate::proto::xproto::Cursor,
         forget: bool,
@@ -209,6 +236,7 @@ pub trait XfixesConnection {
 
     fn change_cursor_by_name(
         &mut self,
+        socket_buffer: &mut [u8],
         src: crate::proto::xproto::Cursor,
         name: &[u8],
         forget: bool,
@@ -216,6 +244,7 @@ pub trait XfixesConnection {
 
     fn expand_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
         left: u16,
@@ -227,18 +256,21 @@ pub trait XfixesConnection {
 
     fn hide_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn show_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn create_pointer_barrier(
         &mut self,
+        socket_buffer: &mut [u8],
         barrier: crate::proto::xfixes::Barrier,
         window: crate::proto::xproto::Window,
         x1: u16,
@@ -252,18 +284,21 @@ pub trait XfixesConnection {
 
     fn delete_pointer_barrier(
         &mut self,
+        socket_buffer: &mut [u8],
         barrier: crate::proto::xfixes::Barrier,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn set_client_disconnect_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         disconnect_mode: crate::proto::xfixes::ClientDisconnectFlags,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_client_disconnect_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xfixes::GetClientDisconnectModeReply, 32>>;
 }
@@ -273,6 +308,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -285,7 +321,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let client_major_version_bytes = client_major_version.serialize_fixed();
         let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -313,6 +349,7 @@ where
 
     fn change_save_set(
         &mut self,
+        socket_buffer: &mut [u8],
         mode: crate::proto::xfixes::SaveSetModeEnum,
         target: crate::proto::xfixes::SaveSetTargetEnum,
         map: crate::proto::xfixes::SaveSetMappingEnum,
@@ -326,7 +363,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -354,6 +391,7 @@ where
 
     fn select_selection_input(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         selection: u32,
         event_mask: crate::proto::xfixes::SelectionEventMask,
@@ -368,7 +406,7 @@ where
         let window_bytes = window.serialize_fixed();
         let selection_bytes = selection.serialize_fixed();
         let event_mask_bytes = (event_mask.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -400,6 +438,7 @@ where
 
     fn select_cursor_input(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         event_mask: crate::proto::xfixes::CursorNotifyMask,
         forget: bool,
@@ -412,7 +451,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let event_mask_bytes = (event_mask.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -440,6 +479,7 @@ where
 
     fn get_cursor_image(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::GetCursorImageReply>> {
         let major_opcode = self
@@ -448,7 +488,7 @@ where
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -465,6 +505,7 @@ where
 
     fn create_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         rectangles: &[crate::proto::xproto::Rectangle],
         forget: bool,
@@ -474,7 +515,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -502,7 +543,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -530,6 +571,7 @@ where
 
     fn create_region_from_bitmap(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         bitmap: crate::proto::xproto::Pixmap,
         forget: bool,
@@ -542,7 +584,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let region_bytes = region.serialize_fixed();
         let bitmap_bytes = bitmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -570,6 +612,7 @@ where
 
     fn create_region_from_window(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         window: crate::proto::xproto::Window,
         kind: crate::proto::shape::SkEnum,
@@ -583,7 +626,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let region_bytes = region.serialize_fixed();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -615,6 +658,7 @@ where
 
     fn create_region_from_g_c(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         gc: crate::proto::xproto::Gcontext,
         forget: bool,
@@ -627,7 +671,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let region_bytes = region.serialize_fixed();
         let gc_bytes = gc.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -655,6 +699,7 @@ where
 
     fn create_region_from_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         picture: crate::proto::render::Picture,
         forget: bool,
@@ -667,7 +712,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let region_bytes = region.serialize_fixed();
         let picture_bytes = picture.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -695,6 +740,7 @@ where
 
     fn destroy_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -705,7 +751,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let region_bytes = region.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -729,6 +775,7 @@ where
 
     fn set_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         rectangles: &[crate::proto::xproto::Rectangle],
         forget: bool,
@@ -738,7 +785,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -766,7 +813,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -794,6 +841,7 @@ where
 
     fn copy_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
         forget: bool,
@@ -806,7 +854,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let source_bytes = source.serialize_fixed();
         let destination_bytes = destination.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -834,6 +882,7 @@ where
 
     fn union_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source1: crate::proto::xfixes::Region,
         source2: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
@@ -848,7 +897,7 @@ where
         let source1_bytes = source1.serialize_fixed();
         let source2_bytes = source2.serialize_fixed();
         let destination_bytes = destination.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -880,6 +929,7 @@ where
 
     fn intersect_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source1: crate::proto::xfixes::Region,
         source2: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
@@ -894,7 +944,7 @@ where
         let source1_bytes = source1.serialize_fixed();
         let source2_bytes = source2.serialize_fixed();
         let destination_bytes = destination.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -926,6 +976,7 @@ where
 
     fn subtract_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source1: crate::proto::xfixes::Region,
         source2: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
@@ -940,7 +991,7 @@ where
         let source1_bytes = source1.serialize_fixed();
         let source2_bytes = source2.serialize_fixed();
         let destination_bytes = destination.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -972,6 +1023,7 @@ where
 
     fn invert_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         bounds: crate::proto::xproto::Rectangle,
         destination: crate::proto::xfixes::Region,
@@ -986,7 +1038,7 @@ where
         let source_bytes = source.serialize_fixed();
         let bounds_bytes = bounds.serialize_fixed();
         let destination_bytes = destination.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1022,6 +1074,7 @@ where
 
     fn translate_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         dx: i16,
         dy: i16,
@@ -1036,7 +1089,7 @@ where
         let region_bytes = region.serialize_fixed();
         let dx_bytes = dx.serialize_fixed();
         let dy_bytes = dy.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1064,6 +1117,7 @@ where
 
     fn region_extents(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
         forget: bool,
@@ -1076,7 +1130,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let source_bytes = source.serialize_fixed();
         let destination_bytes = destination.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1104,6 +1158,7 @@ where
 
     fn fetch_region(
         &mut self,
+        socket_buffer: &mut [u8],
         region: crate::proto::xfixes::Region,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::FetchRegionReply>> {
@@ -1114,7 +1169,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let region_bytes = region.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1138,6 +1193,7 @@ where
 
     fn set_g_c_clip_region(
         &mut self,
+        socket_buffer: &mut [u8],
         gc: crate::proto::xproto::Gcontext,
         region: crate::proto::xfixes::RegionEnum,
         x_origin: i16,
@@ -1154,7 +1210,7 @@ where
         let region_bytes = (region.0 as u32).serialize_fixed();
         let x_origin_bytes = x_origin.serialize_fixed();
         let y_origin_bytes = y_origin.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1186,6 +1242,7 @@ where
 
     fn set_window_shape_region(
         &mut self,
+        socket_buffer: &mut [u8],
         dest: crate::proto::xproto::Window,
         dest_kind: crate::proto::shape::SkEnum,
         x_offset: i16,
@@ -1203,7 +1260,7 @@ where
         let x_offset_bytes = x_offset.serialize_fixed();
         let y_offset_bytes = y_offset.serialize_fixed();
         let region_bytes = (region.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1239,6 +1296,7 @@ where
 
     fn set_picture_clip_region(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         region: crate::proto::xfixes::RegionEnum,
         x_origin: i16,
@@ -1255,7 +1313,7 @@ where
         let region_bytes = (region.0 as u32).serialize_fixed();
         let x_origin_bytes = x_origin.serialize_fixed();
         let y_origin_bytes = y_origin.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1287,6 +1345,7 @@ where
 
     fn set_cursor_name(
         &mut self,
+        socket_buffer: &mut [u8],
         cursor: crate::proto::xproto::Cursor,
         name: &[u8],
         forget: bool,
@@ -1296,7 +1355,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let nbytes = u16::try_from(name.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -1335,7 +1394,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1363,6 +1422,7 @@ where
 
     fn get_cursor_name(
         &mut self,
+        socket_buffer: &mut [u8],
         cursor: crate::proto::xproto::Cursor,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::GetCursorNameReply>> {
@@ -1373,7 +1433,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let cursor_bytes = cursor.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1397,6 +1457,7 @@ where
 
     fn get_cursor_image_and_name(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xfixes::GetCursorImageAndNameReply>> {
         let major_opcode = self
@@ -1405,7 +1466,7 @@ where
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -1422,6 +1483,7 @@ where
 
     fn change_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xproto::Cursor,
         destination: crate::proto::xproto::Cursor,
         forget: bool,
@@ -1434,7 +1496,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let source_bytes = source.serialize_fixed();
         let destination_bytes = destination.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1462,6 +1524,7 @@ where
 
     fn change_cursor_by_name(
         &mut self,
+        socket_buffer: &mut [u8],
         src: crate::proto::xproto::Cursor,
         name: &[u8],
         forget: bool,
@@ -1471,7 +1534,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let nbytes = u16::try_from(name.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -1510,7 +1573,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1538,6 +1601,7 @@ where
 
     fn expand_region(
         &mut self,
+        socket_buffer: &mut [u8],
         source: crate::proto::xfixes::Region,
         destination: crate::proto::xfixes::Region,
         left: u16,
@@ -1558,7 +1622,7 @@ where
         let right_bytes = right.serialize_fixed();
         let top_bytes = top.serialize_fixed();
         let bottom_bytes = bottom.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1594,6 +1658,7 @@ where
 
     fn hide_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1604,7 +1669,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1628,6 +1693,7 @@ where
 
     fn show_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1638,7 +1704,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1662,6 +1728,7 @@ where
 
     fn create_pointer_barrier(
         &mut self,
+        socket_buffer: &mut [u8],
         barrier: crate::proto::xfixes::Barrier,
         window: crate::proto::xproto::Window,
         x1: u16,
@@ -1677,7 +1744,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         let num_devices =
             u16::try_from(devices.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -1741,7 +1808,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1769,6 +1836,7 @@ where
 
     fn delete_pointer_barrier(
         &mut self,
+        socket_buffer: &mut [u8],
         barrier: crate::proto::xfixes::Barrier,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1779,7 +1847,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let barrier_bytes = barrier.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1803,6 +1871,7 @@ where
 
     fn set_client_disconnect_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         disconnect_mode: crate::proto::xfixes::ClientDisconnectFlags,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1813,7 +1882,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let disconnect_mode_bytes = (disconnect_mode.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1837,6 +1906,7 @@ where
 
     fn get_client_disconnect_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xfixes::GetClientDisconnectModeReply, 32>>
     {
@@ -1846,7 +1916,7 @@ where
                 crate::proto::xfixes::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;

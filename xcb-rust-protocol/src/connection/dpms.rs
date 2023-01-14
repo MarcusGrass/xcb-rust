@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait DpmsConnection {
     fn get_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u16,
         client_minor_version: u16,
         forget: bool,
@@ -18,34 +19,47 @@ pub trait DpmsConnection {
 
     fn capable(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dpms::CapableReply, 32>>;
 
     fn get_timeouts(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetTimeoutsReply, 32>>;
 
     fn set_timeouts(
         &mut self,
+        socket_buffer: &mut [u8],
         standby_timeout: u16,
         suspend_timeout: u16,
         off_timeout: u16,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
-    fn enable(&mut self, forget: bool) -> crate::error::Result<VoidCookie>;
+    fn enable(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie>;
 
-    fn disable(&mut self, forget: bool) -> crate::error::Result<VoidCookie>;
+    fn disable(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie>;
 
     fn force_level(
         &mut self,
+        socket_buffer: &mut [u8],
         power_level: crate::proto::dpms::DPMSModeEnum,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn info(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dpms::InfoReply, 32>>;
 }
@@ -55,6 +69,7 @@ where
 {
     fn get_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u16,
         client_minor_version: u16,
         forget: bool,
@@ -67,7 +82,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let client_major_version_bytes = client_major_version.serialize_fixed();
         let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -91,6 +106,7 @@ where
 
     fn capable(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dpms::CapableReply, 32>> {
         let major_opcode = self
@@ -99,7 +115,7 @@ where
                 crate::proto::dpms::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -116,6 +132,7 @@ where
 
     fn get_timeouts(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetTimeoutsReply, 32>> {
         let major_opcode = self
@@ -124,7 +141,7 @@ where
                 crate::proto::dpms::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -141,6 +158,7 @@ where
 
     fn set_timeouts(
         &mut self,
+        socket_buffer: &mut [u8],
         standby_timeout: u16,
         suspend_timeout: u16,
         off_timeout: u16,
@@ -155,7 +173,7 @@ where
         let standby_timeout_bytes = standby_timeout.serialize_fixed();
         let suspend_timeout_bytes = suspend_timeout.serialize_fixed();
         let off_timeout_bytes = off_timeout.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -181,14 +199,18 @@ where
         Ok(VoidCookie::new(seq))
     }
 
-    fn enable(&mut self, forget: bool) -> crate::error::Result<VoidCookie> {
+    fn enable(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie> {
         let major_opcode = self
             .major_opcode(crate::proto::dpms::EXTENSION_NAME)
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::dpms::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -203,14 +225,18 @@ where
         Ok(VoidCookie::new(seq))
     }
 
-    fn disable(&mut self, forget: bool) -> crate::error::Result<VoidCookie> {
+    fn disable(
+        &mut self,
+        socket_buffer: &mut [u8],
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie> {
         let major_opcode = self
             .major_opcode(crate::proto::dpms::EXTENSION_NAME)
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::dpms::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -227,6 +253,7 @@ where
 
     fn force_level(
         &mut self,
+        socket_buffer: &mut [u8],
         power_level: crate::proto::dpms::DPMSModeEnum,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -237,7 +264,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let power_level_bytes = (power_level.0 as u16).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -261,6 +288,7 @@ where
 
     fn info(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dpms::InfoReply, 32>> {
         let major_opcode = self
@@ -269,7 +297,7 @@ where
                 crate::proto::dpms::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;

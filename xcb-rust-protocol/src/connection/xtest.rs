@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait XtestConnection {
     fn get_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u8,
         minor_version: u16,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait XtestConnection {
 
     fn compare_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         cursor: crate::proto::xproto::Cursor,
         forget: bool,
@@ -25,6 +27,7 @@ pub trait XtestConnection {
 
     fn fake_input(
         &mut self,
+        socket_buffer: &mut [u8],
         r#type: u8,
         detail: u8,
         time: u32,
@@ -35,7 +38,12 @@ pub trait XtestConnection {
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
-    fn grab_control(&mut self, impervious: u8, forget: bool) -> crate::error::Result<VoidCookie>;
+    fn grab_control(
+        &mut self,
+        socket_buffer: &mut [u8],
+        impervious: u8,
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie>;
 }
 impl<C> XtestConnection for C
 where
@@ -43,6 +51,7 @@ where
 {
     fn get_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u8,
         minor_version: u16,
         forget: bool,
@@ -54,7 +63,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -78,6 +87,7 @@ where
 
     fn compare_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         cursor: crate::proto::xproto::Cursor,
         forget: bool,
@@ -90,7 +100,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let cursor_bytes = cursor.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -118,6 +128,7 @@ where
 
     fn fake_input(
         &mut self,
+        socket_buffer: &mut [u8],
         r#type: u8,
         detail: u8,
         time: u32,
@@ -137,7 +148,7 @@ where
         let root_bytes = root.serialize_fixed();
         let root_x_bytes = root_x.serialize_fixed();
         let root_y_bytes = root_y.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..36)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -187,14 +198,19 @@ where
         Ok(VoidCookie::new(seq))
     }
 
-    fn grab_control(&mut self, impervious: u8, forget: bool) -> crate::error::Result<VoidCookie> {
+    fn grab_control(
+        &mut self,
+        socket_buffer: &mut [u8],
+        impervious: u8,
+        forget: bool,
+    ) -> crate::error::Result<VoidCookie> {
         let major_opcode = self
             .major_opcode(crate::proto::xtest::EXTENSION_NAME)
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xtest::EXTENSION_NAME,
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 3, length[0], length[1], impervious, 0, 0, 0]);

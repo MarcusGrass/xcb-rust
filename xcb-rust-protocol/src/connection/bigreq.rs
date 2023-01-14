@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait BigreqConnection {
     fn enable(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::bigreq::EnableReply, 12>>;
 }
@@ -20,6 +21,7 @@ where
 {
     fn enable(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::bigreq::EnableReply, 12>> {
         let major_opcode = self
@@ -28,7 +30,7 @@ where
                 crate::proto::bigreq::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;

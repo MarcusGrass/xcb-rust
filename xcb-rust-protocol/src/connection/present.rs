@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait PresentConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait PresentConnection {
 
     fn pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         pixmap: crate::proto::xproto::Pixmap,
         serial: u32,
@@ -38,6 +40,7 @@ pub trait PresentConnection {
 
     fn notify_m_s_c(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         serial: u32,
         target_msc: u64,
@@ -48,6 +51,7 @@ pub trait PresentConnection {
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         eid: crate::proto::present::Event,
         window: crate::proto::xproto::Window,
         event_mask: crate::proto::present::EventMask,
@@ -56,6 +60,7 @@ pub trait PresentConnection {
 
     fn query_capabilities(
         &mut self,
+        socket_buffer: &mut [u8],
         target: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::present::QueryCapabilitiesReply, 12>>;
@@ -66,6 +71,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -78,7 +84,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let major_version_bytes = major_version.serialize_fixed();
         let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -106,6 +112,7 @@ where
 
     fn pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         pixmap: crate::proto::xproto::Pixmap,
         serial: u32,
@@ -128,7 +135,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::present::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Start align 8, offset None
         // Pad 4 bytes
         buf_ptr
@@ -212,7 +219,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -240,6 +247,7 @@ where
 
     fn notify_m_s_c(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         serial: u32,
         target_msc: u64,
@@ -258,7 +266,7 @@ where
         let target_msc_bytes = target_msc.serialize_fixed();
         let divisor_bytes = divisor.serialize_fixed();
         let remainder_bytes = remainder.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..40)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -314,6 +322,7 @@ where
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         eid: crate::proto::present::Event,
         window: crate::proto::xproto::Window,
         event_mask: crate::proto::present::EventMask,
@@ -328,7 +337,7 @@ where
         let eid_bytes = eid.serialize_fixed();
         let window_bytes = window.serialize_fixed();
         let event_mask_bytes = (event_mask.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -360,6 +369,7 @@ where
 
     fn query_capabilities(
         &mut self,
+        socket_buffer: &mut [u8],
         target: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::present::QueryCapabilitiesReply, 12>> {
@@ -370,7 +380,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let target_bytes = target.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

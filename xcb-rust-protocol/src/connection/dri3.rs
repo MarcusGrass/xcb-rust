@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait Dri3Connection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait Dri3Connection {
 
     fn open(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         provider: u32,
         forget: bool,
@@ -25,6 +27,7 @@ pub trait Dri3Connection {
 
     fn pixmap_from_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         drawable: crate::proto::xproto::Drawable,
         size: u32,
@@ -39,12 +42,14 @@ pub trait Dri3Connection {
 
     fn buffer_from_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dri3::BufferFromPixmapReply, 32>>;
 
     fn fence_from_f_d(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         fence: u32,
         initially_triggered: u8,
@@ -54,6 +59,7 @@ pub trait Dri3Connection {
 
     fn f_d_from_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         fence: u32,
         forget: bool,
@@ -61,6 +67,7 @@ pub trait Dri3Connection {
 
     fn get_supported_modifiers(
         &mut self,
+        socket_buffer: &mut [u8],
         window: u32,
         depth: u8,
         bpp: u8,
@@ -69,6 +76,7 @@ pub trait Dri3Connection {
 
     fn pixmap_from_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         window: crate::proto::xproto::Window,
         width: u16,
@@ -90,12 +98,14 @@ pub trait Dri3Connection {
 
     fn buffers_from_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::dri3::BuffersFromPixmapReply>>;
 
     fn set_d_r_m_device_in_use(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         drm_major: u32,
         drm_minor: u32,
@@ -108,6 +118,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -120,7 +131,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let major_version_bytes = major_version.serialize_fixed();
         let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -148,6 +159,7 @@ where
 
     fn open(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         provider: u32,
         forget: bool,
@@ -160,7 +172,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
         let provider_bytes = provider.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -188,6 +200,7 @@ where
 
     fn pixmap_from_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         drawable: crate::proto::xproto::Drawable,
         size: u32,
@@ -211,7 +224,7 @@ where
         let width_bytes = width.serialize_fixed();
         let height_bytes = height.serialize_fixed();
         let stride_bytes = stride.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -251,6 +264,7 @@ where
 
     fn buffer_from_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dri3::BufferFromPixmapReply, 32>> {
@@ -261,7 +275,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let pixmap_bytes = pixmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -285,6 +299,7 @@ where
 
     fn fence_from_f_d(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         fence: u32,
         initially_triggered: u8,
@@ -299,7 +314,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
         let fence_bytes = fence.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -331,6 +346,7 @@ where
 
     fn f_d_from_fence(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         fence: u32,
         forget: bool,
@@ -343,7 +359,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
         let fence_bytes = fence.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -371,6 +387,7 @@ where
 
     fn get_supported_modifiers(
         &mut self,
+        socket_buffer: &mut [u8],
         window: u32,
         depth: u8,
         bpp: u8,
@@ -383,7 +400,7 @@ where
             ))?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -411,6 +428,7 @@ where
 
     fn pixmap_from_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         window: crate::proto::xproto::Window,
         width: u16,
@@ -434,7 +452,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::dri3::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Start align 8, offset None
         let num_buffers =
             u8::try_from(buffers.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -525,7 +543,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -553,6 +571,7 @@ where
 
     fn buffers_from_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         pixmap: crate::proto::xproto::Pixmap,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::dri3::BuffersFromPixmapReply>> {
@@ -563,7 +582,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let pixmap_bytes = pixmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -587,6 +606,7 @@ where
 
     fn set_d_r_m_device_in_use(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         drm_major: u32,
         drm_minor: u32,
@@ -601,7 +621,7 @@ where
         let window_bytes = window.serialize_fixed();
         let drm_major_bytes = drm_major.serialize_fixed();
         let drm_minor_bytes = drm_minor.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

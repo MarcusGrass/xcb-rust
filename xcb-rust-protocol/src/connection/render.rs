@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait RenderConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -18,17 +19,20 @@ pub trait RenderConnection {
 
     fn query_pict_formats(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictFormatsReply>>;
 
     fn query_pict_index_values(
         &mut self,
+        socket_buffer: &mut [u8],
         format: crate::proto::render::Pictformat,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictIndexValuesReply>>;
 
     fn create_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         pid: crate::proto::render::Picture,
         drawable: crate::proto::xproto::Drawable,
         format: crate::proto::render::Pictformat,
@@ -38,6 +42,7 @@ pub trait RenderConnection {
 
     fn change_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         change_picture_value_list: crate::proto::render::ChangePictureValueList,
         forget: bool,
@@ -45,6 +50,7 @@ pub trait RenderConnection {
 
     fn set_picture_clip_rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         clip_x_origin: i16,
         clip_y_origin: i16,
@@ -54,12 +60,14 @@ pub trait RenderConnection {
 
     fn free_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn composite(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         mask: crate::proto::render::PictureEnum,
@@ -77,6 +85,7 @@ pub trait RenderConnection {
 
     fn trapezoids(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -89,6 +98,7 @@ pub trait RenderConnection {
 
     fn triangles(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -101,6 +111,7 @@ pub trait RenderConnection {
 
     fn tri_strip(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -113,6 +124,7 @@ pub trait RenderConnection {
 
     fn tri_fan(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -125,6 +137,7 @@ pub trait RenderConnection {
 
     fn create_glyph_set(
         &mut self,
+        socket_buffer: &mut [u8],
         gsid: crate::proto::render::Glyphset,
         format: crate::proto::render::Pictformat,
         forget: bool,
@@ -132,6 +145,7 @@ pub trait RenderConnection {
 
     fn reference_glyph_set(
         &mut self,
+        socket_buffer: &mut [u8],
         gsid: crate::proto::render::Glyphset,
         existing: crate::proto::render::Glyphset,
         forget: bool,
@@ -139,12 +153,14 @@ pub trait RenderConnection {
 
     fn free_glyph_set(
         &mut self,
+        socket_buffer: &mut [u8],
         glyphset: crate::proto::render::Glyphset,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn add_glyphs(
         &mut self,
+        socket_buffer: &mut [u8],
         glyphset: crate::proto::render::Glyphset,
         glyphs_len: u32,
         glyphids: &[u32],
@@ -155,6 +171,7 @@ pub trait RenderConnection {
 
     fn free_glyphs(
         &mut self,
+        socket_buffer: &mut [u8],
         glyphset: crate::proto::render::Glyphset,
         glyphs: &[crate::proto::render::Glyph],
         forget: bool,
@@ -162,6 +179,7 @@ pub trait RenderConnection {
 
     fn composite_glyphs8(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -175,6 +193,7 @@ pub trait RenderConnection {
 
     fn composite_glyphs16(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -188,6 +207,7 @@ pub trait RenderConnection {
 
     fn composite_glyphs32(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -201,6 +221,7 @@ pub trait RenderConnection {
 
     fn fill_rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         dst: crate::proto::render::Picture,
         color: crate::proto::render::Color,
@@ -210,6 +231,7 @@ pub trait RenderConnection {
 
     fn create_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         cid: crate::proto::xproto::Cursor,
         source: crate::proto::render::Picture,
         x: u16,
@@ -219,6 +241,7 @@ pub trait RenderConnection {
 
     fn set_picture_transform(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         transform: crate::proto::render::Transform,
         forget: bool,
@@ -226,12 +249,14 @@ pub trait RenderConnection {
 
     fn query_filters(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::render::QueryFiltersReply>>;
 
     fn set_picture_filter(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         filter: &[u8],
         values: &[crate::proto::render::Fixed],
@@ -240,6 +265,7 @@ pub trait RenderConnection {
 
     fn create_anim_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         cid: crate::proto::xproto::Cursor,
         cursors: &[crate::proto::render::Animcursorelt],
         forget: bool,
@@ -247,6 +273,7 @@ pub trait RenderConnection {
 
     fn add_traps(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         x_off: i16,
         y_off: i16,
@@ -256,6 +283,7 @@ pub trait RenderConnection {
 
     fn create_solid_fill(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         color: crate::proto::render::Color,
         forget: bool,
@@ -263,6 +291,7 @@ pub trait RenderConnection {
 
     fn create_linear_gradient(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         p1: crate::proto::render::Pointfix,
         p2: crate::proto::render::Pointfix,
@@ -274,6 +303,7 @@ pub trait RenderConnection {
 
     fn create_radial_gradient(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         inner: crate::proto::render::Pointfix,
         outer: crate::proto::render::Pointfix,
@@ -287,6 +317,7 @@ pub trait RenderConnection {
 
     fn create_conical_gradient(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         center: crate::proto::render::Pointfix,
         angle: crate::proto::render::Fixed,
@@ -302,6 +333,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -314,7 +346,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let client_major_version_bytes = client_major_version.serialize_fixed();
         let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -342,6 +374,7 @@ where
 
     fn query_pict_formats(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictFormatsReply>> {
         let major_opcode = self
@@ -350,7 +383,7 @@ where
                 crate::proto::render::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -367,6 +400,7 @@ where
 
     fn query_pict_index_values(
         &mut self,
+        socket_buffer: &mut [u8],
         format: crate::proto::render::Pictformat,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictIndexValuesReply>> {
@@ -377,7 +411,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let format_bytes = format.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -401,6 +435,7 @@ where
 
     fn create_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         pid: crate::proto::render::Picture,
         drawable: crate::proto::xproto::Drawable,
         format: crate::proto::render::Pictformat,
@@ -412,7 +447,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -458,6 +493,7 @@ where
 
     fn change_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         change_picture_value_list: crate::proto::render::ChangePictureValueList,
         forget: bool,
@@ -467,7 +503,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -505,6 +541,7 @@ where
 
     fn set_picture_clip_rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         clip_x_origin: i16,
         clip_y_origin: i16,
@@ -516,7 +553,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -554,7 +591,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -582,6 +619,7 @@ where
 
     fn free_picture(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -592,7 +630,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let picture_bytes = picture.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -616,6 +654,7 @@ where
 
     fn composite(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         mask: crate::proto::render::PictureEnum,
@@ -647,7 +686,7 @@ where
         let dst_y_bytes = dst_y.serialize_fixed();
         let width_bytes = width.serialize_fixed();
         let height_bytes = height.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..36)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -699,6 +738,7 @@ where
 
     fn trapezoids(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -713,7 +753,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -764,7 +804,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -792,6 +832,7 @@ where
 
     fn triangles(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -806,7 +847,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -857,7 +898,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -885,6 +926,7 @@ where
 
     fn tri_strip(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -899,7 +941,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -950,7 +992,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -978,6 +1020,7 @@ where
 
     fn tri_fan(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -992,7 +1035,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1043,7 +1086,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1071,6 +1114,7 @@ where
 
     fn create_glyph_set(
         &mut self,
+        socket_buffer: &mut [u8],
         gsid: crate::proto::render::Glyphset,
         format: crate::proto::render::Pictformat,
         forget: bool,
@@ -1083,7 +1127,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let gsid_bytes = gsid.serialize_fixed();
         let format_bytes = format.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1111,6 +1155,7 @@ where
 
     fn reference_glyph_set(
         &mut self,
+        socket_buffer: &mut [u8],
         gsid: crate::proto::render::Glyphset,
         existing: crate::proto::render::Glyphset,
         forget: bool,
@@ -1123,7 +1168,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let gsid_bytes = gsid.serialize_fixed();
         let existing_bytes = existing.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1151,6 +1196,7 @@ where
 
     fn free_glyph_set(
         &mut self,
+        socket_buffer: &mut [u8],
         glyphset: crate::proto::render::Glyphset,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1161,7 +1207,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let glyphset_bytes = glyphset.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1185,6 +1231,7 @@ where
 
     fn add_glyphs(
         &mut self,
+        socket_buffer: &mut [u8],
         glyphset: crate::proto::render::Glyphset,
         glyphs_len: u32,
         glyphids: &[u32],
@@ -1197,7 +1244,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let glyphs_len = u32::try_from(glyphs_len).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -1251,7 +1298,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1279,6 +1326,7 @@ where
 
     fn free_glyphs(
         &mut self,
+        socket_buffer: &mut [u8],
         glyphset: crate::proto::render::Glyphset,
         glyphs: &[crate::proto::render::Glyph],
         forget: bool,
@@ -1288,7 +1336,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1316,7 +1364,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1344,6 +1392,7 @@ where
 
     fn composite_glyphs8(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -1359,7 +1408,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1414,7 +1463,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1442,6 +1491,7 @@ where
 
     fn composite_glyphs16(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -1457,7 +1507,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1512,7 +1562,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1540,6 +1590,7 @@ where
 
     fn composite_glyphs32(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         src: crate::proto::render::Picture,
         dst: crate::proto::render::Picture,
@@ -1555,7 +1606,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1610,7 +1661,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1638,6 +1689,7 @@ where
 
     fn fill_rectangles(
         &mut self,
+        socket_buffer: &mut [u8],
         op: crate::proto::render::PictOpEnum,
         dst: crate::proto::render::Picture,
         color: crate::proto::render::Color,
@@ -1649,7 +1701,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1688,7 +1740,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1716,6 +1768,7 @@ where
 
     fn create_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         cid: crate::proto::xproto::Cursor,
         source: crate::proto::render::Picture,
         x: u16,
@@ -1732,7 +1785,7 @@ where
         let source_bytes = source.serialize_fixed();
         let x_bytes = x.serialize_fixed();
         let y_bytes = y.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1764,6 +1817,7 @@ where
 
     fn set_picture_transform(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         transform: crate::proto::render::Transform,
         forget: bool,
@@ -1776,7 +1830,7 @@ where
         let length: [u8; 2] = (11u16).to_ne_bytes();
         let picture_bytes = picture.serialize_fixed();
         let transform_bytes = transform.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..44)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1836,6 +1890,7 @@ where
 
     fn query_filters(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::render::QueryFiltersReply>> {
@@ -1846,7 +1901,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1870,6 +1925,7 @@ where
 
     fn set_picture_filter(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         filter: &[u8],
         values: &[crate::proto::render::Fixed],
@@ -1880,7 +1936,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let filter_len = u16::try_from(filter.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -1928,7 +1984,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1956,6 +2012,7 @@ where
 
     fn create_anim_cursor(
         &mut self,
+        socket_buffer: &mut [u8],
         cid: crate::proto::xproto::Cursor,
         cursors: &[crate::proto::render::Animcursorelt],
         forget: bool,
@@ -1965,7 +2022,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1993,7 +2050,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2021,6 +2078,7 @@ where
 
     fn add_traps(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         x_off: i16,
         y_off: i16,
@@ -2032,7 +2090,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -2070,7 +2128,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2098,6 +2156,7 @@ where
 
     fn create_solid_fill(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         color: crate::proto::render::Color,
         forget: bool,
@@ -2110,7 +2169,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let picture_bytes = picture.serialize_fixed();
         let color_bytes = color.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2142,6 +2201,7 @@ where
 
     fn create_linear_gradient(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         p1: crate::proto::render::Pointfix,
         p2: crate::proto::render::Pointfix,
@@ -2155,7 +2215,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_stops = u32::try_from(num_stops).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2209,7 +2269,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2237,6 +2297,7 @@ where
 
     fn create_radial_gradient(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         inner: crate::proto::render::Pointfix,
         outer: crate::proto::render::Pointfix,
@@ -2252,7 +2313,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_stops = u32::try_from(num_stops).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2314,7 +2375,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2342,6 +2403,7 @@ where
 
     fn create_conical_gradient(
         &mut self,
+        socket_buffer: &mut [u8],
         picture: crate::proto::render::Picture,
         center: crate::proto::render::Pointfix,
         angle: crate::proto::render::Fixed,
@@ -2355,7 +2417,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::render::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_stops = u32::try_from(num_stops).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2409,7 +2471,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?

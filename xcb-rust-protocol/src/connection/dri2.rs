@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait Dri2Connection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait Dri2Connection {
 
     fn connect(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         driver_type: crate::proto::dri2::DriverTypeEnum,
         forget: bool,
@@ -25,6 +27,7 @@ pub trait Dri2Connection {
 
     fn authenticate(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         magic: u32,
         forget: bool,
@@ -32,18 +35,21 @@ pub trait Dri2Connection {
 
     fn create_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn destroy_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         count: u32,
         attachments: &[u32],
@@ -52,6 +58,7 @@ pub trait Dri2Connection {
 
     fn copy_region(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         region: u32,
         dest: u32,
@@ -61,6 +68,7 @@ pub trait Dri2Connection {
 
     fn get_buffers_with_format(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         count: u32,
         attachments: &[crate::proto::dri2::AttachFormat],
@@ -69,6 +77,7 @@ pub trait Dri2Connection {
 
     fn swap_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         target_msc_hi: u32,
         target_msc_lo: u32,
@@ -81,12 +90,14 @@ pub trait Dri2Connection {
 
     fn get_m_s_c(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetMSCReply, 32>>;
 
     fn wait_m_s_c(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         target_msc_hi: u32,
         target_msc_lo: u32,
@@ -99,6 +110,7 @@ pub trait Dri2Connection {
 
     fn wait_s_b_c(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         target_sbc_hi: u32,
         target_sbc_lo: u32,
@@ -107,6 +119,7 @@ pub trait Dri2Connection {
 
     fn swap_interval(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         interval: u32,
         forget: bool,
@@ -114,6 +127,7 @@ pub trait Dri2Connection {
 
     fn get_param(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         param: u32,
         forget: bool,
@@ -125,6 +139,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -137,7 +152,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let major_version_bytes = major_version.serialize_fixed();
         let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -165,6 +180,7 @@ where
 
     fn connect(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         driver_type: crate::proto::dri2::DriverTypeEnum,
         forget: bool,
@@ -177,7 +193,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let driver_type_bytes = (driver_type.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -205,6 +221,7 @@ where
 
     fn authenticate(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         magic: u32,
         forget: bool,
@@ -217,7 +234,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let magic_bytes = magic.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -245,6 +262,7 @@ where
 
     fn create_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -255,7 +273,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -279,6 +297,7 @@ where
 
     fn destroy_drawable(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -289,7 +308,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -313,6 +332,7 @@ where
 
     fn get_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         count: u32,
         attachments: &[u32],
@@ -323,7 +343,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::dri2::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -357,7 +377,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -385,6 +405,7 @@ where
 
     fn copy_region(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         region: u32,
         dest: u32,
@@ -401,7 +422,7 @@ where
         let region_bytes = region.serialize_fixed();
         let dest_bytes = dest.serialize_fixed();
         let src_bytes = src.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -437,6 +458,7 @@ where
 
     fn get_buffers_with_format(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         count: u32,
         attachments: &[crate::proto::dri2::AttachFormat],
@@ -447,7 +469,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::dri2::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -481,7 +503,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -509,6 +531,7 @@ where
 
     fn swap_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         target_msc_hi: u32,
         target_msc_lo: u32,
@@ -531,7 +554,7 @@ where
         let divisor_lo_bytes = divisor_lo.serialize_fixed();
         let remainder_hi_bytes = remainder_hi.serialize_fixed();
         let remainder_lo_bytes = remainder_lo.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -579,6 +602,7 @@ where
 
     fn get_m_s_c(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetMSCReply, 32>> {
@@ -589,7 +613,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -613,6 +637,7 @@ where
 
     fn wait_m_s_c(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         target_msc_hi: u32,
         target_msc_lo: u32,
@@ -635,7 +660,7 @@ where
         let divisor_lo_bytes = divisor_lo.serialize_fixed();
         let remainder_hi_bytes = remainder_hi.serialize_fixed();
         let remainder_lo_bytes = remainder_lo.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -683,6 +708,7 @@ where
 
     fn wait_s_b_c(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         target_sbc_hi: u32,
         target_sbc_lo: u32,
@@ -697,7 +723,7 @@ where
         let drawable_bytes = drawable.serialize_fixed();
         let target_sbc_hi_bytes = target_sbc_hi.serialize_fixed();
         let target_sbc_lo_bytes = target_sbc_lo.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -729,6 +755,7 @@ where
 
     fn swap_interval(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         interval: u32,
         forget: bool,
@@ -741,7 +768,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
         let interval_bytes = interval.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -769,6 +796,7 @@ where
 
     fn get_param(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         param: u32,
         forget: bool,
@@ -781,7 +809,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
         let param_bytes = param.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

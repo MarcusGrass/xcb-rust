@@ -192,11 +192,11 @@ fn write_cargo_toml(
 name = \"xcb-rust-protocol\"
 version = \"0.1.0\"
 edition = \"2021\"
-license = \"MIT\"
+license = \"MPL-2.0\"
 
 [dependencies]
-tiny-std = { version = \"0.1\" }
-unix-print = \"0.1.0\"
+tiny-std = { workspace = true }
+unix-print = { workspace = true }
 
 [features]
 debug = []

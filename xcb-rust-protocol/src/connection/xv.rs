@@ -11,23 +11,27 @@ use crate::util::VariableLengthSerialize;
 pub trait XvConnection {
     fn query_extension(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xv::QueryExtensionReply, 12>>;
 
     fn query_adaptors(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::QueryAdaptorsReply>>;
 
     fn query_encodings(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::QueryEncodingsReply>>;
 
     fn grab_port(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         time: crate::proto::xproto::TimeEnum,
         forget: bool,
@@ -35,6 +39,7 @@ pub trait XvConnection {
 
     fn ungrab_port(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         time: crate::proto::xproto::TimeEnum,
         forget: bool,
@@ -42,6 +47,7 @@ pub trait XvConnection {
 
     fn put_video(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -58,6 +64,7 @@ pub trait XvConnection {
 
     fn put_still(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -74,6 +81,7 @@ pub trait XvConnection {
 
     fn get_video(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -90,6 +98,7 @@ pub trait XvConnection {
 
     fn get_still(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -106,6 +115,7 @@ pub trait XvConnection {
 
     fn stop_video(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
@@ -113,6 +123,7 @@ pub trait XvConnection {
 
     fn select_video_notify(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         onoff: u8,
         forget: bool,
@@ -120,6 +131,7 @@ pub trait XvConnection {
 
     fn select_port_notify(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         onoff: u8,
         forget: bool,
@@ -127,6 +139,7 @@ pub trait XvConnection {
 
     fn query_best_size(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         vid_w: u16,
         vid_h: u16,
@@ -138,6 +151,7 @@ pub trait XvConnection {
 
     fn set_port_attribute(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         attribute: u32,
         value: i32,
@@ -146,6 +160,7 @@ pub trait XvConnection {
 
     fn get_port_attribute(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         attribute: u32,
         forget: bool,
@@ -153,18 +168,21 @@ pub trait XvConnection {
 
     fn query_port_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::QueryPortAttributesReply>>;
 
     fn list_image_formats(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::ListImageFormatsReply>>;
 
     fn query_image_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         id: u32,
         width: u16,
@@ -174,6 +192,7 @@ pub trait XvConnection {
 
     fn put_image(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -194,6 +213,7 @@ pub trait XvConnection {
 
     fn shm_put_image(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -220,13 +240,14 @@ where
 {
     fn query_extension(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xv::QueryExtensionReply, 12>> {
         let major_opcode = self.major_opcode(crate::proto::xv::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xv::EXTENSION_NAME),
         )?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -243,6 +264,7 @@ where
 
     fn query_adaptors(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::QueryAdaptorsReply>> {
@@ -251,7 +273,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -275,6 +297,7 @@ where
 
     fn query_encodings(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::QueryEncodingsReply>> {
@@ -283,7 +306,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -307,6 +330,7 @@ where
 
     fn grab_port(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         time: crate::proto::xproto::TimeEnum,
         forget: bool,
@@ -317,7 +341,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
         let time_bytes = (time.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -345,6 +369,7 @@ where
 
     fn ungrab_port(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         time: crate::proto::xproto::TimeEnum,
         forget: bool,
@@ -355,7 +380,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
         let time_bytes = (time.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -383,6 +408,7 @@ where
 
     fn put_video(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -411,7 +437,7 @@ where
         let drw_y_bytes = drw_y.serialize_fixed();
         let drw_w_bytes = drw_w.serialize_fixed();
         let drw_h_bytes = drw_h.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -459,6 +485,7 @@ where
 
     fn put_still(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -487,7 +514,7 @@ where
         let drw_y_bytes = drw_y.serialize_fixed();
         let drw_w_bytes = drw_w.serialize_fixed();
         let drw_h_bytes = drw_h.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -535,6 +562,7 @@ where
 
     fn get_video(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -563,7 +591,7 @@ where
         let drw_y_bytes = drw_y.serialize_fixed();
         let drw_w_bytes = drw_w.serialize_fixed();
         let drw_h_bytes = drw_h.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -611,6 +639,7 @@ where
 
     fn get_still(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -639,7 +668,7 @@ where
         let drw_y_bytes = drw_y.serialize_fixed();
         let drw_w_bytes = drw_w.serialize_fixed();
         let drw_h_bytes = drw_h.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -687,6 +716,7 @@ where
 
     fn stop_video(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         forget: bool,
@@ -697,7 +727,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -725,6 +755,7 @@ where
 
     fn select_video_notify(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         onoff: u8,
         forget: bool,
@@ -734,7 +765,7 @@ where
         )?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -762,6 +793,7 @@ where
 
     fn select_port_notify(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         onoff: u8,
         forget: bool,
@@ -771,7 +803,7 @@ where
         )?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -799,6 +831,7 @@ where
 
     fn query_best_size(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         vid_w: u16,
         vid_h: u16,
@@ -816,7 +849,7 @@ where
         let vid_h_bytes = vid_h.serialize_fixed();
         let drw_w_bytes = drw_w.serialize_fixed();
         let drw_h_bytes = drw_h.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -852,6 +885,7 @@ where
 
     fn set_port_attribute(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         attribute: u32,
         value: i32,
@@ -864,7 +898,7 @@ where
         let port_bytes = port.serialize_fixed();
         let attribute_bytes = attribute.serialize_fixed();
         let value_bytes = value.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -896,6 +930,7 @@ where
 
     fn get_port_attribute(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         attribute: u32,
         forget: bool,
@@ -906,7 +941,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
         let attribute_bytes = attribute.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -934,6 +969,7 @@ where
 
     fn query_port_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::QueryPortAttributesReply>> {
@@ -942,7 +978,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -966,6 +1002,7 @@ where
 
     fn list_image_formats(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xv::ListImageFormatsReply>> {
@@ -974,7 +1011,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let port_bytes = port.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -998,6 +1035,7 @@ where
 
     fn query_image_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         id: u32,
         width: u16,
@@ -1012,7 +1050,7 @@ where
         let id_bytes = id.serialize_fixed();
         let width_bytes = width.serialize_fixed();
         let height_bytes = height.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1044,6 +1082,7 @@ where
 
     fn put_image(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -1064,7 +1103,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::xv::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::xv::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1146,7 +1185,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1174,6 +1213,7 @@ where
 
     fn shm_put_image(
         &mut self,
+        socket_buffer: &mut [u8],
         port: crate::proto::xv::Port,
         drawable: crate::proto::xproto::Drawable,
         gc: crate::proto::xproto::Gcontext,
@@ -1213,7 +1253,7 @@ where
         let drw_h_bytes = drw_h.serialize_fixed();
         let width_bytes = width.serialize_fixed();
         let height_bytes = height.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..52)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

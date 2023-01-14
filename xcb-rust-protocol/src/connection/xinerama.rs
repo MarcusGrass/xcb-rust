@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait XineramaConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major: u8,
         minor: u8,
         forget: bool,
@@ -18,18 +19,21 @@ pub trait XineramaConnection {
 
     fn get_state(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xinerama::GetStateReply, 12>>;
 
     fn get_screen_count(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xinerama::GetScreenCountReply, 12>>;
 
     fn get_screen_size(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         screen: u32,
         forget: bool,
@@ -37,11 +41,13 @@ pub trait XineramaConnection {
 
     fn is_active(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xinerama::IsActiveReply, 12>>;
 
     fn query_screens(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xinerama::QueryScreensReply>>;
 }
@@ -51,6 +57,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major: u8,
         minor: u8,
         forget: bool,
@@ -61,7 +68,7 @@ where
                 crate::proto::xinerama::EXTENSION_NAME,
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 0, length[0], length[1], major, minor, 0, 0]);
@@ -76,6 +83,7 @@ where
 
     fn get_state(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xinerama::GetStateReply, 12>> {
@@ -86,7 +94,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -110,6 +118,7 @@ where
 
     fn get_screen_count(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xinerama::GetScreenCountReply, 12>> {
@@ -120,7 +129,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -144,6 +153,7 @@ where
 
     fn get_screen_size(
         &mut self,
+        socket_buffer: &mut [u8],
         window: crate::proto::xproto::Window,
         screen: u32,
         forget: bool,
@@ -156,7 +166,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let window_bytes = window.serialize_fixed();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -184,6 +194,7 @@ where
 
     fn is_active(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xinerama::IsActiveReply, 12>> {
         let major_opcode = self
@@ -192,7 +203,7 @@ where
                 crate::proto::xinerama::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -209,6 +220,7 @@ where
 
     fn query_screens(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xinerama::QueryScreensReply>> {
         let major_opcode = self
@@ -217,7 +229,7 @@ where
                 crate::proto::xinerama::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;

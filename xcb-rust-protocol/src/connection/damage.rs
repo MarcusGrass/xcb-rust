@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait DamageConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -18,6 +19,7 @@ pub trait DamageConnection {
 
     fn create(
         &mut self,
+        socket_buffer: &mut [u8],
         damage: crate::proto::damage::Damage,
         drawable: crate::proto::xproto::Drawable,
         level: crate::proto::damage::ReportLevelEnum,
@@ -26,12 +28,14 @@ pub trait DamageConnection {
 
     fn destroy(
         &mut self,
+        socket_buffer: &mut [u8],
         damage: crate::proto::damage::Damage,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn subtract(
         &mut self,
+        socket_buffer: &mut [u8],
         damage: crate::proto::damage::Damage,
         repair: crate::proto::xfixes::RegionEnum,
         parts: crate::proto::xfixes::RegionEnum,
@@ -40,6 +44,7 @@ pub trait DamageConnection {
 
     fn add(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         region: crate::proto::xfixes::Region,
         forget: bool,
@@ -51,6 +56,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u32,
         client_minor_version: u32,
         forget: bool,
@@ -63,7 +69,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let client_major_version_bytes = client_major_version.serialize_fixed();
         let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -91,6 +97,7 @@ where
 
     fn create(
         &mut self,
+        socket_buffer: &mut [u8],
         damage: crate::proto::damage::Damage,
         drawable: crate::proto::xproto::Drawable,
         level: crate::proto::damage::ReportLevelEnum,
@@ -104,7 +111,7 @@ where
         let length: [u8; 2] = (4u16).to_ne_bytes();
         let damage_bytes = damage.serialize_fixed();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -136,6 +143,7 @@ where
 
     fn destroy(
         &mut self,
+        socket_buffer: &mut [u8],
         damage: crate::proto::damage::Damage,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -146,7 +154,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let damage_bytes = damage.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -170,6 +178,7 @@ where
 
     fn subtract(
         &mut self,
+        socket_buffer: &mut [u8],
         damage: crate::proto::damage::Damage,
         repair: crate::proto::xfixes::RegionEnum,
         parts: crate::proto::xfixes::RegionEnum,
@@ -184,7 +193,7 @@ where
         let damage_bytes = damage.serialize_fixed();
         let repair_bytes = (repair.0 as u32).serialize_fixed();
         let parts_bytes = (parts.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -216,6 +225,7 @@ where
 
     fn add(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::xproto::Drawable,
         region: crate::proto::xfixes::Region,
         forget: bool,
@@ -228,7 +238,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
         let region_bytes = region.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

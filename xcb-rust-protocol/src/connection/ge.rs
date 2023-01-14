@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait GeConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u16,
         client_minor_version: u16,
         forget: bool,
@@ -22,6 +23,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u16,
         client_minor_version: u16,
         forget: bool,
@@ -32,7 +34,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let client_major_version_bytes = client_major_version.serialize_fixed();
         let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

@@ -11,17 +11,20 @@ use crate::util::VariableLengthSerialize;
 pub trait Xf86vidmodeConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::QueryVersionReply, 12>>;
 
     fn get_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetModeLineReply>>;
 
     fn mod_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         hdisplay: u16,
         hsyncstart: u16,
@@ -39,6 +42,7 @@ pub trait Xf86vidmodeConnection {
 
     fn switch_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         zoom: u16,
         forget: bool,
@@ -46,12 +50,14 @@ pub trait Xf86vidmodeConnection {
 
     fn get_monitor(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetMonitorReply>>;
 
     fn lock_mode_switch(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         lock: u16,
         forget: bool,
@@ -59,12 +65,14 @@ pub trait Xf86vidmodeConnection {
 
     fn get_all_mode_lines(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetAllModeLinesReply>>;
 
     fn add_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -94,6 +102,7 @@ pub trait Xf86vidmodeConnection {
 
     fn delete_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -112,6 +121,7 @@ pub trait Xf86vidmodeConnection {
 
     fn validate_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -130,6 +140,7 @@ pub trait Xf86vidmodeConnection {
 
     fn switch_to_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -148,12 +159,14 @@ pub trait Xf86vidmodeConnection {
 
     fn get_view_port(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetViewPortReply, 32>>;
 
     fn set_view_port(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         x: u32,
         y: u32,
@@ -162,12 +175,14 @@ pub trait Xf86vidmodeConnection {
 
     fn get_dot_clocks(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetDotClocksReply>>;
 
     fn set_client_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major: u16,
         minor: u16,
         forget: bool,
@@ -175,6 +190,7 @@ pub trait Xf86vidmodeConnection {
 
     fn set_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         red: u32,
         green: u32,
@@ -184,12 +200,14 @@ pub trait Xf86vidmodeConnection {
 
     fn get_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaReply, 32>>;
 
     fn get_gamma_ramp(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         size: u16,
         forget: bool,
@@ -197,6 +215,7 @@ pub trait Xf86vidmodeConnection {
 
     fn set_gamma_ramp(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         size: u16,
         red: &[u16],
@@ -207,12 +226,14 @@ pub trait Xf86vidmodeConnection {
 
     fn get_gamma_ramp_size(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaRampSizeReply, 32>>;
 
     fn get_permissions(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetPermissionsReply, 32>>;
@@ -223,6 +244,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::QueryVersionReply, 12>> {
         let major_opcode = self
@@ -231,7 +253,7 @@ where
                 crate::proto::xf86vidmode::EXTENSION_NAME,
             ))?;
         let buf = self
-            .write_buf()
+            .apply_offset(socket_buffer)
             .get_mut(..4)
             .ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
@@ -248,6 +270,7 @@ where
 
     fn get_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetModeLineReply>> {
@@ -258,7 +281,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -282,6 +305,7 @@ where
 
     fn mod_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         hdisplay: u16,
         hsyncstart: u16,
@@ -301,7 +325,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xf86vidmode::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -381,7 +405,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -409,6 +433,7 @@ where
 
     fn switch_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         zoom: u16,
         forget: bool,
@@ -421,7 +446,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let zoom_bytes = zoom.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -445,6 +470,7 @@ where
 
     fn get_monitor(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetMonitorReply>> {
@@ -455,7 +481,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -479,6 +505,7 @@ where
 
     fn lock_mode_switch(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         lock: u16,
         forget: bool,
@@ -491,7 +518,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let lock_bytes = lock.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -515,6 +542,7 @@ where
 
     fn get_all_mode_lines(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetAllModeLinesReply>> {
@@ -525,7 +553,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -549,6 +577,7 @@ where
 
     fn add_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -580,7 +609,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xf86vidmode::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -710,7 +739,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -738,6 +767,7 @@ where
 
     fn delete_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -758,7 +788,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xf86vidmode::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -842,7 +872,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -870,6 +900,7 @@ where
 
     fn validate_mode_line(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -891,7 +922,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xf86vidmode::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -975,7 +1006,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1003,6 +1034,7 @@ where
 
     fn switch_to_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         dotclock: crate::proto::xf86vidmode::Dotclock,
         hdisplay: u16,
@@ -1023,7 +1055,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xf86vidmode::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -1107,7 +1139,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1135,6 +1167,7 @@ where
 
     fn get_view_port(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetViewPortReply, 32>> {
@@ -1145,7 +1178,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1169,6 +1202,7 @@ where
 
     fn set_view_port(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         x: u32,
         y: u32,
@@ -1183,7 +1217,7 @@ where
         let screen_bytes = screen.serialize_fixed();
         let x_bytes = x.serialize_fixed();
         let y_bytes = y.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1215,6 +1249,7 @@ where
 
     fn get_dot_clocks(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetDotClocksReply>> {
@@ -1225,7 +1260,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1249,6 +1284,7 @@ where
 
     fn set_client_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major: u16,
         minor: u16,
         forget: bool,
@@ -1261,7 +1297,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let major_bytes = major.serialize_fixed();
         let minor_bytes = minor.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1285,6 +1321,7 @@ where
 
     fn set_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         red: u32,
         green: u32,
@@ -1301,7 +1338,7 @@ where
         let red_bytes = red.serialize_fixed();
         let green_bytes = green.serialize_fixed();
         let blue_bytes = blue.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1349,6 +1386,7 @@ where
 
     fn get_gamma(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaReply, 32>> {
@@ -1359,7 +1397,7 @@ where
             ))?;
         let length: [u8; 2] = (8u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1407,6 +1445,7 @@ where
 
     fn get_gamma_ramp(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         size: u16,
         forget: bool,
@@ -1419,7 +1458,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let size_bytes = size.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1443,6 +1482,7 @@ where
 
     fn set_gamma_ramp(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         size: u16,
         red: &[u16],
@@ -1455,7 +1495,7 @@ where
             .ok_or(crate::error::Error::MissingExtension(
                 crate::proto::xf86vidmode::EXTENSION_NAME,
             ))?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let size = u16::try_from(size).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..6)
@@ -1511,7 +1551,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1539,6 +1579,7 @@ where
 
     fn get_gamma_ramp_size(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaRampSizeReply, 32>>
@@ -1550,7 +1591,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1574,6 +1615,7 @@ where
 
     fn get_permissions(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u16,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetPermissionsReply, 32>> {
@@ -1584,7 +1626,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

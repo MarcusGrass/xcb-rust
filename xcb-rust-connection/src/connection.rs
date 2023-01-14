@@ -76,7 +76,11 @@ impl SeqCount {
 }
 
 impl SocketConnection {
-    pub fn connect(dpy_name: Option<&str>, xcb_env: XcbEnv) -> Result<(Self, usize), ConnectError> {
+    pub fn connect(
+        dpy_name: Option<&str>,
+        buf: &mut [u8],
+        xcb_env: XcbEnv,
+    ) -> Result<(Self, usize, RawFd), ConnectError> {
         // Parse display information
         let parsed_display = crate::helpers::parse_display::parse_display(dpy_name, xcb_env)
             .ok_or(ConnectError::DisplayParsingError)?;
@@ -119,16 +123,17 @@ impl SocketConnection {
                     if screen >= setup.roots.len() {
                         return Err(ConnectError::InvalidScreen);
                     }
+                    let raw_sock_fd = socket.as_raw_fd();
                     let mut con = SocketConnection::new(SocketBuffer::new(socket), setup);
-                    con.init_extensions().map_err(|e| {
+                    con.init_extensions(buf).map_err(|e| {
                         crate::debug!("Error init exts {e}");
                         ConnectError::UnknownError
                     })?;
-                    con.check_for_big_req().map_err(|e| {
+                    con.check_for_big_req(buf).map_err(|e| {
                         crate::debug!("Error check big_req {e}");
                         ConnectError::UnknownError
                     })?;
-                    return Ok((con, screen));
+                    return Ok((con, screen, raw_sock_fd));
                 }
                 Err(e) => {
                     error = Some(e);
@@ -143,12 +148,12 @@ impl SocketConnection {
     }
 
     #[cfg(feature = "debug")]
-    pub fn clear_cache(&mut self) -> Result<(), ConnectionError> {
+    pub fn clear_cache(&mut self, buffer: &mut [u8]) -> Result<(), ConnectionError> {
         if self.keep_seqs.is_empty() && self.reply_cache.is_empty() {
             return Ok(());
         }
         if !self.keep_seqs.is_empty() {
-            let _ = self.get_input_focus(false)?.reply(self)?;
+            let _ = self.get_input_focus(buffer, false)?.reply(self, buffer)?;
         }
         for (seq, _) in self.keep_seqs.iter() {
             crate::debug!("Dropped voidcookie {seq}");
@@ -165,11 +170,11 @@ impl SocketConnection {
         panic!("Leaked replies;")
     }
 
-    pub fn try_next(&mut self) -> Result<Option<Vec<u8>>, ConnectionError> {
+    pub fn try_next(&mut self, buffer: &mut [u8]) -> Result<Option<Vec<u8>>, ConnectionError> {
         if let Some(cached) = self.event_cache.pop_front() {
             Ok(Some(cached))
         } else {
-            for rr in self.buf.read_next()? {
+            for rr in self.buf.read_next(buffer)? {
                 match rr {
                     ReadResult::Event(e) => {
                         self.event_cache.push_back(e);
@@ -196,6 +201,7 @@ impl SocketConnection {
 
     pub fn read_next_event(
         &mut self,
+        buffer: &mut [u8],
         timeout: Duration,
     ) -> Result<Option<Vec<u8>>, ConnectionError> {
         if let Some(cached) = self.event_cache.pop_front() {
@@ -210,7 +216,7 @@ impl SocketConnection {
                     return Ok(None);
                 };
                 if poll_readable(self.buf.sock.as_raw_fd(), timeout)? {
-                    for rr in self.buf.read_next()? {
+                    for rr in self.buf.read_next(buffer)? {
                         match rr {
                             ReadResult::Event(e) => {
                                 got_event = true;
@@ -243,21 +249,21 @@ impl SocketConnection {
     }
 
     // Preload all extensions immediately
-    fn init_extensions(&mut self) -> Result<(), ConnectionError> {
-        let listed = self.list_extensions(false)?;
-        let r = self.block_for_reply(listed.seq)?;
+    fn init_extensions(&mut self, buffer: &mut [u8]) -> Result<(), ConnectionError> {
+        let listed = self.list_extensions(buffer, false)?;
+        let r = self.block_for_reply(buffer, listed.seq)?;
         let (reply, offset) = ListExtensionsReply::from_bytes(&r)?;
         let mut extensions = vec![];
         for name in reply.names {
             let cookie = xcb_rust_protocol::connection::xproto::XprotoConnection::query_extension(
-                self, &name.name, false,
+                self, buffer, &name.name, false,
             )?;
             extensions.push((name.name, cookie));
         }
         crate::debug!("Pushed all {} ext requests", extensions.len());
-        self.buf.flush()?;
+        self.buf.flush(buffer)?;
         for (name, cookie) in extensions {
-            let response = cookie.reply(self)?;
+            let response = cookie.reply(self, buffer)?;
             let name = String::from_utf8(name).map_err(|e| {
                 crate::debug!("Failed string convert {e}");
                 ConnectionError::UnsupportedExtension(format!(
@@ -281,14 +287,14 @@ impl SocketConnection {
         Ok(())
     }
 
-    fn check_for_big_req(&mut self) -> Result<(), ConnectionError> {
+    fn check_for_big_req(&mut self, buffer: &mut [u8]) -> Result<(), ConnectionError> {
         if self
             .extension_information(xcb_rust_protocol::proto::bigreq::EXTENSION_NAME)
             .is_some()
         {
             let reply =
-                xcb_rust_protocol::connection::bigreq::BigreqConnection::enable(self, false)?
-                    .reply(self)
+                xcb_rust_protocol::connection::bigreq::BigreqConnection::enable(self, buffer, false)?
+                    .reply(self, buffer)
                     .unwrap();
             self.max_request_length = reply.maximum_request_length as usize;
             crate::debug!(
@@ -301,6 +307,7 @@ impl SocketConnection {
     }
     pub fn change_property8(
         &mut self,
+        buffer: &mut [u8],
         mode: PropModeEnum,
         window: Window,
         property: Atom,
@@ -309,6 +316,7 @@ impl SocketConnection {
         forget: bool,
     ) -> Result<VoidCookie, ConnectionError> {
         Ok(self.change_property(
+            buffer,
             mode,
             window,
             property,
@@ -323,6 +331,7 @@ impl SocketConnection {
     /// Change a property on a window with format 16.
     pub fn change_property16(
         &mut self,
+        buffer: &mut [u8],
         mode: PropModeEnum,
         window: Window,
         property: Atom,
@@ -335,6 +344,7 @@ impl SocketConnection {
             data_u8.extend(item.to_ne_bytes());
         }
         Ok(self.change_property(
+            buffer,
             mode,
             window,
             property,
@@ -349,6 +359,7 @@ impl SocketConnection {
     /// Change a property on a window with format 32.
     pub fn change_property32(
         &mut self,
+        buffer: &mut [u8],
         mode: PropModeEnum,
         window: Window,
         property: Atom,
@@ -361,6 +372,7 @@ impl SocketConnection {
             data_u8.extend(item.to_ne_bytes());
         }
         Ok(self.change_property(
+            buffer,
             mode,
             window,
             property,
@@ -373,14 +385,14 @@ impl SocketConnection {
     }
 
     #[inline]
-    pub fn flush(&mut self) -> Result<(), ConnectionError> {
-        self.buf.flush()
+    pub fn flush(&mut self, buffer: &mut [u8]) -> Result<(), ConnectionError> {
+        self.buf.flush(buffer)
     }
 
     #[inline]
-    pub fn sync(&mut self) -> Result<(), ConnectionError> {
+    pub fn sync(&mut self, buffer: &mut [u8]) -> Result<(), ConnectionError> {
         crate::debug!("Syncing");
-        self.get_input_focus(false)?.reply(self)?;
+        self.get_input_focus(buffer, false)?.reply(self, buffer)?;
         Ok(())
     }
 
@@ -408,8 +420,8 @@ impl AsRawFd for SocketConnection {
 
 impl XcbConnection for SocketConnection {
     #[inline]
-    fn write_buf(&mut self) -> &mut [u8] {
-        &mut self.buf.out_buf[self.buf.out_offset..]
+    fn apply_offset<'a>(&mut self, buffer: &'a mut [u8]) -> &'a mut [u8] {
+        &mut buffer[self.buf.out_offset..]
     }
 
     #[inline]
@@ -447,7 +459,7 @@ impl XcbConnection for SocketConnection {
     }
 
     #[inline]
-    fn generate_id(&mut self) -> Result<u32, Error> {
+    fn generate_id(&mut self, buffer: &mut [u8]) -> Result<u32, Error> {
         if let Some(id) = self.id_allocator.generate_id() {
             Ok(id)
         } else if self
@@ -457,7 +469,7 @@ impl XcbConnection for SocketConnection {
             // IDs are exhausted and XC-MISC is not available
             Err(Error::Connection("Ids exhausted and xc-misk not available"))
         } else {
-            let range = self.get_x_i_d_range(false)?.reply(self)?;
+            let range = self.get_x_i_d_range(buffer, false)?.reply(self, buffer)?;
 
             self.id_allocator
                 .update_xid_range(&range)
@@ -468,18 +480,18 @@ impl XcbConnection for SocketConnection {
         }
     }
 
-    fn block_for_reply(&mut self, seq: u16) -> Result<Vec<u8>, Error> {
+    fn block_for_reply(&mut self, buffer: &mut [u8], seq: u16) -> Result<Vec<u8>, Error> {
         if let Some(reply) = self.reply_cache.remove(&seq) {
             Ok(reply)
         } else {
-            self.buf.flush().map_err(|e| {
+            self.buf.flush(buffer).map_err(|e| {
                 crate::debug!("Failed to flush, {e}");
                 Error::Connection("Failed flush")
             })?;
             let mut target = None;
             self.keep_seqs.remove(&seq);
             while target.is_none() {
-                for rr in self.buf.read_next().map_err(|e| {
+                for rr in self.buf.read_next(buffer).map_err(|e| {
                     crate::debug!("Failed to read next {e}");
                     Error::Connection("Failed to read next")
                 })? {
@@ -511,9 +523,9 @@ impl XcbConnection for SocketConnection {
         }
     }
 
-    fn block_check_for_err(&mut self, seq: u16) -> Result<(), Error> {
+    fn block_check_for_err(&mut self, buffer: &mut [u8], seq: u16) -> Result<(), Error> {
         if !self.seq_count.sequence_has_been_seen(seq) {
-            self.get_input_focus(false)?.reply(self)?;
+            self.get_input_focus(buffer, false)?.reply(self, buffer)?;
         }
         if let Some(err) = self.reply_cache.remove(&seq) {
             Err(Error::XcbError(parse_error(&err, &self.extensions)?))
@@ -539,10 +551,8 @@ const BUF_SIZE: usize = 65536;
 #[derive(Debug)]
 struct SocketBuffer {
     sock: UnixStream,
-    in_buf: Vec<u8>,
     in_read_offset: usize,
     in_write_offset: usize,
-    out_buf: Vec<u8>,
     out_offset: usize,
 }
 
@@ -556,11 +566,11 @@ enum ReadResult {
 }
 
 impl SocketBuffer {
-    pub fn flush(&mut self) -> Result<(), ConnectionError> {
+    pub fn flush(&mut self, buf: &mut [u8]) -> Result<(), ConnectionError> {
         if self.out_offset != 0 {
             let mut written = 0;
             loop {
-                return match self.sock.write_all(&self.out_buf[written..self.out_offset]) {
+                return match self.sock.write_all(&buf[written..self.out_offset]) {
                     Ok(_) => {
                         self.out_offset = 0;
                         Ok(())
@@ -582,11 +592,11 @@ impl SocketBuffer {
         Ok(())
     }
 
-    fn read_next(&mut self) -> Result<Vec<ReadResult>, ConnectionError> {
+    fn read_next(&mut self, buf: &mut [u8]) -> Result<Vec<ReadResult>, ConnectionError> {
         let mut start = self.in_write_offset;
         // drain
         loop {
-            match self.sock.read(&mut self.in_buf[self.in_write_offset..]) {
+            match self.sock.read(&mut buf[self.in_write_offset..]) {
                 Ok(o) => {
                     self.in_write_offset += o;
                     break;
@@ -606,11 +616,11 @@ impl SocketBuffer {
         }
 
         let mut read_results = vec![];
-        while let Some(rr) = self.drain_next() {
+        while let Some(rr) = self.drain_next(buf) {
             read_results.push(rr);
         }
         let remainder_len = self.in_write_offset - self.in_read_offset;
-        self.in_buf
+        buf
             .copy_within(self.in_read_offset..self.in_write_offset, 0);
         self.in_read_offset = 0;
         self.in_write_offset = remainder_len;
@@ -618,15 +628,14 @@ impl SocketBuffer {
     }
 
     #[allow(clippy::match_on_vec_items)]
-    fn drain_next(&mut self) -> Option<ReadResult> {
-        let has_length_field = match self.in_buf.get(self.in_read_offset) {
+    fn drain_next(&mut self, buf: &mut [u8]) -> Option<ReadResult> {
+        let has_length_field = match buf.get(self.in_read_offset) {
             Some(&REPLY) => true,
             Some(x) if x & 0x7f == xcb_rust_protocol::proto::xproto::GE_GENERIC_EVENT => true,
             _ => false,
         };
         let additional_length = if has_length_field {
-            if let Some(length_field) = self
-                .in_buf
+            if let Some(length_field) = buf
                 .get(self.in_read_offset + 4..self.in_read_offset + 8)
             {
                 let length_field = u32::from_ne_bytes(length_field.try_into().unwrap());
@@ -647,16 +656,16 @@ impl SocketBuffer {
         } else {
             // Got at least one full packet
             let end_at = self.in_read_offset + packet_length;
-            let read_result = match self.in_buf[self.in_read_offset] {
+            let read_result = match buf[self.in_read_offset] {
                 ERROR => ReadResult::Error(
-                    parse_seq(&self.in_buf[self.in_read_offset..]),
-                    self.in_buf[self.in_read_offset..end_at].to_vec(),
+                    parse_seq(&buf[self.in_read_offset..]),
+                    buf[self.in_read_offset..end_at].to_vec(),
                 ),
                 REPLY => ReadResult::Reply(
-                    parse_seq(&self.in_buf[self.in_read_offset..]),
-                    self.in_buf[self.in_read_offset..end_at].to_vec(),
+                    parse_seq(&buf[self.in_read_offset..]),
+                    buf[self.in_read_offset..end_at].to_vec(),
                 ),
-                _ => ReadResult::Event(self.in_buf[self.in_read_offset..end_at].to_vec()),
+                _ => ReadResult::Event(buf[self.in_read_offset..end_at].to_vec()),
             };
             self.in_read_offset = end_at;
             Some(read_result)
@@ -666,10 +675,8 @@ impl SocketBuffer {
     pub fn new(sock: UnixStream) -> Self {
         Self {
             sock,
-            in_buf: vec![0; BUF_SIZE],
             in_read_offset: 0,
             in_write_offset: 0,
-            out_buf: vec![0; BUF_SIZE],
             out_offset: 0,
         }
     }

@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait GlxConnection {
     fn render(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         data: &[u8],
         forget: bool,
@@ -18,6 +19,7 @@ pub trait GlxConnection {
 
     fn render_large(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         request_num: u16,
         request_total: u16,
@@ -27,6 +29,7 @@ pub trait GlxConnection {
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         visual: crate::proto::xproto::Visualid,
         screen: u32,
@@ -37,12 +40,14 @@ pub trait GlxConnection {
 
     fn destroy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn make_current(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::glx::Drawable,
         context: crate::proto::glx::Context,
         old_context_tag: crate::proto::glx::ContextTag,
@@ -51,12 +56,14 @@ pub trait GlxConnection {
 
     fn is_direct(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::IsDirectReply, 32>>;
 
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -64,18 +71,21 @@ pub trait GlxConnection {
 
     fn wait_g_l(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn wait_x(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn copy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         src: crate::proto::glx::Context,
         dest: crate::proto::glx::Context,
         mask: u32,
@@ -85,6 +95,7 @@ pub trait GlxConnection {
 
     fn swap_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         drawable: crate::proto::glx::Drawable,
         forget: bool,
@@ -92,6 +103,7 @@ pub trait GlxConnection {
 
     fn use_x_font(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         font: crate::proto::xproto::Font,
         first: u32,
@@ -102,6 +114,7 @@ pub trait GlxConnection {
 
     fn create_g_l_x_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         visual: crate::proto::xproto::Visualid,
         pixmap: crate::proto::xproto::Pixmap,
@@ -111,18 +124,21 @@ pub trait GlxConnection {
 
     fn get_visual_configs(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::GetVisualConfigsReply>>;
 
     fn destroy_g_l_x_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         glx_pixmap: crate::proto::glx::Pixmap,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn vendor_private(
         &mut self,
+        socket_buffer: &mut [u8],
         vendor_code: u32,
         context_tag: crate::proto::glx::ContextTag,
         data: &[u8],
@@ -131,6 +147,7 @@ pub trait GlxConnection {
 
     fn vendor_private_with_reply(
         &mut self,
+        socket_buffer: &mut [u8],
         vendor_code: u32,
         context_tag: crate::proto::glx::ContextTag,
         data: &[u8],
@@ -139,12 +156,14 @@ pub trait GlxConnection {
 
     fn query_extensions_string(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::QueryExtensionsStringReply, 32>>;
 
     fn query_server_string(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         name: u32,
         forget: bool,
@@ -152,6 +171,7 @@ pub trait GlxConnection {
 
     fn client_info(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         string: &[u8],
@@ -160,12 +180,14 @@ pub trait GlxConnection {
 
     fn get_f_b_configs(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::GetFBConfigsReply>>;
 
     fn create_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         fbconfig: crate::proto::glx::Fbconfig,
         pixmap: crate::proto::xproto::Pixmap,
@@ -177,12 +199,14 @@ pub trait GlxConnection {
 
     fn destroy_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         glx_pixmap: crate::proto::glx::Pixmap,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn create_new_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         fbconfig: crate::proto::glx::Fbconfig,
         screen: u32,
@@ -194,12 +218,14 @@ pub trait GlxConnection {
 
     fn query_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::QueryContextReply>>;
 
     fn make_context_current(
         &mut self,
+        socket_buffer: &mut [u8],
         old_context_tag: crate::proto::glx::ContextTag,
         drawable: crate::proto::glx::Drawable,
         read_drawable: crate::proto::glx::Drawable,
@@ -209,6 +235,7 @@ pub trait GlxConnection {
 
     fn create_pbuffer(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         fbconfig: crate::proto::glx::Fbconfig,
         pbuffer: crate::proto::glx::Pbuffer,
@@ -219,18 +246,21 @@ pub trait GlxConnection {
 
     fn destroy_pbuffer(
         &mut self,
+        socket_buffer: &mut [u8],
         pbuffer: crate::proto::glx::Pbuffer,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn get_drawable_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::glx::Drawable,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::GetDrawableAttributesReply>>;
 
     fn change_drawable_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::glx::Drawable,
         num_attribs: u32,
         attribs: &[u32],
@@ -239,6 +269,7 @@ pub trait GlxConnection {
 
     fn create_window(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         fbconfig: crate::proto::glx::Fbconfig,
         window: crate::proto::xproto::Window,
@@ -250,12 +281,14 @@ pub trait GlxConnection {
 
     fn delete_window(
         &mut self,
+        socket_buffer: &mut [u8],
         glxwindow: crate::proto::glx::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn set_client_info_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         num_versions: u32,
@@ -269,6 +302,7 @@ pub trait GlxConnection {
 
     fn create_context_attribs_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         fbconfig: crate::proto::glx::Fbconfig,
         screen: u32,
@@ -281,6 +315,7 @@ pub trait GlxConnection {
 
     fn set_client_info2_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         num_versions: u32,
@@ -294,6 +329,7 @@ pub trait GlxConnection {
 
     fn new_list(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         list: u32,
         mode: u32,
@@ -302,12 +338,14 @@ pub trait GlxConnection {
 
     fn end_list(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn delete_lists(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         list: u32,
         range: i32,
@@ -316,6 +354,7 @@ pub trait GlxConnection {
 
     fn gen_lists(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         range: i32,
         forget: bool,
@@ -323,6 +362,7 @@ pub trait GlxConnection {
 
     fn feedback_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         size: i32,
         r#type: i32,
@@ -331,6 +371,7 @@ pub trait GlxConnection {
 
     fn select_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         size: i32,
         forget: bool,
@@ -338,6 +379,7 @@ pub trait GlxConnection {
 
     fn render_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         mode: u32,
         forget: bool,
@@ -345,12 +387,14 @@ pub trait GlxConnection {
 
     fn finish(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::FinishReply, 8>>;
 
     fn pixel_storef(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         datum: crate::proto::glx::Float32,
@@ -359,6 +403,7 @@ pub trait GlxConnection {
 
     fn pixel_storei(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         datum: i32,
@@ -367,6 +412,7 @@ pub trait GlxConnection {
 
     fn read_pixels(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         x: i32,
         y: i32,
@@ -381,6 +427,7 @@ pub trait GlxConnection {
 
     fn get_booleanv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: i32,
         forget: bool,
@@ -388,6 +435,7 @@ pub trait GlxConnection {
 
     fn get_clip_plane(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         plane: i32,
         forget: bool,
@@ -395,6 +443,7 @@ pub trait GlxConnection {
 
     fn get_doublev(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         forget: bool,
@@ -402,12 +451,14 @@ pub trait GlxConnection {
 
     fn get_error(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::GetErrorReply, 12>>;
 
     fn get_floatv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         forget: bool,
@@ -415,6 +466,7 @@ pub trait GlxConnection {
 
     fn get_integerv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         forget: bool,
@@ -422,6 +474,7 @@ pub trait GlxConnection {
 
     fn get_lightfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         light: u32,
         pname: u32,
@@ -430,6 +483,7 @@ pub trait GlxConnection {
 
     fn get_lightiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         light: u32,
         pname: u32,
@@ -438,6 +492,7 @@ pub trait GlxConnection {
 
     fn get_mapdv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         query: u32,
@@ -446,6 +501,7 @@ pub trait GlxConnection {
 
     fn get_mapfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         query: u32,
@@ -454,6 +510,7 @@ pub trait GlxConnection {
 
     fn get_mapiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         query: u32,
@@ -462,6 +519,7 @@ pub trait GlxConnection {
 
     fn get_materialfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         face: u32,
         pname: u32,
@@ -470,6 +528,7 @@ pub trait GlxConnection {
 
     fn get_materialiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         face: u32,
         pname: u32,
@@ -478,6 +537,7 @@ pub trait GlxConnection {
 
     fn get_pixel_mapfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         map: u32,
         forget: bool,
@@ -485,6 +545,7 @@ pub trait GlxConnection {
 
     fn get_pixel_mapuiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         map: u32,
         forget: bool,
@@ -492,6 +553,7 @@ pub trait GlxConnection {
 
     fn get_pixel_mapusv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         map: u32,
         forget: bool,
@@ -499,6 +561,7 @@ pub trait GlxConnection {
 
     fn get_polygon_stipple(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         lsb_first: u8,
         forget: bool,
@@ -506,6 +569,7 @@ pub trait GlxConnection {
 
     fn get_string(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         name: u32,
         forget: bool,
@@ -513,6 +577,7 @@ pub trait GlxConnection {
 
     fn get_tex_envfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -521,6 +586,7 @@ pub trait GlxConnection {
 
     fn get_tex_enviv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -529,6 +595,7 @@ pub trait GlxConnection {
 
     fn get_tex_gendv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         coord: u32,
         pname: u32,
@@ -537,6 +604,7 @@ pub trait GlxConnection {
 
     fn get_tex_genfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         coord: u32,
         pname: u32,
@@ -545,6 +613,7 @@ pub trait GlxConnection {
 
     fn get_tex_geniv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         coord: u32,
         pname: u32,
@@ -553,6 +622,7 @@ pub trait GlxConnection {
 
     fn get_tex_image(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -564,6 +634,7 @@ pub trait GlxConnection {
 
     fn get_tex_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -572,6 +643,7 @@ pub trait GlxConnection {
 
     fn get_tex_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -580,6 +652,7 @@ pub trait GlxConnection {
 
     fn get_tex_level_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -589,6 +662,7 @@ pub trait GlxConnection {
 
     fn get_tex_level_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -598,6 +672,7 @@ pub trait GlxConnection {
 
     fn is_enabled(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         capability: u32,
         forget: bool,
@@ -605,6 +680,7 @@ pub trait GlxConnection {
 
     fn is_list(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         list: u32,
         forget: bool,
@@ -612,12 +688,14 @@ pub trait GlxConnection {
 
     fn flush(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie>;
 
     fn are_textures_resident(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         textures: &[u32],
         forget: bool,
@@ -625,6 +703,7 @@ pub trait GlxConnection {
 
     fn delete_textures(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         textures: &[u32],
         forget: bool,
@@ -632,6 +711,7 @@ pub trait GlxConnection {
 
     fn gen_textures(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         n: i32,
         forget: bool,
@@ -639,6 +719,7 @@ pub trait GlxConnection {
 
     fn is_texture(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         texture: u32,
         forget: bool,
@@ -646,6 +727,7 @@ pub trait GlxConnection {
 
     fn get_color_table(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -656,6 +738,7 @@ pub trait GlxConnection {
 
     fn get_color_table_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -664,6 +747,7 @@ pub trait GlxConnection {
 
     fn get_color_table_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -672,6 +756,7 @@ pub trait GlxConnection {
 
     fn get_convolution_filter(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -682,6 +767,7 @@ pub trait GlxConnection {
 
     fn get_convolution_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -690,6 +776,7 @@ pub trait GlxConnection {
 
     fn get_convolution_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -698,6 +785,7 @@ pub trait GlxConnection {
 
     fn get_separable_filter(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -708,6 +796,7 @@ pub trait GlxConnection {
 
     fn get_histogram(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -719,6 +808,7 @@ pub trait GlxConnection {
 
     fn get_histogram_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -727,6 +817,7 @@ pub trait GlxConnection {
 
     fn get_histogram_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -735,6 +826,7 @@ pub trait GlxConnection {
 
     fn get_minmax(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -746,6 +838,7 @@ pub trait GlxConnection {
 
     fn get_minmax_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -754,6 +847,7 @@ pub trait GlxConnection {
 
     fn get_minmax_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -762,6 +856,7 @@ pub trait GlxConnection {
 
     fn get_compressed_tex_image_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -770,6 +865,7 @@ pub trait GlxConnection {
 
     fn delete_queries_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         ids: &[u32],
         forget: bool,
@@ -777,6 +873,7 @@ pub trait GlxConnection {
 
     fn gen_queries_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         n: i32,
         forget: bool,
@@ -784,6 +881,7 @@ pub trait GlxConnection {
 
     fn is_query_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         id: u32,
         forget: bool,
@@ -791,6 +889,7 @@ pub trait GlxConnection {
 
     fn get_queryiv_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -799,6 +898,7 @@ pub trait GlxConnection {
 
     fn get_query_objectiv_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         id: u32,
         pname: u32,
@@ -807,6 +907,7 @@ pub trait GlxConnection {
 
     fn get_query_objectuiv_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         id: u32,
         pname: u32,
@@ -819,6 +920,7 @@ where
 {
     fn render(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         data: &[u8],
         forget: bool,
@@ -826,7 +928,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -854,7 +956,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -882,6 +984,7 @@ where
 
     fn render_large(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         request_num: u16,
         request_total: u16,
@@ -891,7 +994,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let data_len = u32::try_from(data.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -937,7 +1040,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -965,6 +1068,7 @@ where
 
     fn create_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         visual: crate::proto::xproto::Visualid,
         screen: u32,
@@ -980,7 +1084,7 @@ where
         let visual_bytes = visual.serialize_fixed();
         let screen_bytes = screen.serialize_fixed();
         let share_list_bytes = share_list.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1020,6 +1124,7 @@ where
 
     fn destroy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1028,7 +1133,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1052,6 +1157,7 @@ where
 
     fn make_current(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::glx::Drawable,
         context: crate::proto::glx::Context,
         old_context_tag: crate::proto::glx::ContextTag,
@@ -1064,7 +1170,7 @@ where
         let drawable_bytes = drawable.serialize_fixed();
         let context_bytes = context.serialize_fixed();
         let old_context_tag_bytes = old_context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1096,6 +1202,7 @@ where
 
     fn is_direct(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::IsDirectReply, 32>> {
@@ -1104,7 +1211,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1128,6 +1235,7 @@ where
 
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         forget: bool,
@@ -1138,7 +1246,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let major_version_bytes = major_version.serialize_fixed();
         let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1166,6 +1274,7 @@ where
 
     fn wait_g_l(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1174,7 +1283,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1198,6 +1307,7 @@ where
 
     fn wait_x(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1206,7 +1316,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1230,6 +1340,7 @@ where
 
     fn copy_context(
         &mut self,
+        socket_buffer: &mut [u8],
         src: crate::proto::glx::Context,
         dest: crate::proto::glx::Context,
         mask: u32,
@@ -1244,7 +1355,7 @@ where
         let dest_bytes = dest.serialize_fixed();
         let mask_bytes = mask.serialize_fixed();
         let src_context_tag_bytes = src_context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1280,6 +1391,7 @@ where
 
     fn swap_buffers(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         drawable: crate::proto::glx::Drawable,
         forget: bool,
@@ -1290,7 +1402,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1318,6 +1430,7 @@ where
 
     fn use_x_font(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         font: crate::proto::xproto::Font,
         first: u32,
@@ -1334,7 +1447,7 @@ where
         let first_bytes = first.serialize_fixed();
         let count_bytes = count.serialize_fixed();
         let list_base_bytes = list_base.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1374,6 +1487,7 @@ where
 
     fn create_g_l_x_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         visual: crate::proto::xproto::Visualid,
         pixmap: crate::proto::xproto::Pixmap,
@@ -1388,7 +1502,7 @@ where
         let visual_bytes = visual.serialize_fixed();
         let pixmap_bytes = pixmap.serialize_fixed();
         let glx_pixmap_bytes = glx_pixmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1424,6 +1538,7 @@ where
 
     fn get_visual_configs(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::GetVisualConfigsReply>> {
@@ -1432,7 +1547,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1456,6 +1571,7 @@ where
 
     fn destroy_g_l_x_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         glx_pixmap: crate::proto::glx::Pixmap,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1464,7 +1580,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let glx_pixmap_bytes = glx_pixmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1488,6 +1604,7 @@ where
 
     fn vendor_private(
         &mut self,
+        socket_buffer: &mut [u8],
         vendor_code: u32,
         context_tag: crate::proto::glx::ContextTag,
         data: &[u8],
@@ -1496,7 +1613,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1530,7 +1647,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1558,6 +1675,7 @@ where
 
     fn vendor_private_with_reply(
         &mut self,
+        socket_buffer: &mut [u8],
         vendor_code: u32,
         context_tag: crate::proto::glx::ContextTag,
         data: &[u8],
@@ -1566,7 +1684,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1600,7 +1718,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1628,6 +1746,7 @@ where
 
     fn query_extensions_string(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::QueryExtensionsStringReply, 32>> {
@@ -1636,7 +1755,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1660,6 +1779,7 @@ where
 
     fn query_server_string(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         name: u32,
         forget: bool,
@@ -1670,7 +1790,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
         let name_bytes = name.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1698,6 +1818,7 @@ where
 
     fn client_info(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         string: &[u8],
@@ -1706,7 +1827,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let str_len = u32::try_from(string.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -1748,7 +1869,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1776,6 +1897,7 @@ where
 
     fn get_f_b_configs(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::GetFBConfigsReply>> {
@@ -1784,7 +1906,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1808,6 +1930,7 @@ where
 
     fn create_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         fbconfig: crate::proto::glx::Fbconfig,
         pixmap: crate::proto::xproto::Pixmap,
@@ -1819,7 +1942,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_attribs = u32::try_from(num_attribs).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -1870,7 +1993,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1898,6 +2021,7 @@ where
 
     fn destroy_pixmap(
         &mut self,
+        socket_buffer: &mut [u8],
         glx_pixmap: crate::proto::glx::Pixmap,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -1906,7 +2030,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let glx_pixmap_bytes = glx_pixmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1930,6 +2054,7 @@ where
 
     fn create_new_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         fbconfig: crate::proto::glx::Fbconfig,
         screen: u32,
@@ -1947,7 +2072,7 @@ where
         let screen_bytes = screen.serialize_fixed();
         let render_type_bytes = render_type.serialize_fixed();
         let share_list_bytes = share_list.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1991,6 +2116,7 @@ where
 
     fn query_context(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::QueryContextReply>> {
@@ -1999,7 +2125,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2023,6 +2149,7 @@ where
 
     fn make_context_current(
         &mut self,
+        socket_buffer: &mut [u8],
         old_context_tag: crate::proto::glx::ContextTag,
         drawable: crate::proto::glx::Drawable,
         read_drawable: crate::proto::glx::Drawable,
@@ -2037,7 +2164,7 @@ where
         let drawable_bytes = drawable.serialize_fixed();
         let read_drawable_bytes = read_drawable.serialize_fixed();
         let context_bytes = context.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2073,6 +2200,7 @@ where
 
     fn create_pbuffer(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         fbconfig: crate::proto::glx::Fbconfig,
         pbuffer: crate::proto::glx::Pbuffer,
@@ -2083,7 +2211,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_attribs = u32::try_from(num_attribs).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2130,7 +2258,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2158,6 +2286,7 @@ where
 
     fn destroy_pbuffer(
         &mut self,
+        socket_buffer: &mut [u8],
         pbuffer: crate::proto::glx::Pbuffer,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -2166,7 +2295,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let pbuffer_bytes = pbuffer.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2190,6 +2319,7 @@ where
 
     fn get_drawable_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::glx::Drawable,
         forget: bool,
     ) -> crate::error::Result<Cookie<crate::proto::glx::GetDrawableAttributesReply>> {
@@ -2198,7 +2328,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2222,6 +2352,7 @@ where
 
     fn change_drawable_attributes(
         &mut self,
+        socket_buffer: &mut [u8],
         drawable: crate::proto::glx::Drawable,
         num_attribs: u32,
         attribs: &[u32],
@@ -2230,7 +2361,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_attribs = u32::try_from(num_attribs).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2269,7 +2400,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2297,6 +2428,7 @@ where
 
     fn create_window(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         fbconfig: crate::proto::glx::Fbconfig,
         window: crate::proto::xproto::Window,
@@ -2308,7 +2440,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_attribs = u32::try_from(num_attribs).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2359,7 +2491,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2387,6 +2519,7 @@ where
 
     fn delete_window(
         &mut self,
+        socket_buffer: &mut [u8],
         glxwindow: crate::proto::glx::Window,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -2395,7 +2528,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let glxwindow_bytes = glxwindow.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2419,6 +2552,7 @@ where
 
     fn set_client_info_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         num_versions: u32,
@@ -2432,7 +2566,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_versions =
             u32::try_from(num_versions).map_err(|_| crate::error::Error::Serialize)?;
         let gl_str_len = u32::try_from(gl_str_len).map_err(|_| crate::error::Error::Serialize)?;
@@ -2509,7 +2643,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2537,6 +2671,7 @@ where
 
     fn create_context_attribs_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context: crate::proto::glx::Context,
         fbconfig: crate::proto::glx::Fbconfig,
         screen: u32,
@@ -2549,7 +2684,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         // Pad 3 bytes
         let num_attribs = u32::try_from(num_attribs).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -2605,7 +2740,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2633,6 +2768,7 @@ where
 
     fn set_client_info2_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         major_version: u32,
         minor_version: u32,
         num_versions: u32,
@@ -2646,7 +2782,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let num_versions =
             u32::try_from(num_versions).map_err(|_| crate::error::Error::Serialize)?;
         let gl_str_len = u32::try_from(gl_str_len).map_err(|_| crate::error::Error::Serialize)?;
@@ -2723,7 +2859,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2751,6 +2887,7 @@ where
 
     fn new_list(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         list: u32,
         mode: u32,
@@ -2763,7 +2900,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let list_bytes = list.serialize_fixed();
         let mode_bytes = mode.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2795,6 +2932,7 @@ where
 
     fn end_list(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -2803,7 +2941,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2827,6 +2965,7 @@ where
 
     fn delete_lists(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         list: u32,
         range: i32,
@@ -2839,7 +2978,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let list_bytes = list.serialize_fixed();
         let range_bytes = range.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2871,6 +3010,7 @@ where
 
     fn gen_lists(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         range: i32,
         forget: bool,
@@ -2881,7 +3021,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let range_bytes = range.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2909,6 +3049,7 @@ where
 
     fn feedback_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         size: i32,
         r#type: i32,
@@ -2921,7 +3062,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let size_bytes = size.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2953,6 +3094,7 @@ where
 
     fn select_buffer(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         size: i32,
         forget: bool,
@@ -2963,7 +3105,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let size_bytes = size.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2991,6 +3133,7 @@ where
 
     fn render_mode(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         mode: u32,
         forget: bool,
@@ -3001,7 +3144,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let mode_bytes = mode.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3029,6 +3172,7 @@ where
 
     fn finish(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::FinishReply, 8>> {
@@ -3037,7 +3181,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3061,6 +3205,7 @@ where
 
     fn pixel_storef(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         datum: crate::proto::glx::Float32,
@@ -3073,7 +3218,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
         let datum_bytes = datum.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3105,6 +3250,7 @@ where
 
     fn pixel_storei(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         datum: i32,
@@ -3117,7 +3263,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
         let datum_bytes = datum.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3149,6 +3295,7 @@ where
 
     fn read_pixels(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         x: i32,
         y: i32,
@@ -3171,7 +3318,7 @@ where
         let height_bytes = height.serialize_fixed();
         let format_bytes = format.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..36)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3223,6 +3370,7 @@ where
 
     fn get_booleanv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: i32,
         forget: bool,
@@ -3233,7 +3381,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3261,6 +3409,7 @@ where
 
     fn get_clip_plane(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         plane: i32,
         forget: bool,
@@ -3271,7 +3420,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let plane_bytes = plane.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3299,6 +3448,7 @@ where
 
     fn get_doublev(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         forget: bool,
@@ -3309,7 +3459,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3337,6 +3487,7 @@ where
 
     fn get_error(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::glx::GetErrorReply, 12>> {
@@ -3345,7 +3496,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3369,6 +3520,7 @@ where
 
     fn get_floatv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         forget: bool,
@@ -3379,7 +3531,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3407,6 +3559,7 @@ where
 
     fn get_integerv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         pname: u32,
         forget: bool,
@@ -3417,7 +3570,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3445,6 +3598,7 @@ where
 
     fn get_lightfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         light: u32,
         pname: u32,
@@ -3457,7 +3611,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let light_bytes = light.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3489,6 +3643,7 @@ where
 
     fn get_lightiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         light: u32,
         pname: u32,
@@ -3501,7 +3656,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let light_bytes = light.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3533,6 +3688,7 @@ where
 
     fn get_mapdv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         query: u32,
@@ -3545,7 +3701,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let query_bytes = query.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3577,6 +3733,7 @@ where
 
     fn get_mapfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         query: u32,
@@ -3589,7 +3746,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let query_bytes = query.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3621,6 +3778,7 @@ where
 
     fn get_mapiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         query: u32,
@@ -3633,7 +3791,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let query_bytes = query.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3665,6 +3823,7 @@ where
 
     fn get_materialfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         face: u32,
         pname: u32,
@@ -3677,7 +3836,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let face_bytes = face.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3709,6 +3868,7 @@ where
 
     fn get_materialiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         face: u32,
         pname: u32,
@@ -3721,7 +3881,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let face_bytes = face.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3753,6 +3913,7 @@ where
 
     fn get_pixel_mapfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         map: u32,
         forget: bool,
@@ -3763,7 +3924,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let map_bytes = map.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3791,6 +3952,7 @@ where
 
     fn get_pixel_mapuiv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         map: u32,
         forget: bool,
@@ -3801,7 +3963,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let map_bytes = map.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3829,6 +3991,7 @@ where
 
     fn get_pixel_mapusv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         map: u32,
         forget: bool,
@@ -3839,7 +4002,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let map_bytes = map.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3867,6 +4030,7 @@ where
 
     fn get_polygon_stipple(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         lsb_first: u8,
         forget: bool,
@@ -3876,7 +4040,7 @@ where
         )?;
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3904,6 +4068,7 @@ where
 
     fn get_string(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         name: u32,
         forget: bool,
@@ -3914,7 +4079,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let name_bytes = name.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3942,6 +4107,7 @@ where
 
     fn get_tex_envfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -3954,7 +4120,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3986,6 +4152,7 @@ where
 
     fn get_tex_enviv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -3998,7 +4165,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4030,6 +4197,7 @@ where
 
     fn get_tex_gendv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         coord: u32,
         pname: u32,
@@ -4042,7 +4210,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let coord_bytes = coord.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4074,6 +4242,7 @@ where
 
     fn get_tex_genfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         coord: u32,
         pname: u32,
@@ -4086,7 +4255,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let coord_bytes = coord.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4118,6 +4287,7 @@ where
 
     fn get_tex_geniv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         coord: u32,
         pname: u32,
@@ -4130,7 +4300,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let coord_bytes = coord.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4162,6 +4332,7 @@ where
 
     fn get_tex_image(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -4179,7 +4350,7 @@ where
         let level_bytes = level.serialize_fixed();
         let format_bytes = format.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..28)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4223,6 +4394,7 @@ where
 
     fn get_tex_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -4235,7 +4407,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4267,6 +4439,7 @@ where
 
     fn get_tex_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -4279,7 +4452,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4311,6 +4484,7 @@ where
 
     fn get_tex_level_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -4325,7 +4499,7 @@ where
         let target_bytes = target.serialize_fixed();
         let level_bytes = level.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4361,6 +4535,7 @@ where
 
     fn get_tex_level_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -4375,7 +4550,7 @@ where
         let target_bytes = target.serialize_fixed();
         let level_bytes = level.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4411,6 +4586,7 @@ where
 
     fn is_enabled(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         capability: u32,
         forget: bool,
@@ -4421,7 +4597,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let capability_bytes = capability.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4449,6 +4625,7 @@ where
 
     fn is_list(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         list: u32,
         forget: bool,
@@ -4459,7 +4636,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let list_bytes = list.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4487,6 +4664,7 @@ where
 
     fn flush(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         forget: bool,
     ) -> crate::error::Result<VoidCookie> {
@@ -4495,7 +4673,7 @@ where
         )?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4519,6 +4697,7 @@ where
 
     fn are_textures_resident(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         textures: &[u32],
         forget: bool,
@@ -4526,7 +4705,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let n = u32::try_from(textures.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -4563,7 +4742,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -4591,6 +4770,7 @@ where
 
     fn delete_textures(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         textures: &[u32],
         forget: bool,
@@ -4598,7 +4778,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let n = u32::try_from(textures.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -4635,7 +4815,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -4663,6 +4843,7 @@ where
 
     fn gen_textures(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         n: i32,
         forget: bool,
@@ -4673,7 +4854,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let n_bytes = n.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4701,6 +4882,7 @@ where
 
     fn is_texture(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         texture: u32,
         forget: bool,
@@ -4711,7 +4893,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let texture_bytes = texture.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4739,6 +4921,7 @@ where
 
     fn get_color_table(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -4754,7 +4937,7 @@ where
         let target_bytes = target.serialize_fixed();
         let format_bytes = format.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4794,6 +4977,7 @@ where
 
     fn get_color_table_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -4806,7 +4990,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4838,6 +5022,7 @@ where
 
     fn get_color_table_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -4850,7 +5035,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4882,6 +5067,7 @@ where
 
     fn get_convolution_filter(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -4897,7 +5083,7 @@ where
         let target_bytes = target.serialize_fixed();
         let format_bytes = format.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4937,6 +5123,7 @@ where
 
     fn get_convolution_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -4949,7 +5136,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -4981,6 +5168,7 @@ where
 
     fn get_convolution_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -4993,7 +5181,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5025,6 +5213,7 @@ where
 
     fn get_separable_filter(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -5040,7 +5229,7 @@ where
         let target_bytes = target.serialize_fixed();
         let format_bytes = format.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5080,6 +5269,7 @@ where
 
     fn get_histogram(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -5096,7 +5286,7 @@ where
         let target_bytes = target.serialize_fixed();
         let format_bytes = format.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5136,6 +5326,7 @@ where
 
     fn get_histogram_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -5148,7 +5339,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5180,6 +5371,7 @@ where
 
     fn get_histogram_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -5192,7 +5384,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5224,6 +5416,7 @@ where
 
     fn get_minmax(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         format: u32,
@@ -5240,7 +5433,7 @@ where
         let target_bytes = target.serialize_fixed();
         let format_bytes = format.serialize_fixed();
         let r#type_bytes = r#type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5280,6 +5473,7 @@ where
 
     fn get_minmax_parameterfv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -5292,7 +5486,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5324,6 +5518,7 @@ where
 
     fn get_minmax_parameteriv(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -5336,7 +5531,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5368,6 +5563,7 @@ where
 
     fn get_compressed_tex_image_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         level: i32,
@@ -5380,7 +5576,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let level_bytes = level.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5412,6 +5608,7 @@ where
 
     fn delete_queries_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         ids: &[u32],
         forget: bool,
@@ -5419,7 +5616,7 @@ where
         let major_opcode = self.major_opcode(crate::proto::glx::EXTENSION_NAME).ok_or(
             crate::error::Error::MissingExtension(crate::proto::glx::EXTENSION_NAME),
         )?;
-        let buf_ptr = self.write_buf();
+        let buf_ptr = self.apply_offset(socket_buffer);
         let n = u32::try_from(ids.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -5456,7 +5653,7 @@ where
             if word_len > self.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
+            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -5484,6 +5681,7 @@ where
 
     fn gen_queries_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         n: i32,
         forget: bool,
@@ -5494,7 +5692,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let n_bytes = n.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5522,6 +5720,7 @@ where
 
     fn is_query_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         id: u32,
         forget: bool,
@@ -5532,7 +5731,7 @@ where
         let length: [u8; 2] = (3u16).to_ne_bytes();
         let context_tag_bytes = context_tag.serialize_fixed();
         let id_bytes = id.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5560,6 +5759,7 @@ where
 
     fn get_queryiv_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         target: u32,
         pname: u32,
@@ -5572,7 +5772,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let target_bytes = target.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5604,6 +5804,7 @@ where
 
     fn get_query_objectiv_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         id: u32,
         pname: u32,
@@ -5616,7 +5817,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let id_bytes = id.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -5648,6 +5849,7 @@ where
 
     fn get_query_objectuiv_a_r_b(
         &mut self,
+        socket_buffer: &mut [u8],
         context_tag: crate::proto::glx::ContextTag,
         id: u32,
         pname: u32,
@@ -5660,7 +5862,7 @@ where
         let context_tag_bytes = context_tag.serialize_fixed();
         let id_bytes = id.serialize_fixed();
         let pname_bytes = pname.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

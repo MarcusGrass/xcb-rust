@@ -11,6 +11,7 @@ use crate::util::VariableLengthSerialize;
 pub trait XevieConnection {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u16,
         client_minor_version: u16,
         forget: bool,
@@ -18,18 +19,21 @@ pub trait XevieConnection {
 
     fn start(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xevie::StartReply, 32>>;
 
     fn end(
         &mut self,
+        socket_buffer: &mut [u8],
         cmap: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xevie::EndReply, 32>>;
 
     fn send(
         &mut self,
+        socket_buffer: &mut [u8],
         event: crate::proto::xevie::Event,
         data_type: u32,
         forget: bool,
@@ -37,6 +41,7 @@ pub trait XevieConnection {
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         event_mask: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xevie::SelectInputReply, 32>>;
@@ -47,6 +52,7 @@ where
 {
     fn query_version(
         &mut self,
+        socket_buffer: &mut [u8],
         client_major_version: u16,
         client_minor_version: u16,
         forget: bool,
@@ -59,7 +65,7 @@ where
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let client_major_version_bytes = client_major_version.serialize_fixed();
         let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -83,6 +89,7 @@ where
 
     fn start(
         &mut self,
+        socket_buffer: &mut [u8],
         screen: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xevie::StartReply, 32>> {
@@ -93,7 +100,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -117,6 +124,7 @@ where
 
     fn end(
         &mut self,
+        socket_buffer: &mut [u8],
         cmap: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xevie::EndReply, 32>> {
@@ -127,7 +135,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let cmap_bytes = cmap.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -151,6 +159,7 @@ where
 
     fn send(
         &mut self,
+        socket_buffer: &mut [u8],
         event: crate::proto::xevie::Event,
         data_type: u32,
         forget: bool,
@@ -163,7 +172,7 @@ where
         let length: [u8; 2] = (26u16).to_ne_bytes();
         let event_bytes = event.serialize_fixed();
         let data_type_bytes = data_type.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..104)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -283,6 +292,7 @@ where
 
     fn select_input(
         &mut self,
+        socket_buffer: &mut [u8],
         event_mask: u32,
         forget: bool,
     ) -> crate::error::Result<FixedCookie<crate::proto::xevie::SelectInputReply, 32>> {
@@ -293,7 +303,7 @@ where
             ))?;
         let length: [u8; 2] = (2u16).to_ne_bytes();
         let event_mask_bytes = event_mask.serialize_fixed();
-        let buf = self.write_buf();
+        let buf = self.apply_offset(socket_buffer);
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[

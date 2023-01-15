@@ -1,6 +1,7 @@
 //! Utility functions for working with X11 properties
 
 use crate::connection::xproto::XprotoConnection;
+use crate::con::XcbBuffers;
 use crate::cookie::{Cookie, VoidCookie};
 use crate::proto::xproto;
 use crate::proto::xproto::{Atom, AtomEnum, GetPropertyReply, GetPropertyTypeEnum, Window};
@@ -20,8 +21,8 @@ macro_rules! property_cookie {
         impl $cookie_name
         {
             /// Get the reply that the server sent.
-            pub fn reply<C>(self, con: &mut C, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<$struct_name, Error> where C: $crate::con::XcbConnection{
-                $from_reply(self.0.reply(con, in_buffer, out_buffer)?)
+            pub fn reply<C>(self, con: &mut C, buffers: &mut XcbBuffers) -> Result<$struct_name, Error> where C: $crate::con::XcbConnection{
+                $from_reply(self.0.reply(con, buffers)?)
             }
         }
     }
@@ -38,13 +39,13 @@ property_cookie! {
 }
 
 impl WmClassCookie {
-    /// Send a `GetProperty` request for the `WM_CLASS` property of the given window
-    pub fn new<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<Self, Error>
+    /// Write a `GetProperty` request for the `WM_CLASS` property of the given window
+    pub fn new<C>(conn: &mut C, out_buffer: &mut [u8], window: Window) -> Result<Self, Error>
     where
         C: XcbConnection,
     {
         Ok(Self(conn.get_property(
-            buffer,
+            out_buffer,
             0,
             window,
             AtomEnum::WM_CLASS.0,

@@ -2,6 +2,7 @@ use xcb_rust_protocol::connection::xproto::XprotoConnection;
 use xcb_rust_protocol::proto::xproto::{Setup, VisualClassEnum};
 use xcb_rust_protocol::util::VariableLengthFromBytes;
 use xcb_rust_protocol::{Error, XcbConnection};
+use xcb_rust_protocol::con::XcbBuffers;
 
 pub(crate) struct BasicCon {
     pub(crate) offset: usize,
@@ -44,15 +45,15 @@ impl XcbConnection for BasicCon {
         self.offset += step;
     }
 
-    fn generate_id(&mut self, _in_buf: &mut [u8], _out_buf: &mut [u8]) -> Result<u32, Error> {
+    fn generate_id(&mut self, _buffers: &mut XcbBuffers) -> Result<u32, Error> {
         todo!()
     }
 
-    fn block_for_reply(&mut self, _in_buf: &mut [u8], _out_buf: &mut [u8], _seq: u16) -> Result<Vec<u8>, Error> {
+    fn block_for_reply(&mut self, _buffers: &mut XcbBuffers, _seq: u16) -> Result<Vec<u8>, Error> {
         todo!()
     }
 
-    fn block_check_for_err(&mut self, _in_buf: &mut [u8], _out_buf: &mut [u8], _seq: u16) -> Result<(), Error> {
+    fn block_check_for_err(&mut self, _buffers: &mut XcbBuffers, _seq: u16) -> Result<(), Error> {
         Ok(())
     }
 

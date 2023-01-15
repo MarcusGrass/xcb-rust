@@ -9,16 +9,18 @@ use crate::connection::xproto::XprotoConnection;
 use crate::helpers::resource_manager::protocol::work_around_constant_limitations;
 use crate::proto::xproto::{GetPropertyReply, GetPropertyTypeEnum};
 use crate::{Error, XcbConnection};
+use crate::con::XcbBuffers;
 
 pub mod protocol;
 
-fn send_request<C>(conn: &mut C, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<GetPropertyReply, Error>
+#[inline]
+fn send_request<C>(conn: &mut C, buffers: &mut XcbBuffers) -> Result<GetPropertyReply, Error>
 where
     C: XcbConnection,
 {
     let window = conn.setup().roots[0].root;
     let cookie = conn.get_property(
-        out_buffer,
+        buffers.out_buffer,
         0,
         window,
         work_around_constant_limitations::ATOM_RESOURCE_MANAGER,
@@ -28,7 +30,7 @@ where
         100_000_000,
         false,
     )?;
-    cookie.reply(conn, in_buffer, out_buffer)
+    cookie.reply(conn, buffers)
 }
 
 /// Create a new X11 resource database from the `RESOURCE_MANAGER` property of the first
@@ -39,14 +41,13 @@ where
 /// or is empty.
 pub fn new_from_resource_manager<C>(
     conn: &mut C,
-    in_buffer: &mut [u8],
-    out_buffer: &mut [u8],
+    buffers: &mut XcbBuffers,
 ) -> Result<Option<Database>, Error>
 where
     C: XcbConnection,
 {
     Ok(Database::new_from_get_property_reply(&send_request(
-        conn, in_buffer, out_buffer
+        conn, buffers
     )?))
 }
 
@@ -73,8 +74,7 @@ where
 /// `xcb_xrm_database_from_default()`.
 pub fn new_from_default<C>(
     conn: &mut C,
-    in_buffer: &mut [u8],
-    out_buffer: &mut [u8],
+    buffers: &mut XcbBuffers,
     home_dir: Option<&str>,
     xenvironment: Option<&str>,
 ) -> Result<Database, Error>
@@ -83,7 +83,7 @@ where
 {
     Ok(
         Database::new_from_default(
-            &send_request(conn, in_buffer, out_buffer)?,
+            &send_request(conn, buffers)?,
             tiny_std::env::host_name().unwrap_or_else(|_| "localhost".to_string()),
             home_dir,
             xenvironment,

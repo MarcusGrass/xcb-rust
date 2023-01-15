@@ -21,6 +21,7 @@ use xcb_rust_protocol::util::{
     XcbErrorHandler,
 };
 use xcb_rust_protocol::{Error, XcbConnection, XcbEnv};
+use xcb_rust_protocol::con::XcbBuffers;
 
 use crate::helpers::basic_info_provider::BasicExtensionInfoProvider;
 use crate::helpers::connect::Connect;
@@ -40,6 +41,7 @@ pub struct SocketConnection {
     max_request_length: usize,
     pub extensions: BasicExtensionInfoProvider,
 }
+
 
 #[derive(Copy, Clone, Debug)]
 struct SeqCount {
@@ -78,8 +80,7 @@ impl SeqCount {
 impl SocketConnection {
     pub fn connect(
         dpy_name: Option<&str>,
-        in_buffer: &mut [u8],
-        out_buffer: &mut [u8],
+        buffers: &mut XcbBuffers,
         xcb_env: XcbEnv,
     ) -> Result<(Self, usize, RawFd), ConnectError> {
         // Parse display information
@@ -126,11 +127,11 @@ impl SocketConnection {
                     }
                     let raw_sock_fd = socket.as_raw_fd();
                     let mut con = SocketConnection::new(SocketBuffer::new(socket), setup);
-                    con.init_extensions(in_buffer, out_buffer).map_err(|e| {
+                    con.init_extensions(buffers).map_err(|e| {
                         crate::debug!("Error init exts {e}");
                         ConnectError::UnknownError
                     })?;
-                    con.check_for_big_req(in_buffer, out_buffer).map_err(|e| {
+                    con.check_for_big_req(buffers).map_err(|e| {
                         crate::debug!("Error check big_req {e}");
                         ConnectError::UnknownError
                     })?;
@@ -149,12 +150,12 @@ impl SocketConnection {
     }
 
     #[cfg(feature = "debug")]
-    pub fn clear_cache(&mut self, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<(), ConnectionError> {
+    pub fn clear_cache(&mut self, buffers: &mut XcbBuffers) -> Result<(), ConnectionError> {
         if self.keep_seqs.is_empty() && self.reply_cache.is_empty() {
             return Ok(());
         }
         if !self.keep_seqs.is_empty() {
-            let _ = self.get_input_focus(out_buffer, false)?.reply(self, in_buffer, out_buffer)?;
+            let _ = self.get_input_focus(out_buffer, false)?.reply(self, buffers)?;
         }
         for (seq, _) in self.keep_seqs.iter() {
             crate::debug!("Dropped voidcookie {seq}");
@@ -169,6 +170,35 @@ impl SocketConnection {
         }
         crate::debug!("Panicking because of leak!");
         panic!("Leaked replies;")
+    }
+
+    pub fn drain_next(&mut self, in_buffer: &mut [u8]) -> Result<Option<Vec<u8>>, ConnectionError> {
+        if let Some(cached) = self.event_cache.pop_front() {
+            Ok(Some(cached))
+        } else {
+            for rr in self.buf.do_drain(in_buffer) {
+                match rr {
+                    ReadResult::Event(e) => {
+                        self.event_cache.push_back(e);
+                    }
+                    ReadResult::Reply(seq, buf) => {
+                        crate::debug!("Got reply on seq {seq}");
+                        if self.keep_seqs.remove(&seq).is_some() {
+                            self.reply_cache.insert(seq, buf);
+                        }
+                        self.seq_count.record_seen(seq);
+                    }
+                    ReadResult::Error(seq, buf) => {
+                        crate::debug!("Got err {:?}", parse_error(&buf, &self.extensions));
+                        if self.keep_seqs.remove(&seq).is_some() {
+                            self.reply_cache.insert(seq, buf);
+                        }
+                        self.seq_count.record_seen(seq);
+                    }
+                }
+            }
+            Ok(self.event_cache.pop_front())
+        }
     }
 
     pub fn try_next(&mut self, buffer: &mut [u8]) -> Result<Option<Vec<u8>>, ConnectionError> {
@@ -250,21 +280,21 @@ impl SocketConnection {
     }
 
     // Preload all extensions immediately
-    fn init_extensions(&mut self, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<(), ConnectionError> {
-        let listed = self.list_extensions(out_buffer, false)?;
-        let r = self.block_for_reply(in_buffer, out_buffer, listed.seq)?;
+    fn init_extensions(&mut self, buffers: &mut XcbBuffers) -> Result<(), ConnectionError> {
+        let listed = self.list_extensions(buffers.out_buffer, false)?;
+        let r = self.block_for_reply(buffers, listed.seq)?;
         let (reply, offset) = ListExtensionsReply::from_bytes(&r)?;
         let mut extensions = vec![];
         for name in reply.names {
             let cookie = xcb_rust_protocol::connection::xproto::XprotoConnection::query_extension(
-                self, in_buffer, &name.name, false,
+                self, buffers.in_buffer, &name.name, false,
             )?;
             extensions.push((name.name, cookie));
         }
         crate::debug!("Pushed all {} ext requests", extensions.len());
-        self.buf.flush(in_buffer)?;
+        self.buf.flush(buffers.in_buffer)?;
         for (name, cookie) in extensions {
-            let response = cookie.reply(self, in_buffer, out_buffer)?;
+            let response = cookie.reply(self, buffers)?;
             let name = String::from_utf8(name).map_err(|e| {
                 crate::debug!("Failed string convert {e}");
                 ConnectionError::UnsupportedExtension(format!(
@@ -288,14 +318,14 @@ impl SocketConnection {
         Ok(())
     }
 
-    fn check_for_big_req(&mut self, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<(), ConnectionError> {
+    fn check_for_big_req(&mut self, buffers: &mut XcbBuffers) -> Result<(), ConnectionError> {
         if self
             .extension_information(xcb_rust_protocol::proto::bigreq::EXTENSION_NAME)
             .is_some()
         {
             let reply =
-                xcb_rust_protocol::connection::bigreq::BigreqConnection::enable(self, out_buffer, false)?
-                    .reply(self, in_buffer, out_buffer)
+                xcb_rust_protocol::connection::bigreq::BigreqConnection::enable(self, buffers.out_buffer, false)?
+                    .reply(self, buffers)
                     .unwrap();
             self.max_request_length = reply.maximum_request_length as usize;
             crate::debug!(
@@ -386,14 +416,19 @@ impl SocketConnection {
     }
 
     #[inline]
+    pub fn reset_out_offset(&mut self) {
+        self.buf.out_offset = 0;
+    }
+
+    #[inline]
     pub fn flush(&mut self, out_buffer: &mut [u8]) -> Result<(), ConnectionError> {
         self.buf.flush(out_buffer)
     }
 
     #[inline]
-    pub fn sync(&mut self, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<(), ConnectionError> {
+    pub fn sync(&mut self, buffers: &mut XcbBuffers) -> Result<(), ConnectionError> {
         crate::debug!("Syncing");
-        self.get_input_focus(out_buffer, false)?.reply(self, in_buffer, out_buffer)?;
+        self.get_input_focus(buffers.out_buffer, false)?.reply(self, buffers)?;
         Ok(())
     }
 
@@ -460,7 +495,7 @@ impl XcbConnection for SocketConnection {
     }
 
     #[inline]
-    fn generate_id(&mut self, in_buffer: &mut [u8], out_buffer: &mut [u8]) -> Result<u32, Error> {
+    fn generate_id(&mut self, buffers: &mut XcbBuffers) -> Result<u32, Error> {
         if let Some(id) = self.id_allocator.generate_id() {
             Ok(id)
         } else if self
@@ -470,7 +505,7 @@ impl XcbConnection for SocketConnection {
             // IDs are exhausted and XC-MISC is not available
             Err(Error::Connection("Ids exhausted and xc-misk not available"))
         } else {
-            let range = self.get_x_i_d_range(out_buffer, false)?.reply(self, in_buffer, out_buffer)?;
+            let range = self.get_x_i_d_range(buffers.out_buffer, false)?.reply(self, buffers)?;
 
             self.id_allocator
                 .update_xid_range(&range)
@@ -481,18 +516,18 @@ impl XcbConnection for SocketConnection {
         }
     }
 
-    fn block_for_reply(&mut self, in_buffer: &mut [u8], out_buffer: &mut [u8], seq: u16) -> Result<Vec<u8>, Error> {
+    fn block_for_reply(&mut self, buffers: &mut XcbBuffers, seq: u16) -> Result<Vec<u8>, Error> {
         if let Some(reply) = self.reply_cache.remove(&seq) {
             Ok(reply)
         } else {
-            self.buf.flush(out_buffer).map_err(|e| {
+            self.buf.flush(buffers.out_buffer).map_err(|e| {
                 crate::debug!("Failed to flush, {e}");
                 Error::Connection("Failed flush")
             })?;
             let mut target = None;
             self.keep_seqs.remove(&seq);
             while target.is_none() {
-                for rr in self.buf.read_next(in_buffer).map_err(|e| {
+                for rr in self.buf.read_next(buffers.in_buffer).map_err(|e| {
                     crate::debug!("Failed to read next {e}");
                     Error::Connection("Failed to read next")
                 })? {
@@ -524,9 +559,9 @@ impl XcbConnection for SocketConnection {
         }
     }
 
-    fn block_check_for_err(&mut self, in_buffer: &mut [u8], out_buffer: &mut [u8], seq: u16) -> Result<(), Error> {
+    fn block_check_for_err(&mut self, buffers: &mut XcbBuffers, seq: u16) -> Result<(), Error> {
         if !self.seq_count.sequence_has_been_seen(seq) {
-            self.get_input_focus(out_buffer, false)?.reply(self, in_buffer, out_buffer)?;
+            self.get_input_focus(buffers.out_buffer, false)?.reply(self, buffers)?;
         }
         if let Some(err) = self.reply_cache.remove(&seq) {
             Err(Error::XcbError(parse_error(&err, &self.extensions)?))
@@ -550,7 +585,7 @@ impl XcbConnection for SocketConnection {
 const BUF_SIZE: usize = 65536;
 
 #[derive(Debug)]
-struct SocketBuffer {
+pub struct SocketBuffer {
     sock: UnixStream,
     pub in_read_offset: usize,
     pub in_write_offset: usize,
@@ -616,6 +651,11 @@ impl SocketBuffer {
             }
         }
 
+        Ok(self.do_drain(buf))
+    }
+
+    #[inline]
+    fn do_drain(&mut self, buf: &mut [u8]) -> Vec<ReadResult> {
         let mut read_results = vec![];
         while let Some(rr) = self.drain_next(buf) {
             read_results.push(rr);
@@ -625,7 +665,7 @@ impl SocketBuffer {
             .copy_within(self.in_read_offset..self.in_write_offset, 0);
         self.in_read_offset = 0;
         self.in_write_offset = remainder_len;
-        Ok(read_results)
+        read_results
     }
 
     #[allow(clippy::match_on_vec_items)]

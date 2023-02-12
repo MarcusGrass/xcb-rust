@@ -8,257 +8,52 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait Xf86vidmodeConnection {
-    fn query_version(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::QueryVersionReply, 12>>;
-
-    fn get_mode_line(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetModeLineReply>>;
-
-    fn mod_mode_line(
-        &mut self,
-        screen: u32,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn switch_mode(
-        &mut self,
-        screen: u16,
-        zoom: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_monitor(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetMonitorReply>>;
-
-    fn lock_mode_switch(
-        &mut self,
-        screen: u16,
-        lock: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_all_mode_lines(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetAllModeLinesReply>>;
-
-    fn add_mode_line(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        after_dotclock: crate::proto::xf86vidmode::Dotclock,
-        after_hdisplay: u16,
-        after_hsyncstart: u16,
-        after_hsyncend: u16,
-        after_htotal: u16,
-        after_hskew: u16,
-        after_vdisplay: u16,
-        after_vsyncstart: u16,
-        after_vsyncend: u16,
-        after_vtotal: u16,
-        after_flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn delete_mode_line(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn validate_mode_line(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::ValidateModeLineReply, 32>>;
-
-    fn switch_to_mode(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_view_port(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetViewPortReply, 32>>;
-
-    fn set_view_port(
-        &mut self,
-        screen: u16,
-        x: u32,
-        y: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_dot_clocks(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetDotClocksReply>>;
-
-    fn set_client_version(
-        &mut self,
-        major: u16,
-        minor: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn set_gamma(
-        &mut self,
-        screen: u16,
-        red: u32,
-        green: u32,
-        blue: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_gamma(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaReply, 32>>;
-
-    fn get_gamma_ramp(
-        &mut self,
-        screen: u16,
-        size: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetGammaRampReply>>;
-
-    fn set_gamma_ramp(
-        &mut self,
-        screen: u16,
-        size: u16,
-        red: &[u16],
-        green: &[u16],
-        blue: &[u16],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_gamma_ramp_size(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaRampSizeReply, 32>>;
-
-    fn get_permissions(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetPermissionsReply, 32>>;
-}
-impl<C> Xf86vidmodeConnection for C
+pub fn query_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::QueryVersionReply, 12>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn query_version(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::QueryVersionReply, 12>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 0;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_mode_line(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetModeLineReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_mode_line<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetModeLineReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -271,37 +66,42 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn mod_mode_line(
-        &mut self,
-        screen: u32,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn mod_mode_line<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u32,
+    hdisplay: u16,
+    hsyncstart: u16,
+    hsyncend: u16,
+    htotal: u16,
+    hskew: u16,
+    vdisplay: u16,
+    vsyncstart: u16,
+    vsyncend: u16,
+    vtotal: u16,
+    flags: crate::proto::xf86vidmode::ModeFlag,
+    private: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -378,10 +178,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -398,30 +197,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn switch_mode(
-        &mut self,
-        screen: u16,
-        zoom: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let zoom_bytes = zoom.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn switch_mode<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    zoom: u16,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    let zoom_bytes = zoom.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -434,28 +238,33 @@ where
                 zoom_bytes[0],
                 zoom_bytes[1],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_monitor(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetMonitorReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_monitor<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetMonitorReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -468,30 +277,35 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn lock_mode_switch(
-        &mut self,
-        screen: u16,
-        lock: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let lock_bytes = lock.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn lock_mode_switch<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    lock: u16,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    let lock_bytes = lock.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -504,28 +318,33 @@ where
                 lock_bytes[0],
                 lock_bytes[1],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_all_mode_lines(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetAllModeLinesReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_all_mode_lines<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetAllModeLinesReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -538,49 +357,54 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn add_mode_line(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        after_dotclock: crate::proto::xf86vidmode::Dotclock,
-        after_hdisplay: u16,
-        after_hsyncstart: u16,
-        after_hsyncend: u16,
-        after_htotal: u16,
-        after_hskew: u16,
-        after_vdisplay: u16,
-        after_vsyncstart: u16,
-        after_vsyncend: u16,
-        after_vtotal: u16,
-        after_flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn add_mode_line<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u32,
+    dotclock: crate::proto::xf86vidmode::Dotclock,
+    hdisplay: u16,
+    hsyncstart: u16,
+    hsyncend: u16,
+    htotal: u16,
+    hskew: u16,
+    vdisplay: u16,
+    vsyncstart: u16,
+    vsyncend: u16,
+    vtotal: u16,
+    flags: crate::proto::xf86vidmode::ModeFlag,
+    after_dotclock: crate::proto::xf86vidmode::Dotclock,
+    after_hdisplay: u16,
+    after_hsyncstart: u16,
+    after_hsyncend: u16,
+    after_htotal: u16,
+    after_hskew: u16,
+    after_vdisplay: u16,
+    after_vsyncstart: u16,
+    after_vsyncend: u16,
+    after_vtotal: u16,
+    after_flags: crate::proto::xf86vidmode::ModeFlag,
+    private: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -707,10 +531,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -727,38 +550,43 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn delete_mode_line(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn delete_mode_line<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u32,
+    dotclock: crate::proto::xf86vidmode::Dotclock,
+    hdisplay: u16,
+    hsyncstart: u16,
+    hsyncend: u16,
+    htotal: u16,
+    hskew: u16,
+    vdisplay: u16,
+    vsyncstart: u16,
+    vsyncend: u16,
+    vtotal: u16,
+    flags: crate::proto::xf86vidmode::ModeFlag,
+    private: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -839,10 +667,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -859,39 +686,43 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn validate_mode_line(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::ValidateModeLineReply, 32>>
-    {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn validate_mode_line<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u32,
+    dotclock: crate::proto::xf86vidmode::Dotclock,
+    hdisplay: u16,
+    hsyncstart: u16,
+    hsyncend: u16,
+    htotal: u16,
+    hskew: u16,
+    vdisplay: u16,
+    vsyncstart: u16,
+    vsyncend: u16,
+    vtotal: u16,
+    flags: crate::proto::xf86vidmode::ModeFlag,
+    private: &[u8],
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::ValidateModeLineReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -972,10 +803,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -992,38 +822,43 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn switch_to_mode(
-        &mut self,
-        screen: u32,
-        dotclock: crate::proto::xf86vidmode::Dotclock,
-        hdisplay: u16,
-        hsyncstart: u16,
-        hsyncend: u16,
-        htotal: u16,
-        hskew: u16,
-        vdisplay: u16,
-        vsyncstart: u16,
-        vsyncend: u16,
-        vtotal: u16,
-        flags: crate::proto::xf86vidmode::ModeFlag,
-        private: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn switch_to_mode<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u32,
+    dotclock: crate::proto::xf86vidmode::Dotclock,
+    hdisplay: u16,
+    hsyncstart: u16,
+    hsyncend: u16,
+    htotal: u16,
+    hskew: u16,
+    vdisplay: u16,
+    vsyncstart: u16,
+    vsyncend: u16,
+    vtotal: u16,
+    flags: crate::proto::xf86vidmode::ModeFlag,
+    private: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 2 bytes
         // Pad 12 bytes
         let privsize = u32::try_from(private.len()).map_err(|_| crate::error::Error::Serialize)?;
@@ -1104,10 +939,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1124,28 +958,33 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_view_port(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetViewPortReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_view_port<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetViewPortReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1158,32 +997,37 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn set_view_port(
-        &mut self,
-        screen: u16,
-        x: u32,
-        y: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let x_bytes = x.serialize_fixed();
-        let y_bytes = y.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn set_view_port<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    x: u32,
+    y: u32,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    let x_bytes = x.serialize_fixed();
+    let y_bytes = y.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1204,28 +1048,33 @@ where
                 y_bytes[2],
                 y_bytes[3],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_dot_clocks(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetDotClocksReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_dot_clocks<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetDotClocksReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1238,30 +1087,35 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn set_client_version(
-        &mut self,
-        major: u16,
-        minor: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let major_bytes = major.serialize_fixed();
-        let minor_bytes = minor.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn set_client_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    major: u16,
+    minor: u16,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let major_bytes = major.serialize_fixed();
+    let minor_bytes = minor.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1274,34 +1128,39 @@ where
                 minor_bytes[0],
                 minor_bytes[1],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn set_gamma(
-        &mut self,
-        screen: u16,
-        red: u32,
-        green: u32,
-        blue: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (8u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let red_bytes = red.serialize_fixed();
-        let green_bytes = green.serialize_fixed();
-        let blue_bytes = blue.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn set_gamma<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    red: u32,
+    green: u32,
+    blue: u32,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (8u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    let red_bytes = red.serialize_fixed();
+    let green_bytes = green.serialize_fixed();
+    let blue_bytes = blue.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1338,28 +1197,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(32);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_gamma(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (8u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(32)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_gamma<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (8u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1396,30 +1260,35 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(32);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_gamma_ramp(
-        &mut self,
-        screen: u16,
-        size: u16,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetGammaRampReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let size_bytes = size.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(32)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_gamma_ramp<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    size: u16,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xf86vidmode::GetGammaRampReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    let size_bytes = size.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1432,30 +1301,35 @@ where
                 size_bytes[0],
                 size_bytes[1],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn set_gamma_ramp(
-        &mut self,
-        screen: u16,
-        size: u16,
-        red: &[u16],
-        green: &[u16],
-        blue: &[u16],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn set_gamma_ramp<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    size: u16,
+    red: &[u16],
+    green: &[u16],
+    blue: &[u16],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let size = u16::try_from(size).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..6)
@@ -1508,10 +1382,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1528,29 +1401,33 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_gamma_ramp_size(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaRampSizeReply, 32>>
-    {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_gamma_ramp_size<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetGammaRampSizeReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1563,28 +1440,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_permissions(
-        &mut self,
-        screen: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetPermissionsReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xf86vidmode::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_permissions<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u16,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xf86vidmode::GetPermissionsReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xf86vidmode::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xf86vidmode::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1597,12 +1479,12 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
 }

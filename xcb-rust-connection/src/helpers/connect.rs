@@ -3,6 +3,7 @@
 use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
+use xcb_rust_protocol::con::XcbBuffer;
 
 use xcb_rust_protocol::proto::xproto::{Setup, SetupAuthenticate, SetupFailed, SetupRequest};
 use xcb_rust_protocol::util::{VariableLengthFromBytes, VariableLengthSerialize};
@@ -29,6 +30,87 @@ const BYTE_ORDER: u8 = b'B';
 // protocol version
 const PROTOCOL_MAJOR_VERSION: u16 = 11;
 const PROTOCOL_MINOR_VERSION: u16 = 0;
+
+pub fn setup_request(
+    env: XcbEnv,
+    family: Family,
+    address: &[u8],
+    display: u16,
+) -> Result<Vec<u8>, ConnectError> {
+    match get_auth(env, family, address, display)? {
+        Some((name, data)) => Ok(with_authorization(name, data)),
+        None => {
+            // fall through to no authorization
+            Ok(with_authorization(Vec::new(), Vec::new()))
+        }
+    }
+}
+
+/// Create a new `Connect` from the given authorization data.
+///
+/// This uses the provided protocol name and data to establish the connection,
+/// rather than the default protocol name and data found in `Xauthority`.
+#[must_use]
+pub fn with_authorization(protocol_name: Vec<u8>, protocol_data: Vec<u8>) -> Vec<u8> {
+    // craft the setup request
+    let mut container = vec![0u8; protocol_data.len() + protocol_name.len() + 128];
+    let sr = SetupRequest {
+        byte_order: BYTE_ORDER,
+        protocol_major_version: PROTOCOL_MAJOR_VERSION,
+        protocol_minor_version: PROTOCOL_MINOR_VERSION,
+        authorization_protocol_name: protocol_name,
+        authorization_protocol_data: protocol_data,
+    };
+    let bytes = sr.serialize_into(container.as_mut_slice()).unwrap();
+    container = container[..bytes].to_vec();
+    // return it
+    container
+}
+
+#[inline]
+#[must_use]
+pub fn get_setup_length(buf: &[u8]) -> usize {
+    let length = u16::from_ne_bytes([buf[6], buf[7]]);
+    length as usize * 4 + 8
+}
+
+/// Returns the setup provided by the server.
+///
+/// # Errors
+///
+/// - If this method is called before the server returns all of the required data,
+///   it returns `ConnectError::NotEnoughData`.
+/// - If the server fails to establish the X11 connection, the `ConnectError::SetupFailed`
+///   variant is returned.
+/// - If the server failed to authenticate the user, the `ConnectError::SetupAuthenticate`
+///   error is returned.
+/// - If the server failed to parse any of the above responses, the
+///   `ConnectError::ParseError` error is returned.
+#[allow(clippy::match_on_vec_items)]
+pub fn parse_setup(buf: &[u8]) -> Result<Setup, ConnectError> {
+    // parse the setup response
+    match buf[0] {
+        0 => {
+            // an error has occurred
+            let (failed, _) = SetupFailed::from_bytes(buf)?;
+            Err(ConnectError::SetupFailed(failed))
+        }
+        1 => {
+            // the setup is valid!
+            let (success, _bytes) = Setup::from_bytes(buf)?;
+            Ok(success)
+        }
+        2 => {
+            // we need further authentication
+            let (more_auth, _) = SetupAuthenticate::from_bytes(buf)?;
+            Err(ConnectError::SetupAuthenticate(more_auth))
+        }
+        _ => {
+            // this is undefined
+            Err(ConnectError::BadValue)
+        }
+    }
+}
 
 impl Connect {
     /// The initial state of a `Connect`.

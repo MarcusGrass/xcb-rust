@@ -6,15 +6,16 @@ use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use crate::connection::render::RenderConnection;
-use crate::connection::xproto::XprotoConnection;
+use crate::con::{SocketIo, XcbState};
+use crate::connection::render::{create_cursor, create_picture, free_picture};
+use crate::connection::xproto::{create_pixmap, put_image};
 use crate::helpers::cursor::parse_cursor::VecBuffer;
 use crate::helpers::resource_manager::protocol::Database;
 use crate::helpers::XcbEnv;
 use crate::proto::render::{CreatePictureValueList, Pictformat};
 use crate::proto::xproto::{CreateGCValueList, Font, FontEnum, Window};
 use crate::proto::{render, xproto};
-use crate::{Error, XcbConnection, NONE};
+use crate::{Error, NONE};
 
 mod find_cursor;
 mod parse_cursor;
@@ -54,21 +55,19 @@ impl Handle {
     /// If you want this function not to block, you should prefetch the RENDER extension's data on
     /// the connection.
     #[allow(clippy::new_ret_no_self)]
-    pub fn new<C>(
-        conn: &mut C,
+    pub fn new<IO: SocketIo, XS: XcbState>(
+        io: &mut IO,
+        xcb_state: &mut XS,
         screen: usize,
         resource_database: &Database,
         env: XcbEnv,
-    ) -> Result<Self, Error>
-    where
-        C: XcbConnection,
-    {
-        let screen = conn.setup().roots[screen].clone();
-        let render_info = if conn.major_opcode(render::EXTENSION_NAME).is_some() {
+    ) -> Result<Self, Error> {
+        let screen = xcb_state.setup().roots[screen].clone();
+        let render_info = if xcb_state.major_opcode(render::EXTENSION_NAME).is_some() {
             let render_version =
-                crate::connection::render::RenderConnection::query_version(conn, 0, 8, false)?;
+                crate::connection::render::query_version(io, xcb_state, 0, 8, false)?;
             let render_pict_format =
-                crate::connection::render::RenderConnection::query_pict_formats(conn, false)?;
+                crate::connection::render::query_pict_formats(io, xcb_state, false)?;
             Some((render_version, render_pict_format))
         } else {
             None
@@ -76,9 +75,9 @@ impl Handle {
         let mut render_version = (0, 0);
         let mut picture_format = NONE;
         if let Some((version, formats)) = render_info {
-            let version = version.reply(conn)?;
+            let version = version.reply(io, xcb_state)?;
             render_version = (version.major_version, version.minor_version);
-            picture_format = find_format(&formats.reply(conn)?);
+            picture_format = find_format(&formats.reply(io, xcb_state)?);
         }
         let render_support = if render_version.0 >= 1 || render_version.1 >= 8 {
             RenderSupport::AnimatedCursor
@@ -99,9 +98,9 @@ impl Handle {
             _ => 0,
         };
         let cursor_size = get_cursor_size(cursor_size, xft_dpi, &screen, env);
-        let cursor_font = conn.generate_id()?;
+        let cursor_font = xcb_state.generate_id(io)?;
 
-        let _ = conn.open_font(cursor_font, b"cursor", true)?;
+        let _ = crate::connection::xproto::open_font(io, xcb_state, cursor_font, b"cursor", true)?;
         Ok(Handle {
             root: screen.root,
             cursor_font,
@@ -114,16 +113,19 @@ impl Handle {
 
     /// Loads the specified cursor, either from the cursor theme or by falling back to the X11
     /// "cursor" font.
-    pub fn load_cursor<C>(
+    #[inline]
+    pub fn load_cursor<IO, XS>(
         &self,
-        conn: &mut C,
+        io: &mut IO,
+        state: &mut XS,
         name: &str,
         env: XcbEnv,
     ) -> Result<xproto::Cursor, Error>
     where
-        C: XcbConnection,
+        IO: SocketIo,
+        XS: XcbState,
     {
-        load_cursor(conn, self, name, env)
+        load_cursor(io, state, self, name, env)
     }
 }
 
@@ -144,16 +146,20 @@ fn open_cursor(
     }
 }
 
-fn create_core_cursor<C>(
-    conn: &mut C,
+fn create_core_cursor<IO, XS>(
+    io: &mut IO,
+    state: &mut XS,
     cursor_font: Font,
     cursor: u16,
 ) -> Result<xproto::Cursor, Error>
 where
-    C: XcbConnection,
+    IO: SocketIo,
+    XS: XcbState,
 {
-    let result = conn.generate_id()?;
-    conn.create_glyph_cursor(
+    let result = state.generate_id(io)?;
+    crate::connection::xproto::create_glyph_cursor(
+        io,
+        state,
         result,
         cursor_font,
         FontEnum(cursor_font),
@@ -172,30 +178,48 @@ where
     Ok(result)
 }
 
-fn create_render_cursor<C>(
-    conn: &mut C,
+fn create_render_cursor<IO, XS>(
+    io: &mut IO,
+    state: &mut XS,
     handle: &Handle,
     image: &parse_cursor::Image,
     storage: &mut Option<(xproto::Pixmap, xproto::Gcontext, u16, u16)>,
 ) -> Result<render::Animcursorelt, Error>
 where
-    C: XcbConnection,
+    IO: SocketIo,
+    XS: XcbState,
 {
-    let (cursor, picture) = (conn.generate_id()?, conn.generate_id()?);
+    let (cursor, picture) = (state.generate_id(io)?, state.generate_id(io)?);
 
     // Get a pixmap of the right size and a gc for it
     let (pixmap, gc) = if storage.map(|(_, _, w, h)| (w, h)) == Some((image.width, image.height)) {
         storage.map(|(pixmap, gc, _, _)| (pixmap, gc)).unwrap()
     } else {
         let (pixmap, gc) = if let Some((pixmap, gc, _, _)) = storage {
-            conn.free_g_c(*gc, true)?;
-            conn.free_pixmap(*pixmap, true)?;
+            crate::connection::xproto::free_g_c(io, state, *gc, true)?;
+            crate::connection::xproto::free_pixmap(io, state, *pixmap, true)?;
             (*pixmap, *gc)
         } else {
-            (conn.generate_id()?, conn.generate_id()?)
+            (state.generate_id(io)?, state.generate_id(io)?)
         };
-        conn.create_pixmap(32, pixmap, handle.root, image.width, image.height, true)?;
-        conn.create_g_c(gc, pixmap, CreateGCValueList::default(), true)?;
+        create_pixmap(
+            io,
+            state,
+            32,
+            pixmap,
+            handle.root,
+            image.width,
+            image.height,
+            true,
+        )?;
+        crate::connection::xproto::create_g_c(
+            io,
+            state,
+            gc,
+            pixmap,
+            CreateGCValueList::default(),
+            true,
+        )?;
 
         *storage = Some((pixmap, gc, image.width, image.height));
         (pixmap, gc)
@@ -204,8 +228,9 @@ where
     // Sigh. We need the pixel data as a bunch of bytes.
     let mut pixels = vec![0; image.pixels.len() * 4];
     crate::util::fixed_vec_serialize_into(&mut pixels, &image.pixels)?;
-    let _ = XprotoConnection::put_image(
-        conn,
+    let _ = put_image(
+        io,
+        state,
         xproto::ImageFormatEnum::Z_PIXMAP,
         pixmap,
         gc,
@@ -219,15 +244,17 @@ where
         true,
     )?;
 
-    let _ = conn.create_picture(
+    let _ = create_picture(
+        io,
+        state,
         picture,
         pixmap,
         handle.picture_format,
         CreatePictureValueList::default(),
         true,
     )?;
-    RenderConnection::create_cursor(conn, cursor, picture, image.x_hot, image.y_hot, true)?;
-    let _ = conn.free_picture(picture, true)?;
+    create_cursor(io, state, cursor, picture, image.x_hot, image.y_hot, true)?;
+    let _ = free_picture(io, state, picture, true)?;
 
     Ok(render::Animcursorelt {
         cursor,
@@ -235,20 +262,22 @@ where
     })
 }
 
-fn load_cursor<C>(
-    conn: &mut C,
+fn load_cursor<IO, XS>(
+    io: &mut IO,
+    state: &mut XS,
     handle: &Handle,
     name: &str,
     env: XcbEnv,
 ) -> Result<xproto::Cursor, Error>
 where
-    C: XcbConnection,
+    IO: SocketIo,
+    XS: XcbState,
 {
     // Find the right cursor, load it directly if it is a core cursor
     let cursor_file = match open_cursor(&handle.theme, name, env) {
         None => return Ok(NONE),
         Some(find_cursor::Cursor::CoreChar(c)) => {
-            return create_core_cursor(conn, handle.cursor_font, c);
+            return create_core_cursor(io, state, handle.cursor_font, c);
         }
         Some(find_cursor::Cursor::File(f)) => f,
     };
@@ -273,20 +302,20 @@ where
     let mut storage = None;
     let cursors = images
         .iter()
-        .map(|image| create_render_cursor(conn, handle, image, &mut storage))
+        .map(|image| create_render_cursor(io, state, handle, image, &mut storage))
         .collect::<Result<Vec<_>, _>>()?;
     if let Some((pixmap, gc, _, _)) = storage {
-        let _ = conn.free_g_c(gc, true)?;
-        let _ = conn.free_pixmap(pixmap, true)?;
+        let _ = crate::connection::xproto::free_g_c(io, state, gc, true)?;
+        let _ = crate::connection::xproto::free_pixmap(io, state, pixmap, true)?;
     }
 
     if cursors.len() == 1 {
         Ok(cursors[0].cursor)
     } else {
-        let result = conn.generate_id()?;
-        let _ = conn.create_anim_cursor(result, &cursors, true)?;
+        let result = state.generate_id(io)?;
+        let _ = crate::connection::render::create_anim_cursor(io, state, result, &cursors, true)?;
         for elem in cursors {
-            let _ = conn.free_cursor(elem.cursor, true)?;
+            let _ = crate::connection::xproto::free_cursor(io, state, elem.cursor, true)?;
         }
         Ok(result)
     }

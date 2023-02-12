@@ -4,13 +4,12 @@ use std::fmt::Write;
 use std::path::Path;
 
 use anyhow::Result;
-use codegen_rs::structures::generics::{Bound, Bounds, Generic};
 use codegen_rs::structures::visibility::Visibility;
 use codegen_rs::structures::{
     Annotation, Annotations, ComponentSignature, Import, Ownership, RustType, Signature,
 };
 use codegen_rs::{
-    FileBuilder, FunctionBuilder, ImplBuilder, ModuleBuilder, RustCase, TraitBuilder,
+    FileBuilder, FunctionBuilder, ModuleBuilder,
 };
 
 use xcb_xsd::parse::raw_xml_parse::TagSpec;
@@ -81,26 +80,12 @@ fn main() -> Result<()> {
         }
     }
     for (chunk, xcb) in wrapped {
-        let trait_name = format!(
-            "{}Connection",
-            RustCase::convert_to_valid_rust(&xcb.header, RustCase::Pascal).unwrap()
-        );
-        let trait_b = TraitBuilder::new(Signature::simple(RustType::in_scope(&trait_name)))
-            .set_visibility(Visibility::Public);
-        let impl_b = ImplBuilder::new(Signature::simple_generic(Generic::bounded(
-            "C",
-            Bounds::single(Bound::required(RustType::from_package(
-                "crate::con",
-                "XcbConnection",
-            ))),
-        )))
-        .implement_for(Signature::simple(RustType::in_scope(&trait_name)));
-        let (tb, ib, file) = generator::codegen::generate_proto(
+        let mut functions = vec![];
+        let file = generator::codegen::generate_proto(
             &chunk,
             &mut reqs,
             &mut evts,
-            trait_b,
-            impl_b,
+            &mut functions,
             xcb.clone(),
         );
         main_mod = main_mod.add_module_file(
@@ -111,36 +96,38 @@ fn main() -> Result<()> {
                 xcb.header
             ))]),
         );
+        let mut fb = FileBuilder::new(&xcb.header)
+            .add_any("#[allow(unused_imports)]\n")
+            .add_import(Import::FullType(RustType::from_package(
+                "crate::cookie",
+                "Cookie",
+            )))
+            .add_any("#[allow(unused_imports)]\n")
+            .add_import(Import::FullType(RustType::from_package(
+                "crate::cookie",
+                "FixedCookie",
+            )))
+            .add_any("#[allow(unused_imports)]\n")
+            .add_import(Import::FullType(RustType::from_package(
+                "crate::cookie",
+                "VoidCookie",
+            )))
+            .add_any("#[allow(unused_imports)]\n")
+            .add_import(Import::FullType(RustType::from_package(
+                "crate::util",
+                FIX_LEN_SERIALIZE,
+            )))
+            .add_any("#[allow(unused_imports)]\n")
+            .add_import(Import::FullType(RustType::from_package(
+                "crate::util",
+                VAR_LEN_SERIALIZE,
+            )));
+        for func in functions {
+            fb = fb.add_function(func);
+        }
         con_mod = con_mod.add_module_file(
             Visibility::Public,
-            FileBuilder::new(&xcb.header)
-                .add_any("#[allow(unused_imports)]\n")
-                .add_import(Import::FullType(RustType::from_package(
-                    "crate::cookie",
-                    "Cookie",
-                )))
-                .add_any("#[allow(unused_imports)]\n")
-                .add_import(Import::FullType(RustType::from_package(
-                    "crate::cookie",
-                    "FixedCookie",
-                )))
-                .add_any("#[allow(unused_imports)]\n")
-                .add_import(Import::FullType(RustType::from_package(
-                    "crate::cookie",
-                    "VoidCookie",
-                )))
-                .add_any("#[allow(unused_imports)]\n")
-                .add_import(Import::FullType(RustType::from_package(
-                    "crate::util",
-                    FIX_LEN_SERIALIZE,
-                )))
-                .add_any("#[allow(unused_imports)]\n")
-                .add_import(Import::FullType(RustType::from_package(
-                    "crate::util",
-                    VAR_LEN_SERIALIZE,
-                )))
-                .add_trait(tb)
-                .add_impl(ib),
+            fb,
             Annotations::new(vec![Annotation::new(format!(
                 "cfg(feature = \"{}\")",
                 xcb.header
@@ -186,17 +173,17 @@ fn parse_all() -> Result<Vec<Xcb>> {
 fn write_cargo_toml(
     path: impl AsRef<Path>,
     features: Vec<(String, Vec<String>)>,
-) -> anyhow::Result<()> {
+) -> Result<()> {
     let mut base = "\
 [package]
 name = \"xcb-rust-protocol\"
 version = \"0.1.0\"
 edition = \"2021\"
-license = \"MIT\"
+license = \"MPL-2.0\"
 
 [dependencies]
-tiny-std = { version = \"0.1\" }
-unix-print = \"0.1.0\"
+tiny-std = { workspace = true }
+unix-print = { workspace = true }
 
 [features]
 debug = []

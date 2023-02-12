@@ -8,66 +8,26 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait DpmsConnection {
-    fn get_version(
-        &mut self,
-        client_major_version: u16,
-        client_minor_version: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetVersionReply, 12>>;
-
-    fn capable(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::CapableReply, 32>>;
-
-    fn get_timeouts(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetTimeoutsReply, 32>>;
-
-    fn set_timeouts(
-        &mut self,
-        standby_timeout: u16,
-        suspend_timeout: u16,
-        off_timeout: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn enable(&mut self, forget: bool) -> crate::error::Result<VoidCookie>;
-
-    fn disable(&mut self, forget: bool) -> crate::error::Result<VoidCookie>;
-
-    fn force_level(
-        &mut self,
-        power_level: crate::proto::dpms::DPMSModeEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn info(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::InfoReply, 32>>;
-}
-impl<C> DpmsConnection for C
+pub fn get_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    client_major_version: u16,
+    client_minor_version: u16,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetVersionReply, 12>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn get_version(
-        &mut self,
-        client_major_version: u16,
-        client_minor_version: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetVersionReply, 12>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let client_major_version_bytes = client_major_version.serialize_fixed();
-        let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let client_major_version_bytes = client_major_version.serialize_fixed();
+    let client_minor_version_bytes = client_minor_version.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -80,82 +40,93 @@ where
                 client_minor_version_bytes[0],
                 client_minor_version_bytes[1],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn capable(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::CapableReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn capable<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dpms::CapableReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 1;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_timeouts(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetTimeoutsReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_timeouts<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dpms::GetTimeoutsReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 2;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn set_timeouts(
-        &mut self,
-        standby_timeout: u16,
-        suspend_timeout: u16,
-        off_timeout: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let standby_timeout_bytes = standby_timeout.serialize_fixed();
-        let suspend_timeout_bytes = suspend_timeout.serialize_fixed();
-        let off_timeout_bytes = off_timeout.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn set_timeouts<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    standby_timeout: u16,
+    suspend_timeout: u16,
+    off_timeout: u16,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let standby_timeout_bytes = standby_timeout.serialize_fixed();
+    let suspend_timeout_bytes = suspend_timeout.serialize_fixed();
+    let off_timeout_bytes = off_timeout.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -172,72 +143,89 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn enable(&mut self, forget: bool) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn enable<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 4;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn disable(&mut self, forget: bool) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn disable<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 5;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn force_level(
-        &mut self,
-        power_level: crate::proto::dpms::DPMSModeEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let power_level_bytes = (power_level.0 as u16).serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn force_level<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    power_level: crate::proto::dpms::DPMSModeEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let power_level_bytes = (power_level.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -250,37 +238,40 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn info(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dpms::InfoReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dpms::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dpms::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn info<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dpms::InfoReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dpms::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dpms::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 7;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
 }

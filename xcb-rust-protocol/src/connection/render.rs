@@ -8,313 +8,26 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait RenderConnection {
-    fn query_version(
-        &mut self,
-        client_major_version: u32,
-        client_minor_version: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::render::QueryVersionReply, 32>>;
-
-    fn query_pict_formats(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictFormatsReply>>;
-
-    fn query_pict_index_values(
-        &mut self,
-        format: crate::proto::render::Pictformat,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictIndexValuesReply>>;
-
-    fn create_picture(
-        &mut self,
-        pid: crate::proto::render::Picture,
-        drawable: crate::proto::xproto::Drawable,
-        format: crate::proto::render::Pictformat,
-        create_picture_value_list: crate::proto::render::CreatePictureValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn change_picture(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        change_picture_value_list: crate::proto::render::ChangePictureValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn set_picture_clip_rectangles(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        clip_x_origin: i16,
-        clip_y_origin: i16,
-        rectangles: &[crate::proto::xproto::Rectangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn free_picture(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn composite(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        mask: crate::proto::render::PictureEnum,
-        dst: crate::proto::render::Picture,
-        src_x: i16,
-        src_y: i16,
-        mask_x: i16,
-        mask_y: i16,
-        dst_x: i16,
-        dst_y: i16,
-        width: u16,
-        height: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn trapezoids(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        traps: &[crate::proto::render::Trapezoid],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn triangles(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        triangles: &[crate::proto::render::Triangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn tri_strip(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        points: &[crate::proto::render::Pointfix],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn tri_fan(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        points: &[crate::proto::render::Pointfix],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_glyph_set(
-        &mut self,
-        gsid: crate::proto::render::Glyphset,
-        format: crate::proto::render::Pictformat,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn reference_glyph_set(
-        &mut self,
-        gsid: crate::proto::render::Glyphset,
-        existing: crate::proto::render::Glyphset,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn free_glyph_set(
-        &mut self,
-        glyphset: crate::proto::render::Glyphset,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn add_glyphs(
-        &mut self,
-        glyphset: crate::proto::render::Glyphset,
-        glyphs_len: u32,
-        glyphids: &[u32],
-        glyphs: &[crate::proto::render::Glyphinfo],
-        data: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn free_glyphs(
-        &mut self,
-        glyphset: crate::proto::render::Glyphset,
-        glyphs: &[crate::proto::render::Glyph],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn composite_glyphs8(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        glyphset: crate::proto::render::Glyphset,
-        src_x: i16,
-        src_y: i16,
-        glyphcmds: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn composite_glyphs16(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        glyphset: crate::proto::render::Glyphset,
-        src_x: i16,
-        src_y: i16,
-        glyphcmds: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn composite_glyphs32(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        glyphset: crate::proto::render::Glyphset,
-        src_x: i16,
-        src_y: i16,
-        glyphcmds: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn fill_rectangles(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        dst: crate::proto::render::Picture,
-        color: crate::proto::render::Color,
-        rects: &[crate::proto::xproto::Rectangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_cursor(
-        &mut self,
-        cid: crate::proto::xproto::Cursor,
-        source: crate::proto::render::Picture,
-        x: u16,
-        y: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn set_picture_transform(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        transform: crate::proto::render::Transform,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn query_filters(
-        &mut self,
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::render::QueryFiltersReply>>;
-
-    fn set_picture_filter(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        filter: &[u8],
-        values: &[crate::proto::render::Fixed],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_anim_cursor(
-        &mut self,
-        cid: crate::proto::xproto::Cursor,
-        cursors: &[crate::proto::render::Animcursorelt],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn add_traps(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        x_off: i16,
-        y_off: i16,
-        traps: &[crate::proto::render::Trap],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_solid_fill(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        color: crate::proto::render::Color,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_linear_gradient(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        p1: crate::proto::render::Pointfix,
-        p2: crate::proto::render::Pointfix,
-        num_stops: u32,
-        stops: &[crate::proto::render::Fixed],
-        colors: &[crate::proto::render::Color],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_radial_gradient(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        inner: crate::proto::render::Pointfix,
-        outer: crate::proto::render::Pointfix,
-        inner_radius: crate::proto::render::Fixed,
-        outer_radius: crate::proto::render::Fixed,
-        num_stops: u32,
-        stops: &[crate::proto::render::Fixed],
-        colors: &[crate::proto::render::Color],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_conical_gradient(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        center: crate::proto::render::Pointfix,
-        angle: crate::proto::render::Fixed,
-        num_stops: u32,
-        stops: &[crate::proto::render::Fixed],
-        colors: &[crate::proto::render::Color],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-}
-impl<C> RenderConnection for C
+pub fn query_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    client_major_version: u32,
+    client_minor_version: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::render::QueryVersionReply, 32>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn query_version(
-        &mut self,
-        client_major_version: u32,
-        client_minor_version: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::render::QueryVersionReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let client_major_version_bytes = client_major_version.serialize_fixed();
-        let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let client_major_version_bytes = client_major_version.serialize_fixed();
+    let client_minor_version_bytes = client_minor_version.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -331,53 +44,61 @@ where
                 client_minor_version_bytes[2],
                 client_minor_version_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn query_pict_formats(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictFormatsReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn query_pict_formats<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::render::QueryPictFormatsReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 1;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn query_pict_index_values(
-        &mut self,
-        format: crate::proto::render::Pictformat,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::render::QueryPictIndexValuesReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let format_bytes = format.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn query_pict_index_values<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    format: crate::proto::render::Pictformat,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::render::QueryPictIndexValuesReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let format_bytes = format.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -390,29 +111,34 @@ where
                 format_bytes[2],
                 format_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn create_picture(
-        &mut self,
-        pid: crate::proto::render::Picture,
-        drawable: crate::proto::xproto::Drawable,
-        format: crate::proto::render::Pictformat,
-        create_picture_value_list: crate::proto::render::CreatePictureValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn create_picture<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    pid: crate::proto::render::Picture,
+    drawable: crate::proto::xproto::Drawable,
+    format: crate::proto::render::Pictformat,
+    create_picture_value_list: crate::proto::render::CreatePictureValueList,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -447,27 +173,32 @@ where
             .get_mut(2..4)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&length);
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn change_picture(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        change_picture_value_list: crate::proto::render::ChangePictureValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn change_picture<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    change_picture_value_list: crate::proto::render::ChangePictureValueList,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -494,29 +225,34 @@ where
             .get_mut(2..4)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&length);
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn set_picture_clip_rectangles(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        clip_x_origin: i16,
-        clip_y_origin: i16,
-        rectangles: &[crate::proto::xproto::Rectangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn set_picture_clip_rectangles<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    clip_x_origin: i16,
+    clip_y_origin: i16,
+    rectangles: &[crate::proto::xproto::Rectangle],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -551,10 +287,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -571,28 +306,33 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn free_picture(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let picture_bytes = picture.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn free_picture<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let picture_bytes = picture.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -605,49 +345,54 @@ where
                 picture_bytes[2],
                 picture_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn composite(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        mask: crate::proto::render::PictureEnum,
-        dst: crate::proto::render::Picture,
-        src_x: i16,
-        src_y: i16,
-        mask_x: i16,
-        mask_y: i16,
-        dst_x: i16,
-        dst_y: i16,
-        width: u16,
-        height: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (9u16).to_ne_bytes();
-        let src_bytes = src.serialize_fixed();
-        let mask_bytes = (mask.0 as u32).serialize_fixed();
-        let dst_bytes = dst.serialize_fixed();
-        let src_x_bytes = src_x.serialize_fixed();
-        let src_y_bytes = src_y.serialize_fixed();
-        let mask_x_bytes = mask_x.serialize_fixed();
-        let mask_y_bytes = mask_y.serialize_fixed();
-        let dst_x_bytes = dst_x.serialize_fixed();
-        let dst_y_bytes = dst_y.serialize_fixed();
-        let width_bytes = width.serialize_fixed();
-        let height_bytes = height.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn composite<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    mask: crate::proto::render::PictureEnum,
+    dst: crate::proto::render::Picture,
+    src_x: i16,
+    src_y: i16,
+    mask_x: i16,
+    mask_y: i16,
+    dst_x: i16,
+    dst_y: i16,
+    width: u16,
+    height: u16,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (9u16).to_ne_bytes();
+    let src_bytes = src.serialize_fixed();
+    let mask_bytes = (mask.0 as u32).serialize_fixed();
+    let dst_bytes = dst.serialize_fixed();
+    let src_x_bytes = src_x.serialize_fixed();
+    let src_y_bytes = src_y.serialize_fixed();
+    let mask_x_bytes = mask_x.serialize_fixed();
+    let mask_y_bytes = mask_y.serialize_fixed();
+    let dst_x_bytes = dst_x.serialize_fixed();
+    let dst_y_bytes = dst_y.serialize_fixed();
+    let width_bytes = width.serialize_fixed();
+    let height_bytes = height.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..36)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -688,32 +433,37 @@ where
                 height_bytes[0],
                 height_bytes[1],
             ]);
-        self.advance_writer(36);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn trapezoids(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        traps: &[crate::proto::render::Trapezoid],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(36)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn trapezoids<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    dst: crate::proto::render::Picture,
+    mask_format: crate::proto::render::Pictformat,
+    src_x: i16,
+    src_y: i16,
+    traps: &[crate::proto::render::Trapezoid],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -761,10 +511,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -781,32 +530,37 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn triangles(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        triangles: &[crate::proto::render::Triangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn triangles<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    dst: crate::proto::render::Picture,
+    mask_format: crate::proto::render::Pictformat,
+    src_x: i16,
+    src_y: i16,
+    triangles: &[crate::proto::render::Triangle],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -854,10 +608,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -874,32 +627,37 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn tri_strip(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        points: &[crate::proto::render::Pointfix],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn tri_strip<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    dst: crate::proto::render::Picture,
+    mask_format: crate::proto::render::Pictformat,
+    src_x: i16,
+    src_y: i16,
+    points: &[crate::proto::render::Pointfix],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -947,10 +705,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -967,32 +724,37 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn tri_fan(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        src_x: i16,
-        src_y: i16,
-        points: &[crate::proto::render::Pointfix],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn tri_fan<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    dst: crate::proto::render::Picture,
+    mask_format: crate::proto::render::Pictformat,
+    src_x: i16,
+    src_y: i16,
+    points: &[crate::proto::render::Pointfix],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1040,10 +802,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1060,30 +821,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_glyph_set(
-        &mut self,
-        gsid: crate::proto::render::Glyphset,
-        format: crate::proto::render::Pictformat,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let gsid_bytes = gsid.serialize_fixed();
-        let format_bytes = format.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_glyph_set<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    gsid: crate::proto::render::Glyphset,
+    format: crate::proto::render::Pictformat,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let gsid_bytes = gsid.serialize_fixed();
+    let format_bytes = format.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1100,30 +866,35 @@ where
                 format_bytes[2],
                 format_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn reference_glyph_set(
-        &mut self,
-        gsid: crate::proto::render::Glyphset,
-        existing: crate::proto::render::Glyphset,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let gsid_bytes = gsid.serialize_fixed();
-        let existing_bytes = existing.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn reference_glyph_set<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    gsid: crate::proto::render::Glyphset,
+    existing: crate::proto::render::Glyphset,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let gsid_bytes = gsid.serialize_fixed();
+    let existing_bytes = existing.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1140,28 +911,33 @@ where
                 existing_bytes[2],
                 existing_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn free_glyph_set(
-        &mut self,
-        glyphset: crate::proto::render::Glyphset,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let glyphset_bytes = glyphset.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn free_glyph_set<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    glyphset: crate::proto::render::Glyphset,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let glyphset_bytes = glyphset.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1174,30 +950,35 @@ where
                 glyphset_bytes[2],
                 glyphset_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn add_glyphs(
-        &mut self,
-        glyphset: crate::proto::render::Glyphset,
-        glyphs_len: u32,
-        glyphids: &[u32],
-        glyphs: &[crate::proto::render::Glyphinfo],
-        data: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn add_glyphs<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    glyphset: crate::proto::render::Glyphset,
+    glyphs_len: u32,
+    glyphids: &[u32],
+    glyphs: &[crate::proto::render::Glyphinfo],
+    data: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let glyphs_len = u32::try_from(glyphs_len).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -1248,10 +1029,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1268,27 +1048,32 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn free_glyphs(
-        &mut self,
-        glyphset: crate::proto::render::Glyphset,
-        glyphs: &[crate::proto::render::Glyph],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn free_glyphs<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    glyphset: crate::proto::render::Glyphset,
+    glyphs: &[crate::proto::render::Glyph],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1313,10 +1098,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1333,33 +1117,38 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn composite_glyphs8(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        glyphset: crate::proto::render::Glyphset,
-        src_x: i16,
-        src_y: i16,
-        glyphcmds: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn composite_glyphs8<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    dst: crate::proto::render::Picture,
+    mask_format: crate::proto::render::Pictformat,
+    glyphset: crate::proto::render::Glyphset,
+    src_x: i16,
+    src_y: i16,
+    glyphcmds: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1411,10 +1200,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1431,33 +1219,38 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn composite_glyphs16(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        glyphset: crate::proto::render::Glyphset,
-        src_x: i16,
-        src_y: i16,
-        glyphcmds: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn composite_glyphs16<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    dst: crate::proto::render::Picture,
+    mask_format: crate::proto::render::Pictformat,
+    glyphset: crate::proto::render::Glyphset,
+    src_x: i16,
+    src_y: i16,
+    glyphcmds: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1509,10 +1302,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1529,33 +1321,38 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn composite_glyphs32(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        src: crate::proto::render::Picture,
-        dst: crate::proto::render::Picture,
-        mask_format: crate::proto::render::Pictformat,
-        glyphset: crate::proto::render::Glyphset,
-        src_x: i16,
-        src_y: i16,
-        glyphcmds: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn composite_glyphs32<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    src: crate::proto::render::Picture,
+    dst: crate::proto::render::Picture,
+    mask_format: crate::proto::render::Pictformat,
+    glyphset: crate::proto::render::Glyphset,
+    src_x: i16,
+    src_y: i16,
+    glyphcmds: &[u8],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1607,10 +1404,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1627,29 +1423,34 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn fill_rectangles(
-        &mut self,
-        op: crate::proto::render::PictOpEnum,
-        dst: crate::proto::render::Picture,
-        color: crate::proto::render::Color,
-        rects: &[crate::proto::xproto::Rectangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn fill_rectangles<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    op: crate::proto::render::PictOpEnum,
+    dst: crate::proto::render::Picture,
+    color: crate::proto::render::Color,
+    rects: &[crate::proto::xproto::Rectangle],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 3 bytes
         buf_ptr
             .get_mut(4..5)
@@ -1685,10 +1486,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1705,34 +1505,39 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_cursor(
-        &mut self,
-        cid: crate::proto::xproto::Cursor,
-        source: crate::proto::render::Picture,
-        x: u16,
-        y: u16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let cid_bytes = cid.serialize_fixed();
-        let source_bytes = source.serialize_fixed();
-        let x_bytes = x.serialize_fixed();
-        let y_bytes = y.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_cursor<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    cid: crate::proto::xproto::Cursor,
+    source: crate::proto::render::Picture,
+    x: u16,
+    y: u16,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let cid_bytes = cid.serialize_fixed();
+    let source_bytes = source.serialize_fixed();
+    let x_bytes = x.serialize_fixed();
+    let y_bytes = y.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1753,30 +1558,35 @@ where
                 y_bytes[0],
                 y_bytes[1],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn set_picture_transform(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        transform: crate::proto::render::Transform,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (11u16).to_ne_bytes();
-        let picture_bytes = picture.serialize_fixed();
-        let transform_bytes = transform.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn set_picture_transform<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    transform: crate::proto::render::Transform,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (11u16).to_ne_bytes();
+    let picture_bytes = picture.serialize_fixed();
+    let transform_bytes = transform.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..44)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1825,28 +1635,33 @@ where
                 transform_bytes[34],
                 transform_bytes[35],
             ]);
-        self.advance_writer(44);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn query_filters(
-        &mut self,
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::render::QueryFiltersReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(44)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn query_filters<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::render::QueryFiltersReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1859,28 +1674,33 @@ where
                 drawable_bytes[2],
                 drawable_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn set_picture_filter(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        filter: &[u8],
-        values: &[crate::proto::render::Fixed],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn set_picture_filter<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    filter: &[u8],
+    values: &[crate::proto::render::Fixed],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let filter_len = u16::try_from(filter.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -1925,10 +1745,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1945,27 +1764,32 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_anim_cursor(
-        &mut self,
-        cid: crate::proto::xproto::Cursor,
-        cursors: &[crate::proto::render::Animcursorelt],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_anim_cursor<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    cid: crate::proto::xproto::Cursor,
+    cursors: &[crate::proto::render::Animcursorelt],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -1990,10 +1814,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2010,29 +1833,34 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn add_traps(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        x_off: i16,
-        y_off: i16,
-        traps: &[crate::proto::render::Trap],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn add_traps<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    x_off: i16,
+    y_off: i16,
+    traps: &[crate::proto::render::Trap],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -2067,10 +1895,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2087,30 +1914,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_solid_fill(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        color: crate::proto::render::Color,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let picture_bytes = picture.serialize_fixed();
-        let color_bytes = color.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_solid_fill<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    color: crate::proto::render::Color,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let picture_bytes = picture.serialize_fixed();
+    let color_bytes = color.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2131,31 +1963,36 @@ where
                 color_bytes[6],
                 color_bytes[7],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_linear_gradient(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        p1: crate::proto::render::Pointfix,
-        p2: crate::proto::render::Pointfix,
-        num_stops: u32,
-        stops: &[crate::proto::render::Fixed],
-        colors: &[crate::proto::render::Color],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_linear_gradient<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    p1: crate::proto::render::Pointfix,
+    p2: crate::proto::render::Pointfix,
+    num_stops: u32,
+    stops: &[crate::proto::render::Fixed],
+    colors: &[crate::proto::render::Color],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_stops = u32::try_from(num_stops).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2206,10 +2043,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2226,33 +2062,38 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_radial_gradient(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        inner: crate::proto::render::Pointfix,
-        outer: crate::proto::render::Pointfix,
-        inner_radius: crate::proto::render::Fixed,
-        outer_radius: crate::proto::render::Fixed,
-        num_stops: u32,
-        stops: &[crate::proto::render::Fixed],
-        colors: &[crate::proto::render::Color],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_radial_gradient<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    inner: crate::proto::render::Pointfix,
+    outer: crate::proto::render::Pointfix,
+    inner_radius: crate::proto::render::Fixed,
+    outer_radius: crate::proto::render::Fixed,
+    num_stops: u32,
+    stops: &[crate::proto::render::Fixed],
+    colors: &[crate::proto::render::Color],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_stops = u32::try_from(num_stops).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2311,10 +2152,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2331,31 +2171,36 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_conical_gradient(
-        &mut self,
-        picture: crate::proto::render::Picture,
-        center: crate::proto::render::Pointfix,
-        angle: crate::proto::render::Fixed,
-        num_stops: u32,
-        stops: &[crate::proto::render::Fixed],
-        colors: &[crate::proto::render::Color],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::render::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::render::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_conical_gradient<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    picture: crate::proto::render::Picture,
+    center: crate::proto::render::Pointfix,
+    angle: crate::proto::render::Fixed,
+    num_stops: u32,
+    stops: &[crate::proto::render::Fixed],
+    colors: &[crate::proto::render::Color],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::render::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::render::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_stops = u32::try_from(num_stops).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
             .get_mut(4..8)
@@ -2406,10 +2251,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2426,12 +2270,12 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
 }

@@ -13,7 +13,7 @@ use xcb_rust_protocol::proto::xc_misc::GetXIDRangeReply;
 ///
 /// > The resource-id-mask contains a single contiguous set of bits (at least 18). The client
 /// > allocates resource IDs [..] by choosing a value with only some subset of these bits set and
-/// > ORing it with resource-id-base.
+/// > Oring it with resource-id-base.
 #[derive(Debug, Clone, Copy)]
 pub struct IdAllocator {
     next_id: u32,
@@ -39,7 +39,7 @@ impl IdAllocator {
         })
     }
 
-    /// Update the available range of IDs based on a GetXIDRangeReply
+    /// Update the available range of IDs based on a `GetXIDRangeReply`
     pub fn update_xid_range(&mut self, xidrange: &GetXIDRangeReply) -> Result<(), IdsExhausted> {
         let (start, count) = (xidrange.start_id, xidrange.count);
         // Apparently (0, 1) is how the server signals "I am out of IDs".

@@ -12,7 +12,7 @@ pub(super) fn connect_addresses(p: &ParsedDisplay) -> Option<String> {
     } = p;
 
     if protocol.is_none() || protocol.as_deref() == Some("unix") {
-        let file_name = alloc::format!("/tmp/.X11-unix/X{}", display);
+        let file_name = alloc::format!("/tmp/.X11-unix/X{display}");
 
         // TODO: Try abstract socket (file name with prepended '\0')
         // Not supported on Rust right now: https://github.com/rust-lang/rust/issues/42048
@@ -29,7 +29,7 @@ mod tests {
 
     #[test]
     fn basic_test() {
-        let pd = parse_display(Some(":0"), XcbEnv::default()).unwrap();
+        let pd = parse_display(Some(":0")).unwrap();
         let ci = pd.connect_instruction();
         let ci = ci.unwrap();
 
@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn try_over_unix_hostname() {
-        let pd = parse_display(Some("unix/host:0"), XcbEnv::default()).unwrap();
+        let pd = parse_display(Some("unix/host:0")).unwrap();
         let ci = pd.connect_instruction();
 
         let ci = ci.unwrap();

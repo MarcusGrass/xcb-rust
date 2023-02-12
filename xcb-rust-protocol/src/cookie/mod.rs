@@ -1,7 +1,7 @@
+use crate::con::{SocketIo, XcbState};
 use core::marker::PhantomData;
 
 use crate::util::{FixedLengthFromBytes, VariableLengthFromBytes};
-use crate::XcbConnection;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Cookie<REPLY>
@@ -26,21 +26,22 @@ where
     }
 
     #[inline]
-    pub fn reply<C>(self, con: &mut C) -> crate::Result<REPLY>
-    where
-        C: XcbConnection,
-    {
-        let reply_buf = con.block_for_reply(self.seq)?;
+    pub fn reply<IO: SocketIo, XS: XcbState>(
+        self,
+        io: &mut IO,
+        state: &mut XS,
+    ) -> crate::Result<REPLY> {
+        let reply_buf = state.block_for_reply(io, self.seq)?;
         let (reply, _offset) = REPLY::from_bytes(&reply_buf)?;
         Ok(reply)
     }
 
     #[inline]
-    pub fn forget<C>(self, con: &mut C)
+    pub fn forget<XS>(self, state: &mut XS)
     where
-        C: XcbConnection,
+        XS: XcbState,
     {
-        con.forget(self.seq);
+        state.forget(self.seq);
     }
 }
 
@@ -67,20 +68,19 @@ where
     }
 
     #[inline]
-    pub fn reply<C>(self, con: &mut C) -> crate::Result<REPLY>
-    where
-        C: XcbConnection,
-    {
-        let reply_buf = con.block_for_reply(self.seq)?;
+    pub fn reply<IO: SocketIo, XS: XcbState>(
+        self,
+        io: &mut IO,
+        state: &mut XS,
+    ) -> crate::Result<REPLY> {
+        let reply_buf = state.block_for_reply(io, self.seq)?;
         let reply = REPLY::from_bytes(&reply_buf)?;
         Ok(reply)
     }
+
     #[inline]
-    pub fn forget<C>(self, con: &mut C)
-    where
-        C: XcbConnection,
-    {
-        con.forget(self.seq);
+    pub fn forget<XS: XcbState>(self, state: &mut XS) {
+        state.forget(self.seq);
     }
 }
 
@@ -97,18 +97,19 @@ impl VoidCookie {
     }
 
     #[inline]
-    pub fn check<C>(self, con: &mut C) -> crate::Result<()>
-    where
-        C: XcbConnection,
-    {
-        con.block_check_for_err(self.seq)?;
+    pub fn check<IO: SocketIo, XS: XcbState>(
+        self,
+        io: &mut IO,
+        state: &mut XS,
+    ) -> crate::Result<()> {
+        state.block_check_err(io, self.seq)?;
         Ok(())
     }
     #[inline]
-    pub fn forget<C>(self, con: &mut C)
+    pub fn forget<XS>(self, state: &mut XS)
     where
-        C: XcbConnection,
+        XS: XcbState,
     {
-        con.forget(self.seq);
+        state.forget(self.seq);
     }
 }

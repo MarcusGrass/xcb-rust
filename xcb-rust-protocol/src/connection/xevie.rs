@@ -8,58 +8,26 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait XevieConnection {
-    fn query_version(
-        &mut self,
-        client_major_version: u16,
-        client_minor_version: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::QueryVersionReply, 32>>;
-
-    fn start(
-        &mut self,
-        screen: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::StartReply, 32>>;
-
-    fn end(
-        &mut self,
-        cmap: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::EndReply, 32>>;
-
-    fn send(
-        &mut self,
-        event: crate::proto::xevie::Event,
-        data_type: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::SendReply, 32>>;
-
-    fn select_input(
-        &mut self,
-        event_mask: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::SelectInputReply, 32>>;
-}
-impl<C> XevieConnection for C
+pub fn query_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    client_major_version: u16,
+    client_minor_version: u16,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xevie::QueryVersionReply, 32>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn query_version(
-        &mut self,
-        client_major_version: u16,
-        client_minor_version: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::QueryVersionReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xevie::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xevie::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let client_major_version_bytes = client_major_version.serialize_fixed();
-        let client_minor_version_bytes = client_minor_version.serialize_fixed();
-        let buf = self.write_buf();
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xevie::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xevie::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let client_major_version_bytes = client_major_version.serialize_fixed();
+    let client_minor_version_bytes = client_minor_version.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -72,28 +40,33 @@ where
                 client_minor_version_bytes[0],
                 client_minor_version_bytes[1],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn start(
-        &mut self,
-        screen: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::StartReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xevie::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xevie::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let screen_bytes = screen.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn start<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    screen: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xevie::StartReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xevie::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xevie::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let screen_bytes = screen.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -106,28 +79,33 @@ where
                 screen_bytes[2],
                 screen_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn end(
-        &mut self,
-        cmap: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::EndReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xevie::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xevie::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let cmap_bytes = cmap.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn end<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    cmap: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xevie::EndReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xevie::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xevie::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let cmap_bytes = cmap.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -140,30 +118,35 @@ where
                 cmap_bytes[2],
                 cmap_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn send(
-        &mut self,
-        event: crate::proto::xevie::Event,
-        data_type: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::SendReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xevie::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xevie::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (26u16).to_ne_bytes();
-        let event_bytes = event.serialize_fixed();
-        let data_type_bytes = data_type.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn send<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    event: crate::proto::xevie::Event,
+    data_type: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xevie::SendReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xevie::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xevie::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (26u16).to_ne_bytes();
+    let event_bytes = event.serialize_fixed();
+    let data_type_bytes = data_type.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..104)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -272,28 +255,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(104);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn select_input(
-        &mut self,
-        event_mask: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xevie::SelectInputReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xevie::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xevie::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let event_mask_bytes = event_mask.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(104)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn select_input<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    event_mask: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xevie::SelectInputReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xevie::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xevie::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let event_mask_bytes = event_mask.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -306,12 +294,12 @@ where
                 event_mask_bytes[2],
                 event_mask_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
 }

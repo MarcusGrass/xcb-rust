@@ -8,128 +8,56 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait ShapeConnection {
-    fn query_version(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryVersionReply, 12>>;
-
-    fn rectangles(
-        &mut self,
-        operation: crate::proto::shape::SoEnum,
-        destination_kind: crate::proto::shape::SkEnum,
-        ordering: crate::proto::xproto::ClipOrderingEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        rectangles: &[crate::proto::xproto::Rectangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn mask(
-        &mut self,
-        operation: crate::proto::shape::SoEnum,
-        destination_kind: crate::proto::shape::SkEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        source_bitmap: crate::proto::xproto::PixmapEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn combine(
-        &mut self,
-        operation: crate::proto::shape::SoEnum,
-        destination_kind: crate::proto::shape::SkEnum,
-        source_kind: crate::proto::shape::SkEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        source_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn offset(
-        &mut self,
-        destination_kind: crate::proto::shape::SkEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn query_extents(
-        &mut self,
-        destination_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryExtentsReply, 28>>;
-
-    fn select_input(
-        &mut self,
-        destination_window: crate::proto::xproto::Window,
-        enable: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn input_selected(
-        &mut self,
-        destination_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::shape::InputSelectedReply, 8>>;
-
-    fn get_rectangles(
-        &mut self,
-        window: crate::proto::xproto::Window,
-        source_kind: crate::proto::shape::SkEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::shape::GetRectanglesReply>>;
-}
-impl<C> ShapeConnection for C
+pub fn query_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryVersionReply, 12>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn query_version(
-        &mut self,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryVersionReply, 12>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .write_buf()
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 0;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn rectangles(
-        &mut self,
-        operation: crate::proto::shape::SoEnum,
-        destination_kind: crate::proto::shape::SkEnum,
-        ordering: crate::proto::xproto::ClipOrderingEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        rectangles: &[crate::proto::xproto::Rectangle],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.write_buf();
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn rectangles<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    operation: crate::proto::shape::SoEnum,
+    destination_kind: crate::proto::shape::SkEnum,
+    ordering: crate::proto::xproto::ClipOrderingEnum,
+    destination_window: crate::proto::xproto::Window,
+    x_offset: i16,
+    y_offset: i16,
+    rectangles: &[crate::proto::xproto::Rectangle],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 1 bytes
         buf_ptr
             .get_mut(4..5)
@@ -177,10 +105,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.write_buf();
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -197,36 +124,41 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn mask(
-        &mut self,
-        operation: crate::proto::shape::SoEnum,
-        destination_kind: crate::proto::shape::SkEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        source_bitmap: crate::proto::xproto::PixmapEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (5u16).to_ne_bytes();
-        let destination_window_bytes = destination_window.serialize_fixed();
-        let x_offset_bytes = x_offset.serialize_fixed();
-        let y_offset_bytes = y_offset.serialize_fixed();
-        let source_bitmap_bytes = (source_bitmap.0 as u32).serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn mask<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    operation: crate::proto::shape::SoEnum,
+    destination_kind: crate::proto::shape::SkEnum,
+    destination_window: crate::proto::xproto::Window,
+    x_offset: i16,
+    y_offset: i16,
+    source_bitmap: crate::proto::xproto::PixmapEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (5u16).to_ne_bytes();
+    let destination_window_bytes = destination_window.serialize_fixed();
+    let x_offset_bytes = x_offset.serialize_fixed();
+    let y_offset_bytes = y_offset.serialize_fixed();
+    let source_bitmap_bytes = (source_bitmap.0 as u32).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -251,37 +183,42 @@ where
                 source_bitmap_bytes[2],
                 source_bitmap_bytes[3],
             ]);
-        self.advance_writer(20);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn combine(
-        &mut self,
-        operation: crate::proto::shape::SoEnum,
-        destination_kind: crate::proto::shape::SkEnum,
-        source_kind: crate::proto::shape::SkEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        source_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (5u16).to_ne_bytes();
-        let destination_window_bytes = destination_window.serialize_fixed();
-        let x_offset_bytes = x_offset.serialize_fixed();
-        let y_offset_bytes = y_offset.serialize_fixed();
-        let source_window_bytes = source_window.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(20)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn combine<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    operation: crate::proto::shape::SoEnum,
+    destination_kind: crate::proto::shape::SkEnum,
+    source_kind: crate::proto::shape::SkEnum,
+    destination_window: crate::proto::xproto::Window,
+    x_offset: i16,
+    y_offset: i16,
+    source_window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (5u16).to_ne_bytes();
+    let destination_window_bytes = destination_window.serialize_fixed();
+    let x_offset_bytes = x_offset.serialize_fixed();
+    let y_offset_bytes = y_offset.serialize_fixed();
+    let source_window_bytes = source_window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -306,33 +243,38 @@ where
                 source_window_bytes[2],
                 source_window_bytes[3],
             ]);
-        self.advance_writer(20);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn offset(
-        &mut self,
-        destination_kind: crate::proto::shape::SkEnum,
-        destination_window: crate::proto::xproto::Window,
-        x_offset: i16,
-        y_offset: i16,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let destination_window_bytes = destination_window.serialize_fixed();
-        let x_offset_bytes = x_offset.serialize_fixed();
-        let y_offset_bytes = y_offset.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(20)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn offset<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    destination_kind: crate::proto::shape::SkEnum,
+    destination_window: crate::proto::xproto::Window,
+    x_offset: i16,
+    y_offset: i16,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let destination_window_bytes = destination_window.serialize_fixed();
+    let x_offset_bytes = x_offset.serialize_fixed();
+    let y_offset_bytes = y_offset.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -353,28 +295,33 @@ where
                 y_offset_bytes[0],
                 y_offset_bytes[1],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn query_extents(
-        &mut self,
-        destination_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryExtentsReply, 28>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let destination_window_bytes = destination_window.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn query_extents<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    destination_window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::shape::QueryExtentsReply, 28>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let destination_window_bytes = destination_window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -387,29 +334,34 @@ where
                 destination_window_bytes[2],
                 destination_window_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn select_input(
-        &mut self,
-        destination_window: crate::proto::xproto::Window,
-        enable: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let destination_window_bytes = destination_window.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn select_input<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    destination_window: crate::proto::xproto::Window,
+    enable: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let destination_window_bytes = destination_window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -426,28 +378,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn input_selected(
-        &mut self,
-        destination_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::shape::InputSelectedReply, 8>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let destination_window_bytes = destination_window.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn input_selected<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    destination_window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::shape::InputSelectedReply, 8>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let destination_window_bytes = destination_window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -460,29 +417,34 @@ where
                 destination_window_bytes[2],
                 destination_window_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_rectangles(
-        &mut self,
-        window: crate::proto::xproto::Window,
-        source_kind: crate::proto::shape::SkEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::shape::GetRectanglesReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::shape::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::shape::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let buf = self.write_buf();
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_rectangles<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    source_kind: crate::proto::shape::SkEnum,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::shape::GetRectanglesReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::shape::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::shape::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -499,12 +461,12 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
 }

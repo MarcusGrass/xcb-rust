@@ -8,173 +8,24 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait SyncConnection {
-    fn initialize(
-        &mut self,
-        socket_buffer: &mut [u8],
-        desired_major_version: u8,
-        desired_minor_version: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::InitializeReply, 32>>;
-
-    fn list_system_counters(
-        &mut self,
-        socket_buffer: &mut [u8],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::sync::ListSystemCountersReply>>;
-
-    fn create_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: crate::proto::sync::Counter,
-        initial_value: crate::proto::sync::Int64,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn destroy_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn query_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryCounterReply, 16>>;
-
-    fn r#await(
-        &mut self,
-        socket_buffer: &mut [u8],
-        wait_list: &[crate::proto::sync::Waitcondition],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn change_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        amount: crate::proto::sync::Int64,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn set_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        value: crate::proto::sync::Int64,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn create_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: crate::proto::sync::Alarm,
-        create_alarm_value_list: crate::proto::sync::CreateAlarmValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn change_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: crate::proto::sync::Alarm,
-        change_alarm_value_list: crate::proto::sync::ChangeAlarmValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn destroy_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        alarm: crate::proto::sync::Alarm,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn query_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        alarm: crate::proto::sync::Alarm,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryAlarmReply, 40>>;
-
-    fn set_priority(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: u32,
-        priority: i32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_priority(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::GetPriorityReply, 12>>;
-
-    fn create_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        fence: crate::proto::sync::Fence,
-        initially_triggered: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn trigger_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn reset_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn destroy_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn query_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryFenceReply, 32>>;
-
-    fn await_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence_list: &[crate::proto::sync::Fence],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-}
-impl<C> SyncConnection for C
+pub fn initialize<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    desired_major_version: u8,
+    desired_minor_version: u8,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::sync::InitializeReply, 32>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn initialize(
-        &mut self,
-        socket_buffer: &mut [u8],
-        desired_major_version: u8,
-        desired_minor_version: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::InitializeReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -187,57 +38,63 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn list_system_counters(
-        &mut self,
-        socket_buffer: &mut [u8],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::sync::ListSystemCountersReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .apply_offset(socket_buffer)
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn list_system_counters<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::sync::ListSystemCountersReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 1;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn create_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: crate::proto::sync::Counter,
-        initial_value: crate::proto::sync::Int64,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let id_bytes = id.serialize_fixed();
-        let initial_value_bytes = initial_value.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn create_counter<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    id: crate::proto::sync::Counter,
+    initial_value: crate::proto::sync::Int64,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let id_bytes = id.serialize_fixed();
+    let initial_value_bytes = initial_value.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -258,29 +115,33 @@ where
                 initial_value_bytes[6],
                 initial_value_bytes[7],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn destroy_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let counter_bytes = counter.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn destroy_counter<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    counter: crate::proto::sync::Counter,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let counter_bytes = counter.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -293,29 +154,33 @@ where
                 counter_bytes[2],
                 counter_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn query_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryCounterReply, 16>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let counter_bytes = counter.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn query_counter<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    counter: crate::proto::sync::Counter,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryCounterReply, 16>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let counter_bytes = counter.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -328,27 +193,31 @@ where
                 counter_bytes[2],
                 counter_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn r#await(
-        &mut self,
-        socket_buffer: &mut [u8],
-        wait_list: &[crate::proto::sync::Waitcondition],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn r#await<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    wait_list: &[crate::proto::sync::Waitcondition],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let list_len = wait_list.len() * 28;
         crate::util::fixed_vec_serialize_into(
             buf_ptr.get_mut(0..).ok_or(crate::error::Error::Serialize)?,
@@ -369,10 +238,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -389,31 +257,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn change_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        amount: crate::proto::sync::Int64,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let counter_bytes = counter.serialize_fixed();
-        let amount_bytes = amount.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn change_counter<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    counter: crate::proto::sync::Counter,
+    amount: crate::proto::sync::Int64,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let counter_bytes = counter.serialize_fixed();
+    let amount_bytes = amount.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -434,31 +306,35 @@ where
                 amount_bytes[6],
                 amount_bytes[7],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn set_counter(
-        &mut self,
-        socket_buffer: &mut [u8],
-        counter: crate::proto::sync::Counter,
-        value: crate::proto::sync::Int64,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let counter_bytes = counter.serialize_fixed();
-        let value_bytes = value.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn set_counter<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    counter: crate::proto::sync::Counter,
+    value: crate::proto::sync::Int64,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let counter_bytes = counter.serialize_fixed();
+    let value_bytes = value.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -479,28 +355,32 @@ where
                 value_bytes[6],
                 value_bytes[7],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn create_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: crate::proto::sync::Alarm,
-        create_alarm_value_list: crate::proto::sync::CreateAlarmValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn create_alarm<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    id: crate::proto::sync::Alarm,
+    create_alarm_value_list: crate::proto::sync::CreateAlarmValueList,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -527,28 +407,32 @@ where
             .get_mut(2..4)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&length);
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn change_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: crate::proto::sync::Alarm,
-        change_alarm_value_list: crate::proto::sync::ChangeAlarmValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn change_alarm<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    id: crate::proto::sync::Alarm,
+    change_alarm_value_list: crate::proto::sync::ChangeAlarmValueList,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -575,29 +459,33 @@ where
             .get_mut(2..4)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&length);
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn destroy_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        alarm: crate::proto::sync::Alarm,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let alarm_bytes = alarm.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn destroy_alarm<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    alarm: crate::proto::sync::Alarm,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let alarm_bytes = alarm.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -610,29 +498,33 @@ where
                 alarm_bytes[2],
                 alarm_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn query_alarm(
-        &mut self,
-        socket_buffer: &mut [u8],
-        alarm: crate::proto::sync::Alarm,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryAlarmReply, 40>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let alarm_bytes = alarm.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn query_alarm<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    alarm: crate::proto::sync::Alarm,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryAlarmReply, 40>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let alarm_bytes = alarm.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -645,31 +537,35 @@ where
                 alarm_bytes[2],
                 alarm_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn set_priority(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: u32,
-        priority: i32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let id_bytes = id.serialize_fixed();
-        let priority_bytes = priority.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn set_priority<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    id: u32,
+    priority: i32,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let id_bytes = id.serialize_fixed();
+    let priority_bytes = priority.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -686,29 +582,33 @@ where
                 priority_bytes[2],
                 priority_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_priority(
-        &mut self,
-        socket_buffer: &mut [u8],
-        id: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::GetPriorityReply, 12>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let id_bytes = id.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_priority<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    id: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::sync::GetPriorityReply, 12>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let id_bytes = id.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -721,32 +621,36 @@ where
                 id_bytes[2],
                 id_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn create_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        fence: crate::proto::sync::Fence,
-        initially_triggered: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let fence_bytes = fence.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn create_fence<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    fence: crate::proto::sync::Fence,
+    initially_triggered: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let fence_bytes = fence.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -767,29 +671,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn trigger_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let fence_bytes = fence.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn trigger_fence<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    fence: crate::proto::sync::Fence,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let fence_bytes = fence.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -802,29 +710,33 @@ where
                 fence_bytes[2],
                 fence_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn reset_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let fence_bytes = fence.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn reset_fence<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    fence: crate::proto::sync::Fence,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let fence_bytes = fence.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -837,29 +749,33 @@ where
                 fence_bytes[2],
                 fence_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn destroy_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let fence_bytes = fence.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn destroy_fence<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    fence: crate::proto::sync::Fence,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let fence_bytes = fence.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -872,29 +788,33 @@ where
                 fence_bytes[2],
                 fence_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn query_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence: crate::proto::sync::Fence,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryFenceReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let fence_bytes = fence.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn query_fence<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    fence: crate::proto::sync::Fence,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::sync::QueryFenceReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let fence_bytes = fence.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -907,27 +827,31 @@ where
                 fence_bytes[2],
                 fence_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn await_fence(
-        &mut self,
-        socket_buffer: &mut [u8],
-        fence_list: &[crate::proto::sync::Fence],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::sync::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::sync::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn await_fence<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    fence_list: &[crate::proto::sync::Fence],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::sync::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::sync::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let list_len = fence_list.len() * 4;
         crate::util::fixed_vec_serialize_into(
             buf_ptr.get_mut(0..).ok_or(crate::error::Error::Serialize)?,
@@ -948,10 +872,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -968,12 +891,12 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
 }

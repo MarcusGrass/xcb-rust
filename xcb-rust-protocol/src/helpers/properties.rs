@@ -1,12 +1,12 @@
 //! Utility functions for working with X11 properties
 
-use crate::connection::xproto::XprotoConnection;
-use crate::con::XcbBuffers;
+use crate::con::{SocketIo, XcbState};
+use crate::connection::xproto::{change_property, get_property};
 use crate::cookie::{Cookie, VoidCookie};
 use crate::proto::xproto;
 use crate::proto::xproto::{Atom, AtomEnum, GetPropertyReply, GetPropertyTypeEnum, Window};
 use crate::util::{FixedLengthFromBytes, FixedLengthSerialize, VariableLengthFromBytes};
-use crate::{Error, XcbConnection};
+use crate::Error;
 
 macro_rules! property_cookie {
     {
@@ -21,8 +21,8 @@ macro_rules! property_cookie {
         impl $cookie_name
         {
             /// Get the reply that the server sent.
-            pub fn reply<C>(self, con: &mut C, buffers: &mut XcbBuffers) -> Result<$struct_name, Error> where C: $crate::con::XcbConnection{
-                $from_reply(self.0.reply(con, buffers)?)
+            pub fn reply<IO: SocketIo, XS: XcbState>(self, io: &mut IO, state: &mut XS) -> Result<$struct_name, Error> {
+                $from_reply(self.0.reply(io, state)?)
             }
         }
     }
@@ -40,12 +40,14 @@ property_cookie! {
 
 impl WmClassCookie {
     /// Write a `GetProperty` request for the `WM_CLASS` property of the given window
-    pub fn new<C>(conn: &mut C, out_buffer: &mut [u8], window: Window) -> Result<Self, Error>
+    pub fn new<IO, XS>(io: &mut IO, state: &mut XS, window: Window) -> Result<Self, Error>
     where
-        C: XcbConnection,
+        IO: SocketIo,
+        XS: XcbState,
     {
-        Ok(Self(conn.get_property(
-            out_buffer,
+        Ok(Self(get_property(
+            io,
+            state,
             0,
             window,
             AtomEnum::WM_CLASS.0,
@@ -63,11 +65,12 @@ pub struct WmClass(GetPropertyReply, usize);
 
 impl WmClass {
     /// Send a `GetProperty` request for the `WM_CLASS` property of the given window
-    pub fn get<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<WmClassCookie, Error>
+    pub fn get<IO, XS>(io: &mut IO, state: &mut XS, window: Window) -> Result<WmClassCookie, Error>
     where
-        C: XcbConnection,
+        IO: SocketIo,
+        XS: XcbState,
     {
-        WmClassCookie::new(conn, buffer, window)
+        WmClassCookie::new(io, state, window)
     }
 
     /// Construct a new `WmClass` instance from a `GetPropertyReply`.
@@ -130,17 +133,15 @@ const NUM_WM_SIZE_HINTS_ELEMENTS: u32 = 18;
 
 impl WmSizeHintsCookie {
     /// Send a `GetProperty` request for the given property of the given window
-    pub fn new<C>(
-        conn: &mut C,
-        buffer: &mut [u8],
+    pub fn new<IO: SocketIo, XS: XcbState>(
+        io: &mut IO,
+        state: &mut XS,
         window: Window,
         property: Atom,
-    ) -> Result<Self, Error>
-    where
-        C: XcbConnection,
-    {
-        Ok(Self(conn.get_property(
-            buffer,
+    ) -> Result<Self, Error> {
+        Ok(Self(get_property(
+            io,
+            state,
             0,
             window,
             property,
@@ -150,11 +151,11 @@ impl WmSizeHintsCookie {
             false,
         )?))
     }
-    pub fn forget<C>(self, conn: &mut C)
+    pub fn forget<XS>(self, state: &mut XS)
     where
-        C: XcbConnection,
+        XS: XcbState,
     {
-        self.0.forget(conn);
+        self.0.forget(state);
     }
 }
 
@@ -253,28 +254,22 @@ impl WmSizeHints {
     }
 
     /// Send a `GetProperty` request for the given property of the given window
-    pub fn get<C>(
-        conn: &mut C,
-        buffer: &mut [u8],
+    pub fn get<IO: SocketIo, XS: XcbState>(
+        io: &mut IO,
+        state: &mut XS,
         window: Window,
         property: Atom,
-    ) -> Result<WmSizeHintsCookie, Error>
-    where
-        C: XcbConnection,
-    {
-        WmSizeHintsCookie::new(conn, buffer, window, property)
+    ) -> Result<WmSizeHintsCookie, Error> {
+        WmSizeHintsCookie::new(io, state, window, property)
     }
 
     /// Send a `GetProperty` request for the `WM_NORMAL_HINTS` property of the given window
-    pub fn get_normal_hints<C>(
-        conn: &mut C,
-        buffer: &mut [u8],
+    pub fn get_normal_hints<IO: SocketIo, XS: XcbState>(
+        io: &mut IO,
+        state: &mut XS,
         window: Window,
-    ) -> Result<WmSizeHintsCookie, Error>
-    where
-        C: XcbConnection,
-    {
-        Self::get(conn, buffer, window, AtomEnum::WM_NORMAL_HINTS.0)
+    ) -> Result<WmSizeHintsCookie, Error> {
+        Self::get(io, state, window, AtomEnum::WM_NORMAL_HINTS.0)
     }
 
     /// Construct a new `WmSizeHints` instance from a `GetPropertyReply`.
@@ -289,34 +284,29 @@ impl WmSizeHints {
     }
 
     /// Set these `WM_SIZE_HINTS` on some window as the `WM_NORMAL_HINTS` property.
-    pub fn set_normal_hints<C>(
+    pub fn set_normal_hints<IO: SocketIo, XS: XcbState>(
         &self,
-        conn: &mut C,
-        buffer: &mut [u8],
+        io: &mut IO,
+        state: &mut XS,
         window: Window,
         forget: bool,
-    ) -> Result<VoidCookie, Error>
-    where
-        C: XcbConnection,
-    {
-        self.set(conn, buffer, window, AtomEnum::WM_NORMAL_HINTS.0, forget)
+    ) -> Result<VoidCookie, Error> {
+        self.set(io, state, window, AtomEnum::WM_NORMAL_HINTS.0, forget)
     }
 
     /// Set these `WM_SIZE_HINTS` on some window as the given property.
-    pub fn set<C>(
+    pub fn set<IO: SocketIo, XS: XcbState>(
         &self,
-        conn: &mut C,
-        buffer: &mut [u8],
+        io: &mut IO,
+        state: &mut XS,
         window: Window,
         property: Atom,
         forget: bool,
-    ) -> Result<VoidCookie, Error>
-    where
-        C: XcbConnection,
-    {
+    ) -> Result<VoidCookie, Error> {
         let data = self.serialize_fixed();
-        conn.change_property(
-            buffer,
+        change_property(
+            io,
+            state,
             xproto::PropModeEnum::REPLACE,
             window,
             property,
@@ -565,12 +555,14 @@ const NUM_WM_HINTS_ELEMENTS: u32 = 9;
 
 impl WmHintsCookie {
     /// Send a `GetProperty` request for the `WM_CLASS` property of the given window
-    pub fn new<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<Self, Error>
+    pub fn new<IO, XS>(io: &mut IO, state: &mut XS, window: Window) -> Result<Self, Error>
     where
-        C: XcbConnection,
+        IO: SocketIo,
+        XS: XcbState,
     {
-        Ok(Self(conn.get_property(
-            buffer,
+        Ok(Self(get_property(
+            io,
+            state,
             0,
             window,
             AtomEnum::WM_HINTS.0,
@@ -581,11 +573,8 @@ impl WmHintsCookie {
         )?))
     }
 
-    pub fn forget<C>(self, conn: &mut C)
-    where
-        C: XcbConnection,
-    {
-        self.0.forget(conn);
+    pub fn forget<XS: XcbState>(self, state: &mut XS) {
+        self.0.forget(state);
     }
 }
 
@@ -656,11 +645,12 @@ impl WmHints {
     }
 
     /// Send a `GetProperty` request for the `WM_HINTS` property of the given window
-    pub fn get<C>(conn: &mut C, buffer: &mut [u8], window: Window) -> Result<WmHintsCookie, Error>
+    pub fn get<IO, XS>(io: &mut IO, state: &mut XS, window: Window) -> Result<WmHintsCookie, Error>
     where
-        C: XcbConnection,
+        IO: SocketIo,
+        XS: XcbState,
     {
-        WmHintsCookie::new(conn, buffer, window)
+        WmHintsCookie::new(io, state, window)
     }
 
     /// Construct a new `WmHints` instance from a `GetPropertyReply`.
@@ -676,19 +666,21 @@ impl WmHints {
     }
 
     /// Set these `WM_HINTS` on some window.
-    pub fn set<C>(
+    pub fn set<IO, XS>(
         &self,
-        conn: &mut C,
-        buffer: &mut [u8],
+        io: &mut IO,
+        state: &mut XS,
         window: Window,
         forget: bool,
     ) -> Result<VoidCookie, Error>
     where
-        C: XcbConnection,
+        IO: SocketIo,
+        XS: XcbState,
     {
         let data = self.serialize_fixed();
-        conn.change_property(
-            buffer,
+        change_property(
+            io,
+            state,
             xproto::PropModeEnum::REPLACE,
             window,
             AtomEnum::WM_HINTS.0,

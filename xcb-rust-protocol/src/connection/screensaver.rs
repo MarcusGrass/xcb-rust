@@ -8,78 +8,24 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait ScreensaverConnection {
-    fn query_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        client_major_version: u8,
-        client_minor_version: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::screensaver::QueryVersionReply, 32>>;
-
-    fn query_info(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::screensaver::QueryInfoReply, 32>>;
-
-    fn select_input(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        event_mask: crate::proto::screensaver::Event,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn set_attributes(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        x: i16,
-        y: i16,
-        width: u16,
-        height: u16,
-        border_width: u16,
-        class: crate::proto::xproto::WindowClassEnum,
-        depth: u8,
-        visual: crate::proto::xproto::Visualid,
-        set_attributes_value_list: crate::proto::screensaver::SetAttributesValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn unset_attributes(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn suspend(
-        &mut self,
-        socket_buffer: &mut [u8],
-        suspend: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-}
-impl<C> ScreensaverConnection for C
+pub fn query_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    client_major_version: u8,
+    client_minor_version: u8,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::screensaver::QueryVersionReply, 32>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn query_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        client_major_version: u8,
-        client_minor_version: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::screensaver::QueryVersionReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::screensaver::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::screensaver::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -92,29 +38,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn query_info(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::screensaver::QueryInfoReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::screensaver::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn query_info<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::screensaver::QueryInfoReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::screensaver::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -127,31 +77,35 @@ where
                 drawable_bytes[2],
                 drawable_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn select_input(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        event_mask: crate::proto::screensaver::Event,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::screensaver::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let event_mask_bytes = (event_mask.0 as u32).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn select_input<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    event_mask: crate::proto::screensaver::Event,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::screensaver::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let event_mask_bytes = (event_mask.0 as u32).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -168,36 +122,40 @@ where
                 event_mask_bytes[2],
                 event_mask_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn set_attributes(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        x: i16,
-        y: i16,
-        width: u16,
-        height: u16,
-        border_width: u16,
-        class: crate::proto::xproto::WindowClassEnum,
-        depth: u8,
-        visual: crate::proto::xproto::Visualid,
-        set_attributes_value_list: crate::proto::screensaver::SetAttributesValueList,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::screensaver::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn set_attributes<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    x: i16,
+    y: i16,
+    width: u16,
+    height: u16,
+    border_width: u16,
+    class: crate::proto::xproto::WindowClassEnum,
+    depth: u8,
+    visual: crate::proto::xproto::Visualid,
+    set_attributes_value_list: crate::proto::screensaver::SetAttributesValueList,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::screensaver::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -256,29 +214,33 @@ where
             .get_mut(2..4)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&length);
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn unset_attributes(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::screensaver::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn unset_attributes<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::screensaver::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -291,29 +253,33 @@ where
                 drawable_bytes[2],
                 drawable_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn suspend(
-        &mut self,
-        socket_buffer: &mut [u8],
-        suspend: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::screensaver::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let suspend_bytes = suspend.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn suspend<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    suspend: u32,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::screensaver::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::screensaver::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let suspend_bytes = suspend.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -326,12 +292,12 @@ where
                 suspend_bytes[2],
                 suspend_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
 }

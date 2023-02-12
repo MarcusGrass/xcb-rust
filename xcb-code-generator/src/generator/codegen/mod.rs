@@ -8,7 +8,7 @@ use codegen_rs::structures::{
 };
 use codegen_rs::{
     ConstantBuilder, ContainerStructBuilder, EnumBuilder, FileBuilder, FunctionBuilder,
-    ImplBuilder, MethodBuilder, RustCase, TraitBuilder,
+    ImplBuilder, MethodBuilder, RustCase,
 };
 
 use crate::generator::codegen::enums::{implement_bitmask_enum, implement_value_enum};
@@ -105,10 +105,9 @@ pub(crate) fn generate_proto(
     resolved: &[WrappedType],
     req_name_spec: &mut ReqNameSpec,
     evt_name_spec: &mut EvtNameSpec,
-    mut trait_builder: TraitBuilder,
-    mut impl_builder: ImplBuilder,
+    functions: &mut Vec<FunctionBuilder>,
     xcb: Xcb,
-) -> (TraitBuilder, ImplBuilder, FileBuilder) {
+) -> FileBuilder {
     let mut fb = FileBuilder::new(&xcb.header);
     fb = fb
         .add_any("#[allow(unused_imports)]\n")
@@ -174,11 +173,9 @@ pub(crate) fn generate_proto(
                 fb = implement_switch_enum(se, &xcb, fb);
             }
             XcbType::Request(req) => {
-                let (tb, imp, new_fb) =
-                    implement_request(req, &xcb, req_name_spec, trait_builder, impl_builder, fb);
+                let (func_b, new_fb) = implement_request(req, &xcb, req_name_spec, fb);
                 fb = new_fb;
-                impl_builder = imp;
-                trait_builder = tb;
+                functions.push(func_b);
             }
             // Trivial wrapper over an event that's always 32 bytes
             XcbType::EventStruct(es) => {
@@ -241,7 +238,7 @@ pub(crate) fn generate_proto(
             XcbType::Builtin(_) | XcbType::Constructed(_) => {}
         }
     }
-    (trait_builder, impl_builder, fb)
+    fb
 }
 
 pub(crate) fn implement_req_name(mut req_name_spec: ReqNameSpec) -> FunctionBuilder {

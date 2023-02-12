@@ -27,6 +27,7 @@ pub struct ParsedDisplay {
 impl ParsedDisplay {
     /// Get an iterator over `ConnectAddress`es from this parsed display for connecting
     /// to the server.
+    #[must_use]
     pub fn connect_instruction(&self) -> Option<String> {
         connect_instruction::connect_addresses(self)
     }
@@ -35,7 +36,8 @@ impl ParsedDisplay {
 /// Parse an X11 display string.
 ///
 /// If `dpy_name` is `None`, the display is parsed from the environment variable `DISPLAY`.
-pub fn parse_display(dpy_name: Option<&str>, _xcb_env: XcbEnv) -> Option<ParsedDisplay> {
+#[must_use]
+pub fn parse_display(dpy_name: Option<&str>) -> Option<ParsedDisplay> {
     match dpy_name {
         Some(dpy_name) => parse_display_impl(dpy_name),
         // Todo: Check default name or figure out how to get the env
@@ -79,7 +81,7 @@ mod test {
     use super::*;
 
     fn do_parse_display(input: &str) -> Option<ParsedDisplay> {
-        parse_display(Some(input), XcbEnv::default())
+        parse_display(Some(input))
     }
 
     // The tests modify environment variables. This is process-global. Thus, the tests in this
@@ -96,7 +98,7 @@ mod test {
     fn test_missing_input() {
         std::env::remove_var("DISPLAY");
         assert_eq!(
-            parse_display(None, XcbEnv::default()),
+            parse_display(None),
             Some(ParsedDisplay {
                 host: "".to_string(),
                 protocol: None,

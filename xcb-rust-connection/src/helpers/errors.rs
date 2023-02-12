@@ -56,6 +56,7 @@ pub enum ConnectError {
 
     Proto(xcb_rust_protocol::Error),
     BadValue,
+    Io(&'static str),
 }
 
 impl From<xcb_rust_protocol::Error> for ConnectError {
@@ -84,8 +85,8 @@ impl core::fmt::Display for ConnectError {
             value: &[u8],
         ) -> core::fmt::Result {
             match core::str::from_utf8(value).ok() {
-                Some(value) => write!(f, "{}: '{}'", prefix, value),
-                None => write!(f, "{}: {:?} [message is not utf8]", prefix, value),
+                Some(value) => write!(f, "{prefix}: '{value}'"),
+                None => write!(f, "{prefix}: {value:?} [message is not utf8]"),
             }
         }
         match self {
@@ -103,6 +104,7 @@ impl core::fmt::Display for ConnectError {
             ConnectError::BadValue => write!(f, "Tried to parse a bad value"),
             ConnectError::Proto(p) => write!(f, "{p}"),
             ConnectError::Syscall(e) => write!(f, "Syscall: {e}"),
+            ConnectError::Io(e) => write!(f, "Delegate io failed: {e}"),
         }
     }
 }
@@ -139,6 +141,7 @@ pub enum ConnectionError {
     Syscall(rusl::Error),
 
     Id(IdError),
+    Io(&'static str),
 }
 
 impl From<xcb_rust_protocol::Error> for ConnectionError {
@@ -187,6 +190,9 @@ impl core::fmt::Display for ConnectionError {
             }
             ConnectionError::Syscall(s) => {
                 write!(f, "Syscall failed {s:?}")
+            }
+            ConnectionError::Io(e) => {
+                write!(f, "Delegate io failed {e}")
             }
         }
     }

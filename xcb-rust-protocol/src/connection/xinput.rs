@@ -8,587 +8,22 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait XinputConnection {
-    fn get_extension_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        name: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::GetExtensionVersionReply, 32>>;
-
-    fn list_input_devices(
-        &mut self,
-        socket_buffer: &mut [u8],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::ListInputDevicesReply>>;
-
-    fn open_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::OpenDeviceReply>>;
-
-    fn close_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn set_device_mode(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        mode: crate::proto::xinput::ValuatorModeEnum,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceModeReply, 32>>;
-
-    fn select_extension_event(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_selected_extension_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetSelectedExtensionEventsReply>>;
-
-    fn change_device_dont_propagate_list(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        mode: crate::proto::xinput::PropagateModeEnum,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_device_dont_propagate_list(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceDontPropagateListReply>>;
-
-    fn get_device_motion_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        start: crate::proto::xproto::Timestamp,
-        stop: crate::proto::xproto::TimeEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceMotionEventsReply>>;
-
-    fn change_keyboard_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangeKeyboardDeviceReply, 32>>;
-
-    fn change_pointer_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        x_axis: u8,
-        y_axis: u8,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangePointerDeviceReply, 32>>;
-
-    fn grab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        time: crate::proto::xproto::TimeEnum,
-        this_device_mode: crate::proto::xproto::GrabModeEnum,
-        other_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: u8,
-        device_id: u8,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::GrabDeviceReply, 32>>;
-
-    fn ungrab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn grab_device_key(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        modifiers: crate::proto::xproto::ModMask,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        grabbed_device: u8,
-        key: crate::proto::xproto::GrabEnum,
-        this_device_mode: crate::proto::xproto::GrabModeEnum,
-        other_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: u8,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn ungrab_device_key(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        modifiers: crate::proto::xproto::ModMask,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        key: crate::proto::xproto::GrabEnum,
-        grabbed_device: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn grab_device_button(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        grabbed_device: u8,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        modifiers: crate::proto::xproto::ModMask,
-        this_device_mode: crate::proto::xproto::GrabModeEnum,
-        other_device_mode: crate::proto::xproto::GrabModeEnum,
-        button: crate::proto::xproto::GrabEnum,
-        owner_events: u8,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn ungrab_device_button(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        modifiers: crate::proto::xproto::ModMask,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        button: crate::proto::xproto::GrabEnum,
-        grabbed_device: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn allow_device_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        mode: crate::proto::xinput::DeviceInputModeEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_device_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::GetDeviceFocusReply, 32>>;
-
-    fn set_device_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        focus: crate::proto::xproto::InputFocusEnum,
-        time: crate::proto::xproto::TimeEnum,
-        revert_to: crate::proto::xproto::InputFocusEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_feedback_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetFeedbackControlReply>>;
-
-    fn change_feedback_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        mask: crate::proto::xinput::ChangeFeedbackControlMask,
-        device_id: u8,
-        feedback_id: u8,
-        feedback: crate::proto::xinput::FeedbackCtl,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_device_key_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        first_keycode: crate::proto::xinput::KeyCode,
-        count: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceKeyMappingReply>>;
-
-    fn change_device_key_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        first_keycode: crate::proto::xinput::KeyCode,
-        keysyms_per_keycode: u8,
-        keycode_count: u8,
-        keysyms: &[crate::proto::xproto::Keysym],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_device_modifier_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceModifierMappingReply>>;
-
-    fn set_device_modifier_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        keycodes_per_modifier: u8,
-        keymaps: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceModifierMappingReply, 32>>;
-
-    fn get_device_button_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceButtonMappingReply>>;
-
-    fn set_device_button_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        map: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceButtonMappingReply, 32>>;
-
-    fn query_device_state(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::QueryDeviceStateReply>>;
-
-    fn device_bell(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        feedback_id: u8,
-        feedback_class: u8,
-        percent: i8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn set_device_valuators(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        first_valuator: u8,
-        valuators: &[i32],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceValuatorsReply, 32>>;
-
-    fn get_device_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        control_id: crate::proto::xinput::DeviceControlEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceControlReply>>;
-
-    fn change_device_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        control_id: crate::proto::xinput::DeviceControlEnum,
-        device_id: u8,
-        control: crate::proto::xinput::DeviceCtl,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangeDeviceControlReply, 32>>;
-
-    fn list_device_properties(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::ListDevicePropertiesReply>>;
-
-    fn change_device_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        property: u32,
-        r#type: u32,
-        device_id: u8,
-        format: crate::proto::xinput::PropertyFormatEnum,
-        mode: crate::proto::xproto::PropModeEnum,
-        num_items: u32,
-        change_device_property_switch_enum: crate::proto::xinput::ChangeDevicePropertySwitchEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn delete_device_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        property: u32,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_device_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        property: u32,
-        r#type: u32,
-        offset: u32,
-        len: u32,
-        device_id: u8,
-        delete: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDevicePropertyReply>>;
-
-    fn x_i_query_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIQueryPointerReply>>;
-
-    fn x_i_warp_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        src_win: crate::proto::xproto::Window,
-        dst_win: crate::proto::xproto::Window,
-        src_x: crate::proto::xinput::Fp1616,
-        src_y: crate::proto::xinput::Fp1616,
-        src_width: u16,
-        src_height: u16,
-        dst_x: crate::proto::xinput::Fp1616,
-        dst_y: crate::proto::xinput::Fp1616,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_change_cursor(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        cursor: crate::proto::xproto::Cursor,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_change_hierarchy(
-        &mut self,
-        socket_buffer: &mut [u8],
-        changes: alloc::vec::Vec<crate::proto::xinput::HierarchyChange>,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_set_client_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_get_client_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGetClientPointerReply, 32>>;
-
-    fn x_i_select_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        masks: alloc::vec::Vec<crate::proto::xinput::EventMask>,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_query_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        major_version: u16,
-        minor_version: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIQueryVersionReply, 32>>;
-
-    fn x_i_query_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIQueryDeviceReply>>;
-
-    fn x_i_set_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        time: crate::proto::xproto::TimeEnum,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_get_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGetFocusReply, 32>>;
-
-    fn x_i_grab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        time: crate::proto::xproto::TimeEnum,
-        cursor: crate::proto::xproto::Cursor,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        mode: crate::proto::xproto::GrabModeEnum,
-        paired_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: crate::proto::xinput::GrabOwnerEnum,
-        mask: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGrabDeviceReply, 32>>;
-
-    fn x_i_ungrab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_allow_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        event_mode: crate::proto::xinput::EventModeEnum,
-        touchid: u32,
-        grab_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_passive_grab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        grab_window: crate::proto::xproto::Window,
-        cursor: crate::proto::xproto::Cursor,
-        detail: u32,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        num_modifiers: u16,
-        mask_len: u16,
-        grab_type: crate::proto::xinput::GrabTypeEnum,
-        grab_mode: crate::proto::xinput::GrabMode22Enum,
-        paired_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: crate::proto::xinput::GrabOwnerEnum,
-        mask: &[u32],
-        modifiers: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIPassiveGrabDeviceReply>>;
-
-    fn x_i_passive_ungrab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        detail: u32,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        grab_type: crate::proto::xinput::GrabTypeEnum,
-        modifiers: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_list_properties(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIListPropertiesReply>>;
-
-    fn x_i_change_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        mode: crate::proto::xproto::PropModeEnum,
-        format: crate::proto::xinput::PropertyFormatEnum,
-        property: u32,
-        r#type: u32,
-        num_items: u32,
-        x_i_change_property_switch_enum: crate::proto::xinput::XIChangePropertySwitchEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_delete_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        property: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn x_i_get_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        delete: u8,
-        property: u32,
-        r#type: u32,
-        offset: u32,
-        len: u32,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIGetPropertyReply>>;
-
-    fn x_i_get_selected_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIGetSelectedEventsReply>>;
-
-    fn x_i_barrier_release_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        barriers: &[crate::proto::xinput::BarrierReleasePointerInfo],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn send_extension_event(
-        &mut self,
-        socket_buffer: &mut [u8],
-        destination: crate::proto::xproto::Window,
-        device_id: u8,
-        propagate: u8,
-        num_classes: u16,
-        num_events: u8,
-        events: &[crate::proto::xinput::EventForSend],
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-}
-impl<C> XinputConnection for C
+pub fn get_extension_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    name: &[u8],
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::GetExtensionVersionReply, 32>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn get_extension_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        name: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::GetExtensionVersionReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let name_len = u16::try_from(name.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -618,10 +53,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -638,105 +72,119 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn list_input_devices(
-        &mut self,
-        socket_buffer: &mut [u8],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::ListInputDevicesReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf = self
-            .apply_offset(socket_buffer)
-            .get_mut(..4)
-            .ok_or(crate::error::Error::Serialize)?;
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn list_input_devices<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::ListInputDevicesReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf| {
+        let buf = buf.get_mut(..4).ok_or(crate::error::Error::Serialize)?;
         buf[0] = major_opcode;
         buf[1] = 2;
         buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());
-        self.advance_writer(4);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn open_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::OpenDeviceReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(4)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn open_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::OpenDeviceReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 3, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn close_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn close_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 4, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn set_device_mode(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        mode: crate::proto::xinput::ValuatorModeEnum,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceModeReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn set_device_mode<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    mode: crate::proto::xinput::ValuatorModeEnum,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceModeReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -749,28 +197,32 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn select_extension_event(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn select_extension_event<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    classes: &[crate::proto::xinput::EventClass],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_classes =
             u16::try_from(classes.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
@@ -807,10 +259,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -827,29 +278,33 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_selected_extension_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetSelectedExtensionEventsReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_selected_extension_events<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetSelectedExtensionEventsReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -862,29 +317,33 @@ where
                 window_bytes[2],
                 window_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn change_device_dont_propagate_list(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        mode: crate::proto::xinput::PropagateModeEnum,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn change_device_dont_propagate_list<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    mode: crate::proto::xinput::PropagateModeEnum,
+    classes: &[crate::proto::xinput::EventClass],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_classes =
             u16::try_from(classes.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 1 bytes
@@ -925,10 +384,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -945,29 +403,33 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_device_dont_propagate_list(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceDontPropagateListReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_device_dont_propagate_list<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceDontPropagateListReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -980,32 +442,36 @@ where
                 window_bytes[2],
                 window_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn get_device_motion_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        start: crate::proto::xproto::Timestamp,
-        stop: crate::proto::xproto::TimeEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceMotionEventsReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let start_bytes = start.serialize_fixed();
-        let stop_bytes = (stop.0 as u32).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn get_device_motion_events<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    start: crate::proto::xproto::Timestamp,
+    stop: crate::proto::xproto::TimeEnum,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceMotionEventsReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let start_bytes = start.serialize_fixed();
+    let stop_bytes = (stop.0 as u32).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1026,56 +492,63 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn change_keyboard_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangeKeyboardDeviceReply, 32>>
-    {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn change_keyboard_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangeKeyboardDeviceReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 11, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn change_pointer_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        x_axis: u8,
-        y_axis: u8,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangePointerDeviceReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn change_pointer_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    x_axis: u8,
+    y_axis: u8,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangePointerDeviceReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1088,33 +561,37 @@ where
                 device_id,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn grab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        time: crate::proto::xproto::TimeEnum,
-        this_device_mode: crate::proto::xproto::GrabModeEnum,
-        other_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: u8,
-        device_id: u8,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::GrabDeviceReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn grab_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    grab_window: crate::proto::xproto::Window,
+    time: crate::proto::xproto::TimeEnum,
+    this_device_mode: crate::proto::xproto::GrabModeEnum,
+    other_device_mode: crate::proto::xproto::GrabModeEnum,
+    owner_events: u8,
+    device_id: u8,
+    classes: &[crate::proto::xinput::EventClass],
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::GrabDeviceReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_classes =
             u16::try_from(classes.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
@@ -1171,10 +648,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1191,30 +667,34 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn ungrab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let time_bytes = (time.0 as u32).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn ungrab_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    time: crate::proto::xproto::TimeEnum,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let time_bytes = (time.0 as u32).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1231,35 +711,39 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn grab_device_key(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        modifiers: crate::proto::xproto::ModMask,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        grabbed_device: u8,
-        key: crate::proto::xproto::GrabEnum,
-        this_device_mode: crate::proto::xproto::GrabModeEnum,
-        other_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: u8,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn grab_device_key<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    grab_window: crate::proto::xproto::Window,
+    modifiers: crate::proto::xproto::ModMask,
+    modifier_device: crate::proto::xinput::ModifierDeviceEnum,
+    grabbed_device: u8,
+    key: crate::proto::xproto::GrabEnum,
+    this_device_mode: crate::proto::xproto::GrabModeEnum,
+    other_device_mode: crate::proto::xproto::GrabModeEnum,
+    owner_events: u8,
+    classes: &[crate::proto::xinput::EventClass],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_classes =
             u16::try_from(classes.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
@@ -1324,10 +808,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1344,34 +827,38 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn ungrab_device_key(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        modifiers: crate::proto::xproto::ModMask,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        key: crate::proto::xproto::GrabEnum,
-        grabbed_device: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let grab_window_bytes = grab_window.serialize_fixed();
-        let modifiers_bytes = (modifiers.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn ungrab_device_key<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    grab_window: crate::proto::xproto::Window,
+    modifiers: crate::proto::xproto::ModMask,
+    modifier_device: crate::proto::xinput::ModifierDeviceEnum,
+    key: crate::proto::xproto::GrabEnum,
+    grabbed_device: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let grab_window_bytes = grab_window.serialize_fixed();
+    let modifiers_bytes = (modifiers.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1392,35 +879,39 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn grab_device_button(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        grabbed_device: u8,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        modifiers: crate::proto::xproto::ModMask,
-        this_device_mode: crate::proto::xproto::GrabModeEnum,
-        other_device_mode: crate::proto::xproto::GrabModeEnum,
-        button: crate::proto::xproto::GrabEnum,
-        owner_events: u8,
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn grab_device_button<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    grab_window: crate::proto::xproto::Window,
+    grabbed_device: u8,
+    modifier_device: crate::proto::xinput::ModifierDeviceEnum,
+    modifiers: crate::proto::xproto::ModMask,
+    this_device_mode: crate::proto::xproto::GrabModeEnum,
+    other_device_mode: crate::proto::xproto::GrabModeEnum,
+    button: crate::proto::xproto::GrabEnum,
+    owner_events: u8,
+    classes: &[crate::proto::xinput::EventClass],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_classes =
             u16::try_from(classes.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
@@ -1485,10 +976,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1505,34 +995,38 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn ungrab_device_button(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        modifiers: crate::proto::xproto::ModMask,
-        modifier_device: crate::proto::xinput::ModifierDeviceEnum,
-        button: crate::proto::xproto::GrabEnum,
-        grabbed_device: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let grab_window_bytes = grab_window.serialize_fixed();
-        let modifiers_bytes = (modifiers.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn ungrab_device_button<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    grab_window: crate::proto::xproto::Window,
+    modifiers: crate::proto::xproto::ModMask,
+    modifier_device: crate::proto::xinput::ModifierDeviceEnum,
+    button: crate::proto::xproto::GrabEnum,
+    grabbed_device: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let grab_window_bytes = grab_window.serialize_fixed();
+    let modifiers_bytes = (modifiers.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1553,31 +1047,35 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn allow_device_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        mode: crate::proto::xinput::DeviceInputModeEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let time_bytes = (time.0 as u32).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn allow_device_events<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    time: crate::proto::xproto::TimeEnum,
+    mode: crate::proto::xinput::DeviceInputModeEnum,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let time_bytes = (time.0 as u32).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1594,58 +1092,66 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_device_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::GetDeviceFocusReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_device_focus<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::GetDeviceFocusReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 20, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn set_device_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        focus: crate::proto::xproto::InputFocusEnum,
-        time: crate::proto::xproto::TimeEnum,
-        revert_to: crate::proto::xproto::InputFocusEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let focus_bytes = (focus.0 as u32).serialize_fixed();
-        let time_bytes = (time.0 as u32).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn set_device_focus<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    focus: crate::proto::xproto::InputFocusEnum,
+    time: crate::proto::xproto::TimeEnum,
+    revert_to: crate::proto::xproto::InputFocusEnum,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let focus_bytes = (focus.0 as u32).serialize_fixed();
+    let time_bytes = (time.0 as u32).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1666,55 +1172,63 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_feedback_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetFeedbackControlReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_feedback_control<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetFeedbackControlReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 22, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn change_feedback_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        mask: crate::proto::xinput::ChangeFeedbackControlMask,
-        device_id: u8,
-        feedback_id: u8,
-        feedback: crate::proto::xinput::FeedbackCtl,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn change_feedback_control<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    mask: crate::proto::xinput::ChangeFeedbackControlMask,
+    device_id: u8,
+    feedback_id: u8,
+    feedback: crate::proto::xinput::FeedbackCtl,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 2 bytes
         buf_ptr
             .get_mut(4..8)
@@ -1746,10 +1260,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1766,31 +1279,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_device_key_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        first_keycode: crate::proto::xinput::KeyCode,
-        count: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceKeyMappingReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let first_keycode_bytes = first_keycode.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_device_key_mapping<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    first_keycode: crate::proto::xinput::KeyCode,
+    count: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceKeyMappingReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let first_keycode_bytes = first_keycode.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -1803,31 +1320,35 @@ where
                 count,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn change_device_key_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        first_keycode: crate::proto::xinput::KeyCode,
-        keysyms_per_keycode: u8,
-        keycode_count: u8,
-        keysyms: &[crate::proto::xproto::Keysym],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn change_device_key_mapping<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    first_keycode: crate::proto::xinput::KeyCode,
+    keysyms_per_keycode: u8,
+    keycode_count: u8,
+    keysyms: &[crate::proto::xproto::Keysym],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(4..5)
             .ok_or(crate::error::Error::Serialize)?
@@ -1864,10 +1385,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1884,55 +1404,62 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_device_modifier_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceModifierMappingReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_device_modifier_mapping<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceModifierMappingReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 26, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn set_device_modifier_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        keycodes_per_modifier: u8,
-        keymaps: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceModifierMappingReply, 32>>
-    {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn set_device_modifier_mapping<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    keycodes_per_modifier: u8,
+    keymaps: &[u8],
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceModifierMappingReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let keycodes_per_modifier =
             u8::try_from(keycodes_per_modifier).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
@@ -1968,10 +1495,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -1988,54 +1514,61 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_device_button_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceButtonMappingReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_device_button_mapping<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceButtonMappingReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 28, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn set_device_button_mapping(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        map: &[u8],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceButtonMappingReply, 32>>
-    {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn set_device_button_mapping<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    map: &[u8],
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceButtonMappingReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let map_size = u8::try_from(map.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -2069,10 +1602,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2089,57 +1621,65 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn query_device_state(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::QueryDeviceStateReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn query_device_state<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::QueryDeviceStateReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 30, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn device_bell(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        feedback_id: u8,
-        feedback_class: u8,
-        percent: i8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let percent_bytes = percent.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn device_bell<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    feedback_id: u8,
+    feedback_class: u8,
+    percent: i8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let percent_bytes = percent.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2152,29 +1692,33 @@ where
                 feedback_class,
                 percent_bytes[0],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn set_device_valuators(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        first_valuator: u8,
-        valuators: &[i32],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceValuatorsReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn set_device_valuators<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    first_valuator: u8,
+    valuators: &[i32],
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::SetDeviceValuatorsReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_valuators =
             u8::try_from(valuators.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 1 bytes
@@ -2213,10 +1757,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2233,30 +1776,34 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_device_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        control_id: crate::proto::xinput::DeviceControlEnum,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceControlReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let control_id_bytes = (control_id.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_device_control<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    control_id: crate::proto::xinput::DeviceControlEnum,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetDeviceControlReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let control_id_bytes = (control_id.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2269,29 +1816,33 @@ where
                 device_id,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn change_device_control(
-        &mut self,
-        socket_buffer: &mut [u8],
-        control_id: crate::proto::xinput::DeviceControlEnum,
-        device_id: u8,
-        control: crate::proto::xinput::DeviceCtl,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangeDeviceControlReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn change_device_control<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    control_id: crate::proto::xinput::DeviceControlEnum,
+    device_id: u8,
+    control: crate::proto::xinput::DeviceCtl,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::ChangeDeviceControlReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 1 bytes
         buf_ptr
             .get_mut(4..6)
@@ -2316,10 +1867,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2336,58 +1886,66 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn list_device_properties(
-        &mut self,
-        socket_buffer: &mut [u8],
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::ListDevicePropertiesReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn list_device_properties<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::ListDevicePropertiesReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[major_opcode, 36, length[0], length[1], device_id, 0, 0, 0]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn change_device_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        property: u32,
-        r#type: u32,
-        device_id: u8,
-        format: crate::proto::xinput::PropertyFormatEnum,
-        mode: crate::proto::xproto::PropModeEnum,
-        num_items: u32,
-        change_device_property_switch_enum: crate::proto::xinput::ChangeDevicePropertySwitchEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn change_device_property<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    property: u32,
+    r#type: u32,
+    device_id: u8,
+    format: crate::proto::xinput::PropertyFormatEnum,
+    mode: crate::proto::xproto::PropModeEnum,
+    num_items: u32,
+    change_device_property_switch_enum: crate::proto::xinput::ChangeDevicePropertySwitchEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 1 bytes
         buf_ptr
             .get_mut(0..2)
@@ -2432,10 +1990,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2452,30 +2009,34 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn delete_device_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        property: u32,
-        device_id: u8,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let property_bytes = property.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn delete_device_property<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    property: u32,
+    device_id: u8,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let property_bytes = property.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2492,37 +2053,41 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_device_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        property: u32,
-        r#type: u32,
-        offset: u32,
-        len: u32,
-        device_id: u8,
-        delete: u8,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::GetDevicePropertyReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (6u16).to_ne_bytes();
-        let property_bytes = property.serialize_fixed();
-        let r#type_bytes = r#type.serialize_fixed();
-        let offset_bytes = offset.serialize_fixed();
-        let len_bytes = len.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_device_property<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    property: u32,
+    r#type: u32,
+    offset: u32,
+    len: u32,
+    device_id: u8,
+    delete: u8,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::GetDevicePropertyReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (6u16).to_ne_bytes();
+    let property_bytes = property.serialize_fixed();
+    let r#type_bytes = r#type.serialize_fixed();
+    let offset_bytes = offset.serialize_fixed();
+    let len_bytes = len.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2551,31 +2116,35 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(24);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn x_i_query_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIQueryPointerReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(24)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn x_i_query_pointer<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::XIQueryPointerReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2592,45 +2161,49 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn x_i_warp_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        src_win: crate::proto::xproto::Window,
-        dst_win: crate::proto::xproto::Window,
-        src_x: crate::proto::xinput::Fp1616,
-        src_y: crate::proto::xinput::Fp1616,
-        src_width: u16,
-        src_height: u16,
-        dst_x: crate::proto::xinput::Fp1616,
-        dst_y: crate::proto::xinput::Fp1616,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (9u16).to_ne_bytes();
-        let src_win_bytes = src_win.serialize_fixed();
-        let dst_win_bytes = dst_win.serialize_fixed();
-        let src_x_bytes = src_x.serialize_fixed();
-        let src_y_bytes = src_y.serialize_fixed();
-        let src_width_bytes = src_width.serialize_fixed();
-        let src_height_bytes = src_height.serialize_fixed();
-        let dst_x_bytes = dst_x.serialize_fixed();
-        let dst_y_bytes = dst_y.serialize_fixed();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn x_i_warp_pointer<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    src_win: crate::proto::xproto::Window,
+    dst_win: crate::proto::xproto::Window,
+    src_x: crate::proto::xinput::Fp1616,
+    src_y: crate::proto::xinput::Fp1616,
+    src_width: u16,
+    src_height: u16,
+    dst_x: crate::proto::xinput::Fp1616,
+    dst_y: crate::proto::xinput::Fp1616,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (9u16).to_ne_bytes();
+    let src_win_bytes = src_win.serialize_fixed();
+    let dst_win_bytes = dst_win.serialize_fixed();
+    let src_x_bytes = src_x.serialize_fixed();
+    let src_y_bytes = src_y.serialize_fixed();
+    let src_width_bytes = src_width.serialize_fixed();
+    let src_height_bytes = src_height.serialize_fixed();
+    let dst_x_bytes = dst_x.serialize_fixed();
+    let dst_y_bytes = dst_y.serialize_fixed();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..36)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2671,33 +2244,37 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(36);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_change_cursor(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        cursor: crate::proto::xproto::Cursor,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let cursor_bytes = cursor.serialize_fixed();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(36)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_change_cursor<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    cursor: crate::proto::xproto::Cursor,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    let cursor_bytes = cursor.serialize_fixed();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2718,27 +2295,31 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_change_hierarchy(
-        &mut self,
-        socket_buffer: &mut [u8],
-        changes: alloc::vec::Vec<crate::proto::xinput::HierarchyChange>,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_change_hierarchy<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    changes: alloc::vec::Vec<crate::proto::xinput::HierarchyChange>,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_changes =
             u8::try_from(changes.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 3 bytes
@@ -2767,10 +2348,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2787,31 +2367,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_set_client_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_set_client_pointer<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2828,29 +2412,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_get_client_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGetClientPointerReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_get_client_pointer<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGetClientPointerReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2863,28 +2451,32 @@ where
                 window_bytes[2],
                 window_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn x_i_select_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        masks: alloc::vec::Vec<crate::proto::xinput::EventMask>,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn x_i_select_events<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    masks: alloc::vec::Vec<crate::proto::xinput::EventMask>,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_mask = u16::try_from(masks.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 2 bytes
         buf_ptr
@@ -2918,10 +2510,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -2938,31 +2529,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_query_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        major_version: u16,
-        minor_version: u16,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIQueryVersionReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let major_version_bytes = major_version.serialize_fixed();
-        let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_query_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    major_version: u16,
+    minor_version: u16,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIQueryVersionReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let major_version_bytes = major_version.serialize_fixed();
+    let minor_version_bytes = minor_version.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -2975,29 +2570,33 @@ where
                 minor_version_bytes[0],
                 minor_version_bytes[1],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn x_i_query_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIQueryDeviceReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn x_i_query_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::XIQueryDeviceReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3010,33 +2609,37 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn x_i_set_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        time: crate::proto::xproto::TimeEnum,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let time_bytes = (time.0 as u32).serialize_fixed();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn x_i_set_focus<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    time: crate::proto::xproto::TimeEnum,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    let time_bytes = (time.0 as u32).serialize_fixed();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3057,29 +2660,33 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_get_focus(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGetFocusReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_get_focus<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGetFocusReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3092,34 +2699,38 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn x_i_grab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        time: crate::proto::xproto::TimeEnum,
-        cursor: crate::proto::xproto::Cursor,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        mode: crate::proto::xproto::GrabModeEnum,
-        paired_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: crate::proto::xinput::GrabOwnerEnum,
-        mask: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGrabDeviceReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn x_i_grab_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    time: crate::proto::xproto::TimeEnum,
+    cursor: crate::proto::xproto::Cursor,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    mode: crate::proto::xproto::GrabModeEnum,
+    paired_device_mode: crate::proto::xproto::GrabModeEnum,
+    owner_events: crate::proto::xinput::GrabOwnerEnum,
+    mask: &[u32],
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::xinput::XIGrabDeviceReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         // Pad 1 bytes
         let mask_len = u16::try_from(mask.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -3179,10 +2790,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -3199,31 +2809,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn x_i_ungrab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let time_bytes = (time.0 as u32).serialize_fixed();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn x_i_ungrab_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    time: crate::proto::xproto::TimeEnum,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let time_bytes = (time.0 as u32).serialize_fixed();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3240,36 +2854,40 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_allow_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        event_mode: crate::proto::xinput::EventModeEnum,
-        touchid: u32,
-        grab_window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (5u16).to_ne_bytes();
-        let time_bytes = (time.0 as u32).serialize_fixed();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let touchid_bytes = touchid.serialize_fixed();
-        let grab_window_bytes = grab_window.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_allow_events<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    time: crate::proto::xproto::TimeEnum,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    event_mode: crate::proto::xinput::EventModeEnum,
+    touchid: u32,
+    grab_window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (5u16).to_ne_bytes();
+    let time_bytes = (time.0 as u32).serialize_fixed();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    let touchid_bytes = touchid.serialize_fixed();
+    let grab_window_bytes = grab_window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3294,39 +2912,43 @@ where
                 grab_window_bytes[2],
                 grab_window_bytes[3],
             ]);
-        self.advance_writer(20);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_passive_grab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        time: crate::proto::xproto::TimeEnum,
-        grab_window: crate::proto::xproto::Window,
-        cursor: crate::proto::xproto::Cursor,
-        detail: u32,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        num_modifiers: u16,
-        mask_len: u16,
-        grab_type: crate::proto::xinput::GrabTypeEnum,
-        grab_mode: crate::proto::xinput::GrabMode22Enum,
-        paired_device_mode: crate::proto::xproto::GrabModeEnum,
-        owner_events: crate::proto::xinput::GrabOwnerEnum,
-        mask: &[u32],
-        modifiers: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIPassiveGrabDeviceReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(20)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_passive_grab_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    time: crate::proto::xproto::TimeEnum,
+    grab_window: crate::proto::xproto::Window,
+    cursor: crate::proto::xproto::Cursor,
+    detail: u32,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    num_modifiers: u16,
+    mask_len: u16,
+    grab_type: crate::proto::xinput::GrabTypeEnum,
+    grab_mode: crate::proto::xinput::GrabMode22Enum,
+    paired_device_mode: crate::proto::xproto::GrabModeEnum,
+    owner_events: crate::proto::xinput::GrabOwnerEnum,
+    mask: &[u32],
+    modifiers: &[u32],
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::XIPassiveGrabDeviceReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_modifiers =
             u16::try_from(num_modifiers).map_err(|_| crate::error::Error::Serialize)?;
         let mask_len = u16::try_from(mask_len).map_err(|_| crate::error::Error::Serialize)?;
@@ -3411,10 +3033,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -3431,31 +3052,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn x_i_passive_ungrab_device(
-        &mut self,
-        socket_buffer: &mut [u8],
-        grab_window: crate::proto::xproto::Window,
-        detail: u32,
-        deviceid: crate::proto::xinput::DeviceEnum,
-        grab_type: crate::proto::xinput::GrabTypeEnum,
-        modifiers: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn x_i_passive_ungrab_device<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    grab_window: crate::proto::xproto::Window,
+    detail: u32,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    grab_type: crate::proto::xinput::GrabTypeEnum,
+    modifiers: &[u32],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_modifiers =
             u16::try_from(modifiers.len()).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 3 bytes
@@ -3504,10 +3129,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -3524,29 +3148,33 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_list_properties(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIListPropertiesReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_list_properties<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::XIListPropertiesReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3559,33 +3187,37 @@ where
                 0,
                 0,
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn x_i_change_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        mode: crate::proto::xproto::PropModeEnum,
-        format: crate::proto::xinput::PropertyFormatEnum,
-        property: u32,
-        r#type: u32,
-        num_items: u32,
-        x_i_change_property_switch_enum: crate::proto::xinput::XIChangePropertySwitchEnum,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn x_i_change_property<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    mode: crate::proto::xproto::PropModeEnum,
+    format: crate::proto::xinput::PropertyFormatEnum,
+    property: u32,
+    r#type: u32,
+    num_items: u32,
+    x_i_change_property_switch_enum: crate::proto::xinput::XIChangePropertySwitchEnum,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(0..2)
             .ok_or(crate::error::Error::Serialize)?
@@ -3629,10 +3261,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -3649,31 +3280,35 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_delete_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        property: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let property_bytes = property.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_delete_property<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    property: u32,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    let property_bytes = property.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3690,38 +3325,42 @@ where
                 property_bytes[2],
                 property_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn x_i_get_property(
-        &mut self,
-        socket_buffer: &mut [u8],
-        deviceid: crate::proto::xinput::DeviceEnum,
-        delete: u8,
-        property: u32,
-        r#type: u32,
-        offset: u32,
-        len: u32,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIGetPropertyReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (6u16).to_ne_bytes();
-        let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
-        let property_bytes = property.serialize_fixed();
-        let r#type_bytes = r#type.serialize_fixed();
-        let offset_bytes = offset.serialize_fixed();
-        let len_bytes = len.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn x_i_get_property<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    deviceid: crate::proto::xinput::DeviceEnum,
+    delete: u8,
+    property: u32,
+    r#type: u32,
+    offset: u32,
+    len: u32,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::XIGetPropertyReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (6u16).to_ne_bytes();
+    let deviceid_bytes = (deviceid.0 as u16).serialize_fixed();
+    let property_bytes = property.serialize_fixed();
+    let r#type_bytes = r#type.serialize_fixed();
+    let offset_bytes = offset.serialize_fixed();
+    let len_bytes = len.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..24)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3750,29 +3389,33 @@ where
                 len_bytes[2],
                 len_bytes[3],
             ]);
-        self.advance_writer(24);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn x_i_get_selected_events(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::xinput::XIGetSelectedEventsReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(24)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn x_i_get_selected_events<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::xinput::XIGetSelectedEventsReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -3785,27 +3428,31 @@ where
                 window_bytes[2],
                 window_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn x_i_barrier_release_pointer(
-        &mut self,
-        socket_buffer: &mut [u8],
-        barriers: &[crate::proto::xinput::BarrierReleasePointerInfo],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn x_i_barrier_release_pointer<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    barriers: &[crate::proto::xinput::BarrierReleasePointerInfo],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_barriers =
             u32::try_from(barriers.len()).map_err(|_| crate::error::Error::Serialize)?;
         buf_ptr
@@ -3835,10 +3482,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -3855,33 +3501,37 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn send_extension_event(
-        &mut self,
-        socket_buffer: &mut [u8],
-        destination: crate::proto::xproto::Window,
-        device_id: u8,
-        propagate: u8,
-        num_classes: u16,
-        num_events: u8,
-        events: &[crate::proto::xinput::EventForSend],
-        classes: &[crate::proto::xinput::EventClass],
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::xinput::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::xinput::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn send_extension_event<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    destination: crate::proto::xproto::Window,
+    device_id: u8,
+    propagate: u8,
+    num_classes: u16,
+    num_events: u8,
+    events: &[crate::proto::xinput::EventForSend],
+    classes: &[crate::proto::xinput::EventClass],
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::xinput::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::xinput::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         let num_classes = u16::try_from(num_classes).map_err(|_| crate::error::Error::Serialize)?;
         let num_events = u8::try_from(num_events).map_err(|_| crate::error::Error::Serialize)?;
         // Pad 3 bytes
@@ -3941,10 +3591,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -3961,12 +3610,12 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
 }

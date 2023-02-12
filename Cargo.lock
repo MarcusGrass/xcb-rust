@@ -18,6 +18,7 @@ dependencies = [
 [[package]]
 name = "linux-rust-bindings"
 version = "0.1.0"
+source = "git+https://github.com/MarcusGrass/linux-rust-bindings.git?rev=f84e2276f755800221bc60eaf000240998ec93d0#f84e2276f755800221bc60eaf000240998ec93d0"
 
 [[package]]
 name = "proc-macro2"
@@ -40,6 +41,7 @@ dependencies = [
 [[package]]
 name = "rusl"
 version = "0.1.0"
+source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=d63d70a9439b9c56d4602166538894708075de3c#d63d70a9439b9c56d4602166538894708075de3c"
 dependencies = [
  "linux-rust-bindings",
  "sc",
@@ -118,6 +120,7 @@ dependencies = [
 [[package]]
 name = "tiny-std"
 version = "0.1.0"
+source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=d63d70a9439b9c56d4602166538894708075de3c#d63d70a9439b9c56d4602166538894708075de3c"
 dependencies = [
  "rusl",
  "sc",

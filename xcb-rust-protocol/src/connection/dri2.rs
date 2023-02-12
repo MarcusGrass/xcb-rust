@@ -8,151 +8,26 @@ use crate::cookie::VoidCookie;
 use crate::util::FixedLengthSerialize;
 #[allow(unused_imports)]
 use crate::util::VariableLengthSerialize;
-pub trait Dri2Connection {
-    fn query_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        major_version: u32,
-        minor_version: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::QueryVersionReply, 16>>;
-
-    fn connect(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        driver_type: crate::proto::dri2::DriverTypeEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::dri2::ConnectReply>>;
-
-    fn authenticate(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        magic: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::AuthenticateReply, 12>>;
-
-    fn create_drawable(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn destroy_drawable(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_buffers(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        count: u32,
-        attachments: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::dri2::GetBuffersReply>>;
-
-    fn copy_region(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        region: u32,
-        dest: u32,
-        src: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::CopyRegionReply, 8>>;
-
-    fn get_buffers_with_format(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        count: u32,
-        attachments: &[crate::proto::dri2::AttachFormat],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::dri2::GetBuffersWithFormatReply>>;
-
-    fn swap_buffers(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        target_msc_hi: u32,
-        target_msc_lo: u32,
-        divisor_hi: u32,
-        divisor_lo: u32,
-        remainder_hi: u32,
-        remainder_lo: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::SwapBuffersReply, 16>>;
-
-    fn get_m_s_c(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetMSCReply, 32>>;
-
-    fn wait_m_s_c(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        target_msc_hi: u32,
-        target_msc_lo: u32,
-        divisor_hi: u32,
-        divisor_lo: u32,
-        remainder_hi: u32,
-        remainder_lo: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::WaitMSCReply, 32>>;
-
-    fn wait_s_b_c(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        target_sbc_hi: u32,
-        target_sbc_lo: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::WaitSBCReply, 32>>;
-
-    fn swap_interval(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        interval: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie>;
-
-    fn get_param(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        param: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetParamReply, 16>>;
-}
-impl<C> Dri2Connection for C
+pub fn query_version<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    major_version: u32,
+    minor_version: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::QueryVersionReply, 16>>
 where
-    C: crate::con::XcbConnection,
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
 {
-    fn query_version(
-        &mut self,
-        socket_buffer: &mut [u8],
-        major_version: u32,
-        minor_version: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::QueryVersionReply, 16>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let major_version_bytes = major_version.serialize_fixed();
-        let minor_version_bytes = minor_version.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let major_version_bytes = major_version.serialize_fixed();
+    let minor_version_bytes = minor_version.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -169,31 +44,35 @@ where
                 minor_version_bytes[2],
                 minor_version_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn connect(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        driver_type: crate::proto::dri2::DriverTypeEnum,
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::dri2::ConnectReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let driver_type_bytes = (driver_type.0 as u32).serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn connect<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    driver_type: crate::proto::dri2::DriverTypeEnum,
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::dri2::ConnectReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    let driver_type_bytes = (driver_type.0 as u32).serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -210,31 +89,35 @@ where
                 driver_type_bytes[2],
                 driver_type_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn authenticate(
-        &mut self,
-        socket_buffer: &mut [u8],
-        window: crate::proto::xproto::Window,
-        magic: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::AuthenticateReply, 12>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let window_bytes = window.serialize_fixed();
-        let magic_bytes = magic.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn authenticate<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    window: crate::proto::xproto::Window,
+    magic: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::AuthenticateReply, 12>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let window_bytes = window.serialize_fixed();
+    let magic_bytes = magic.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -251,29 +134,33 @@ where
                 magic_bytes[2],
                 magic_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn create_drawable(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn create_drawable<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -286,29 +173,33 @@ where
                 drawable_bytes[2],
                 drawable_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn destroy_drawable(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn destroy_drawable<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -321,29 +212,33 @@ where
                 drawable_bytes[2],
                 drawable_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_buffers(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        count: u32,
-        attachments: &[u32],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::dri2::GetBuffersReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_buffers<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    count: u32,
+    attachments: &[u32],
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::dri2::GetBuffersReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -374,10 +269,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -394,35 +288,39 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn copy_region(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        region: u32,
-        dest: u32,
-        src: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::CopyRegionReply, 8>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (5u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let region_bytes = region.serialize_fixed();
-        let dest_bytes = dest.serialize_fixed();
-        let src_bytes = src.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn copy_region<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    region: u32,
+    dest: u32,
+    src: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::CopyRegionReply, 8>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (5u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let region_bytes = region.serialize_fixed();
+    let dest_bytes = dest.serialize_fixed();
+    let src_bytes = src.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..20)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -447,29 +345,33 @@ where
                 src_bytes[2],
                 src_bytes[3],
             ]);
-        self.advance_writer(20);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_buffers_with_format(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        count: u32,
-        attachments: &[crate::proto::dri2::AttachFormat],
-        forget: bool,
-    ) -> crate::error::Result<Cookie<crate::proto::dri2::GetBuffersWithFormatReply>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let buf_ptr = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(20)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_buffers_with_format<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    count: u32,
+    attachments: &[crate::proto::dri2::AttachFormat],
+    forget: bool,
+) -> crate::error::Result<Cookie<crate::proto::dri2::GetBuffersWithFormatReply>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    io.use_write_buffer(|buf_ptr| {
         buf_ptr
             .get_mut(4..8)
             .ok_or(crate::error::Error::Serialize)?
@@ -500,10 +402,9 @@ where
                 .ok_or(crate::error::Error::Serialize)?
                 .copy_from_slice(&length);
         } else {
-            if word_len > self.max_request_size() {
+            if word_len > xcb_state.max_request_size() {
                 return Err(crate::error::Error::TooLargeRequest);
             }
-            let buf_ptr = self.apply_offset(socket_buffer);
             buf_ptr
                 .get_mut(2..4)
                 .ok_or(crate::error::Error::Serialize)?
@@ -520,41 +421,45 @@ where
                 .copy_from_slice(&length);
             offset += 4;
         }
-        self.advance_writer(offset);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(Cookie::new(seq))
-    }
-
-    fn swap_buffers(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        target_msc_hi: u32,
-        target_msc_lo: u32,
-        divisor_hi: u32,
-        divisor_lo: u32,
-        remainder_hi: u32,
-        remainder_lo: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::SwapBuffersReply, 16>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (8u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let target_msc_hi_bytes = target_msc_hi.serialize_fixed();
-        let target_msc_lo_bytes = target_msc_lo.serialize_fixed();
-        let divisor_hi_bytes = divisor_hi.serialize_fixed();
-        let divisor_lo_bytes = divisor_lo.serialize_fixed();
-        let remainder_hi_bytes = remainder_hi.serialize_fixed();
-        let remainder_lo_bytes = remainder_lo.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(offset)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(Cookie::new(seq))
+}
+pub fn swap_buffers<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    target_msc_hi: u32,
+    target_msc_lo: u32,
+    divisor_hi: u32,
+    divisor_lo: u32,
+    remainder_hi: u32,
+    remainder_lo: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::SwapBuffersReply, 16>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (8u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let target_msc_hi_bytes = target_msc_hi.serialize_fixed();
+    let target_msc_lo_bytes = target_msc_lo.serialize_fixed();
+    let divisor_hi_bytes = divisor_hi.serialize_fixed();
+    let divisor_lo_bytes = divisor_lo.serialize_fixed();
+    let remainder_hi_bytes = remainder_hi.serialize_fixed();
+    let remainder_lo_bytes = remainder_lo.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -591,29 +496,33 @@ where
                 remainder_lo_bytes[2],
                 remainder_lo_bytes[3],
             ]);
-        self.advance_writer(32);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn get_m_s_c(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetMSCReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (2u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(32)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn get_m_s_c<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetMSCReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (2u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..8)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -626,41 +535,45 @@ where
                 drawable_bytes[2],
                 drawable_bytes[3],
             ]);
-        self.advance_writer(8);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn wait_m_s_c(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        target_msc_hi: u32,
-        target_msc_lo: u32,
-        divisor_hi: u32,
-        divisor_lo: u32,
-        remainder_hi: u32,
-        remainder_lo: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::WaitMSCReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (8u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let target_msc_hi_bytes = target_msc_hi.serialize_fixed();
-        let target_msc_lo_bytes = target_msc_lo.serialize_fixed();
-        let divisor_hi_bytes = divisor_hi.serialize_fixed();
-        let divisor_lo_bytes = divisor_lo.serialize_fixed();
-        let remainder_hi_bytes = remainder_hi.serialize_fixed();
-        let remainder_lo_bytes = remainder_lo.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(8)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn wait_m_s_c<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    target_msc_hi: u32,
+    target_msc_lo: u32,
+    divisor_hi: u32,
+    divisor_lo: u32,
+    remainder_hi: u32,
+    remainder_lo: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::WaitMSCReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (8u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let target_msc_hi_bytes = target_msc_hi.serialize_fixed();
+    let target_msc_lo_bytes = target_msc_lo.serialize_fixed();
+    let divisor_hi_bytes = divisor_hi.serialize_fixed();
+    let divisor_lo_bytes = divisor_lo.serialize_fixed();
+    let remainder_hi_bytes = remainder_hi.serialize_fixed();
+    let remainder_lo_bytes = remainder_lo.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..32)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -697,33 +610,37 @@ where
                 remainder_lo_bytes[2],
                 remainder_lo_bytes[3],
             ]);
-        self.advance_writer(32);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn wait_s_b_c(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        target_sbc_hi: u32,
-        target_sbc_lo: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::WaitSBCReply, 32>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (4u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let target_sbc_hi_bytes = target_sbc_hi.serialize_fixed();
-        let target_sbc_lo_bytes = target_sbc_lo.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(32)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn wait_s_b_c<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    target_sbc_hi: u32,
+    target_sbc_lo: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::WaitSBCReply, 32>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (4u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let target_sbc_hi_bytes = target_sbc_hi.serialize_fixed();
+    let target_sbc_lo_bytes = target_sbc_lo.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..16)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -744,31 +661,35 @@ where
                 target_sbc_lo_bytes[2],
                 target_sbc_lo_bytes[3],
             ]);
-        self.advance_writer(16);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
-
-    fn swap_interval(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        interval: u32,
-        forget: bool,
-    ) -> crate::error::Result<VoidCookie> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let interval_bytes = interval.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(16)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
+}
+pub fn swap_interval<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    interval: u32,
+    forget: bool,
+) -> crate::error::Result<VoidCookie>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let interval_bytes = interval.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -785,31 +706,35 @@ where
                 interval_bytes[2],
                 interval_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(VoidCookie::new(seq))
-    }
-
-    fn get_param(
-        &mut self,
-        socket_buffer: &mut [u8],
-        drawable: crate::proto::xproto::Drawable,
-        param: u32,
-        forget: bool,
-    ) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetParamReply, 16>> {
-        let major_opcode = self
-            .major_opcode(crate::proto::dri2::EXTENSION_NAME)
-            .ok_or(crate::error::Error::MissingExtension(
-                crate::proto::dri2::EXTENSION_NAME,
-            ))?;
-        let length: [u8; 2] = (3u16).to_ne_bytes();
-        let drawable_bytes = drawable.serialize_fixed();
-        let param_bytes = param.serialize_fixed();
-        let buf = self.apply_offset(socket_buffer);
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(VoidCookie::new(seq))
+}
+pub fn get_param<IO, XS>(
+    io: &mut IO,
+    xcb_state: &mut XS,
+    drawable: crate::proto::xproto::Drawable,
+    param: u32,
+    forget: bool,
+) -> crate::error::Result<FixedCookie<crate::proto::dri2::GetParamReply, 16>>
+where
+    IO: crate::con::SocketIo,
+    XS: crate::con::XcbState,
+{
+    let major_opcode = xcb_state
+        .major_opcode(crate::proto::dri2::EXTENSION_NAME)
+        .ok_or(crate::error::Error::MissingExtension(
+            crate::proto::dri2::EXTENSION_NAME,
+        ))?;
+    let length: [u8; 2] = (3u16).to_ne_bytes();
+    let drawable_bytes = drawable.serialize_fixed();
+    let param_bytes = param.serialize_fixed();
+    io.use_write_buffer(|buf| {
         buf.get_mut(..12)
             .ok_or(crate::error::Error::Serialize)?
             .copy_from_slice(&[
@@ -826,12 +751,12 @@ where
                 param_bytes[2],
                 param_bytes[3],
             ]);
-        self.advance_writer(12);
-        let seq = if forget {
-            self.next_seq()
-        } else {
-            self.keep_and_return_next_seq()
-        };
-        Ok(FixedCookie::new(seq))
-    }
+        Ok::<usize, crate::error::Error>(12)
+    })?;
+    let seq = if forget {
+        xcb_state.next_seq()
+    } else {
+        xcb_state.keep_and_return_next_seq()
+    };
+    Ok(FixedCookie::new(seq))
 }

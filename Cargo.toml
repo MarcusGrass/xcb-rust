@@ -2,7 +2,7 @@
 members = ["xcb-code-generator", "xcb-rust-connection", "xcb-rust-protocol", "xcb-xsd", "xcb-xsd-parser"]
 
 [workspace.dependencies]
-rusl = { path = "../tiny-std/rusl" }
+rusl = { git = "https://github.com/MarcusGrass/tiny-std.git", rev = "d63d70a9439b9c56d4602166538894708075de3c" }
 smallmap = { git = "https://github.com/MarcusGrass/smallmap.git", rev = "a0e7399d09a22753ef9c80aa1f1a34009b364357", default-features = false }
-tiny-std = { path = "../tiny-std/tiny-std" }
+tiny-std = { git = "https://github.com/MarcusGrass/tiny-std.git", rev = "d63d70a9439b9c56d4602166538894708075de3c" }
 unix-print = "0.1.0"

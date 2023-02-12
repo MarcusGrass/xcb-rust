@@ -4,9 +4,13 @@ use std::fmt::Write;
 use std::ops::Deref;
 
 use codegen_rs::structures::gen_enum::NamedComponentSignature;
+use codegen_rs::structures::generics::{Bound, Bounds, Generic};
 use codegen_rs::structures::method::Argument;
+use codegen_rs::structures::visibility::Visibility;
 use codegen_rs::structures::{ComponentSignature, Ownership, RustType, Signature};
-use codegen_rs::{FileBuilder, ImplBuilder, MethodBuilder, RustCase, TraitBuilder};
+use codegen_rs::{
+    FileBuilder, FunctionBuilder, RustCase,
+};
 
 use crate::generator::codegen::functions::{
     find_req_derive_fields, from_bytes_length_expr, get_unsorted_required_fields, is_finite_size,
@@ -41,10 +45,8 @@ pub(crate) fn implement_request(
     req: &XcbRequest,
     xcb: &Xcb,
     req_name_spec: &mut ReqNameSpec,
-    mut con_trait_bilder: TraitBuilder,
-    mut con_impl_builder: ImplBuilder,
     fb: FileBuilder,
-) -> (TraitBuilder, ImplBuilder, FileBuilder) {
+) -> (FunctionBuilder, FileBuilder) {
     if xcb.header == "xproto" {
         req_name_spec.xproto.push(ReqSpec {
             major_opcode: req.opcode,
@@ -90,12 +92,7 @@ pub(crate) fn implement_request(
         )
     };
     mb = mb.add_argument_in_scope_simple_type(Ownership::Owned, "forget", "bool");
-    let marker = mb.clone();
-
-    con_trait_bilder = con_trait_bilder.add_method(marker.set_trait_no_body());
-    con_impl_builder = con_impl_builder.add_method(mb);
-
-    (con_trait_bilder, con_impl_builder, fb)
+    (mb, fb)
 }
 
 pub(crate) fn implement_fixed_req_serialize(
@@ -104,25 +101,46 @@ pub(crate) fn implement_fixed_req_serialize(
     members: &[EntityMember],
     reply: Option<WrappedType>,
     xcb: &Xcb,
-) -> MethodBuilder {
+) -> FunctionBuilder {
     let xproto = xcb.header == "xproto";
     let bs = member_size(members).unwrap();
     let mut body = String::new();
-    let mut mb = MethodBuilder::new(&name).set_self_ownership(Ownership::MutRef);
-    mb = mb.add_argument(Argument::new(
-        Ownership::MutRef,
-        NamedComponentSignature::new(
-            "socket_buffer",
-            ComponentSignature::Signature(Signature::simple(RustType::in_scope("[u8]"))),
-        ),
-    ));
+    let mut func_b = FunctionBuilder::new(&name).set_visibility(Visibility::Public);
+    func_b = func_b
+        .add_argument(Argument::new(
+            Ownership::MutRef,
+            NamedComponentSignature::new(
+                "io",
+                ComponentSignature::Signature(Signature::simple_generic(Generic::bounded(
+                    "IO",
+                    Bounds::single(Bound::new(
+                        RustType::from_package("crate::con", "SocketIo"),
+                        false,
+                    )),
+                ))),
+            ),
+        ))
+        .add_argument(Argument::new(
+            Ownership::MutRef,
+            NamedComponentSignature::new(
+                "xcb_state",
+                ComponentSignature::Signature(Signature::simple_generic(Generic::bounded(
+                    "XS",
+                    Bounds::single(Bound::new(
+                        RustType::from_package("crate::con", "XcbState"),
+                        false,
+                    )),
+                ))),
+            ),
+        ));
     add_major_opcode(xproto, &mut body, xcb);
     // We don't need to do anything on an empty-body request essentially
     if bs == 0 {
         // We measure length in words here
+        dump!(body, "io.use_write_buffer(|buf| {\n");
         dump!(
             body,
-            "let buf = self.apply_offset(socket_buffer).get_mut(..4).ok_or({})?\n;",
+            "let buf = buf.get_mut(..4).ok_or({})?\n;",
             SERIALIZE_ERROR
         );
         if xproto {
@@ -131,7 +149,7 @@ pub(crate) fn implement_fixed_req_serialize(
             dump!(body, "buf[0] = major_opcode;\nbuf[1] = {};\n", opcode);
         }
         dump!(body, "buf[2..4].copy_from_slice(&(1u16).to_ne_bytes());\n");
-        dump!(body, "self.advance_writer(4);\n");
+        dump!(body, "Ok::<usize, crate::error::Error>(4)\n})?;\n");
     } else {
         let ff = create_fixed_fields(members);
 
@@ -170,7 +188,7 @@ pub(crate) fn implement_fixed_req_serialize(
                 }
             }
         }
-        dump!(body, "let buf = self.apply_offset(socket_buffer);\n");
+        dump!(body, "io.use_write_buffer(|buf| {\n");
         dump!(
             body,
             "buf.get_mut(..{}).ok_or({})?.copy_from_slice(&[\n",
@@ -197,9 +215,9 @@ pub(crate) fn implement_fixed_req_serialize(
             dump!(body, "0\n,");
         }
         dump!(body, "]);\n");
-        dump!(body, "self.advance_writer({});\n", bs);
+        dump!(body, "Ok::<usize, crate::error::Error>({})\n}})?;\n", bs);
     }
-    mb = set_return_type(mb, &mut body, reply);
+    func_b = set_return_type(func_b, &mut body, reply);
     let mut list_field_names = HashSet::new();
     let fields = members
         .iter()
@@ -230,25 +248,25 @@ pub(crate) fn implement_fixed_req_serialize(
         ));
     }
     for arg in args {
-        mb = mb.add_argument(arg);
+        func_b = func_b.add_argument(arg);
     }
-    mb.set_body(body)
+    func_b.set_body(body)
 }
 
 fn add_major_opcode(xproto: bool, body: &mut String, xcb: &Xcb) {
     if !xproto {
         let ext_name_source = format!("crate::proto::{}::EXTENSION_NAME", xcb.header);
-        let _ = body.write_fmt(format_args!("let major_opcode = self.major_opcode({}).ok_or(crate::error::Error::MissingExtension({}))?;\n", ext_name_source, ext_name_source));
+        let _ = body.write_fmt(format_args!("let major_opcode = xcb_state.major_opcode({}).ok_or(crate::error::Error::MissingExtension({}))?;\n", ext_name_source, ext_name_source));
     }
 }
 
 fn set_return_type(
-    mut mb: MethodBuilder,
+    mut fb: FunctionBuilder,
     body: &mut String,
     reply: Option<WrappedType>,
-) -> MethodBuilder {
+) -> FunctionBuilder {
     body.push_str(
-        "let seq = if forget { \nself.next_seq()\n} else {\n self.keep_and_return_next_seq()\n};\n",
+        "let seq = if forget { \nxcb_state.next_seq()\n} else {\n xcb_state.keep_and_return_next_seq()\n};\n",
     );
     if let Some(reply) = reply {
         let (cookie, constructor) = if let Some(sz) = reply.byte_size() {
@@ -267,17 +285,17 @@ fn set_return_type(
                 "Ok(Cookie::new(seq))",
             )
         };
-        mb = mb.set_return_type(ComponentSignature::Signature(Signature::simple(
+        fb = fb.set_return_type(ComponentSignature::Signature(Signature::simple(
             RustType::in_scope(cookie),
         )));
         let _ = body.write_str(constructor);
     } else {
-        mb = mb.set_return_type(ComponentSignature::Signature(Signature::simple(
+        fb = fb.set_return_type(ComponentSignature::Signature(Signature::simple(
             RustType::in_scope(format!("{}<VoidCookie>", RESULT)),
         )));
         let _ = body.write_str("Ok(VoidCookie::new(seq))");
     }
-    mb
+    fb
 }
 
 fn create_fixed_fields(members: &[EntityMember]) -> Vec<FixedField> {
@@ -325,7 +343,7 @@ pub(crate) fn implement_var_len_req_serialize(
     switch: Option<WrappedType>,
     reply: Option<WrappedType>,
     xcb: &Xcb,
-) -> MethodBuilder {
+) -> FunctionBuilder {
     let finite =
         is_finite_size(&members) && switch.as_ref().map(is_finite_switch_type).unwrap_or(true);
 
@@ -346,16 +364,36 @@ pub(crate) fn implement_var_len_req_serialize(
         .collect::<HashSet<String>>();
     let mut body = String::new();
     let name = RustCase::convert_to_valid_rust(&name, RustCase::Snake).unwrap();
-    let mut mb = MethodBuilder::new(&name).set_self_ownership(Ownership::MutRef);
-    mb = mb.add_argument(Argument::new(
-        Ownership::MutRef,
-        NamedComponentSignature::new(
-            "socket_buffer",
-            ComponentSignature::Signature(Signature::simple(RustType::in_scope("[u8]"))),
-        ),
-    ));
+    let mut func_b = FunctionBuilder::new(&name).set_visibility(Visibility::Public);
+    func_b = func_b
+        .add_argument(Argument::new(
+            Ownership::MutRef,
+            NamedComponentSignature::new(
+                "io",
+                ComponentSignature::Signature(Signature::simple_generic(Generic::bounded(
+                    "IO",
+                    Bounds::single(Bound::new(
+                        RustType::from_package("crate::con", "SocketIo"),
+                        false,
+                    )),
+                ))),
+            ),
+        ))
+        .add_argument(Argument::new(
+            Ownership::MutRef,
+            NamedComponentSignature::new(
+                "xcb_state",
+                ComponentSignature::Signature(Signature::simple_generic(Generic::bounded(
+                    "XS",
+                    Bounds::single(Bound::new(
+                        RustType::from_package("crate::con", "XcbState"),
+                        false,
+                    )),
+                ))),
+            ),
+        ));
     add_major_opcode(xproto, &mut body, xcb);
-    dump!(body, "let buf_ptr = self.apply_offset(socket_buffer);\n");
+    dump!(body, "io.use_write_buffer(|buf_ptr| {\n");
     let mut known_offset = 4;
     let mut header = String::new();
     let mut skip_first = false;
@@ -672,10 +710,10 @@ pub(crate) fn implement_var_len_req_serialize(
     }
     dump!(body, "{}", header);
     for arg in args {
-        mb = mb.add_argument(arg);
+        func_b = func_b.add_argument(arg);
     }
     if let Some(switch) = switch {
-        mb = mb.add_argument_in_scope_simple_type(
+        func_b = func_b.add_argument_in_scope_simple_type(
             Ownership::Owned,
             switch.rust_field_name(),
             switch.import_name("NONE"),
@@ -730,11 +768,11 @@ pub(crate) fn implement_var_len_req_serialize(
         dump!(body, "} else {\n");
         dump!(
             body,
-            "if word_len > self.max_request_size() {{\n return Err({}); \n}}\n",
+            "if word_len > xcb_state.max_request_size() {{\n return Err({}); \n}}\n",
             REQ_TO_BIG_ERROR
         );
 
-        dump!(body, "let buf_ptr = self.apply_offset(socket_buffer);\n");
+        //dump!(body, "let buf_ptr = io.write_buf_mut().at_offset();\n");
         dump!(
             body,
             "buf_ptr.get_mut(2..4).ok_or({})?.copy_from_slice(&[0, 0]);\n",
@@ -755,8 +793,8 @@ pub(crate) fn implement_var_len_req_serialize(
         dump!(body, "offset += 4;\n");
         dump!(body, "}\n");
     }
-    dump!(body, "self.advance_writer(offset);\n");
+    dump!(body, "Ok::<usize, crate::error::Error>(offset)\n})?;\n");
 
-    mb = set_return_type(mb, &mut body, reply);
-    mb.set_body(body)
+    func_b = set_return_type(func_b, &mut body, reply);
+    func_b.set_body(body)
 }

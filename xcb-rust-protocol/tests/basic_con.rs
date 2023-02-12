@@ -1,8 +1,9 @@
-use xcb_rust_protocol::connection::xproto::XprotoConnection;
+use std::fmt::Debug;
+use xcb_rust_protocol::con::{SocketIo, XcbBuffers, XcbState};
+use xcb_rust_protocol::connection::xproto::get_input_focus;
 use xcb_rust_protocol::proto::xproto::{Setup, VisualClassEnum};
 use xcb_rust_protocol::util::VariableLengthFromBytes;
 use xcb_rust_protocol::{Error, XcbConnection};
-use xcb_rust_protocol::con::XcbBuffers;
 
 pub(crate) struct BasicCon {
     pub(crate) offset: usize,
@@ -11,10 +12,7 @@ pub(crate) struct BasicCon {
 
 impl BasicCon {
     pub fn new() -> Self {
-        Self {
-            offset: 0,
-            seq: 0,
-        }
+        Self { offset: 0, seq: 0 }
     }
 }
 
@@ -66,12 +64,88 @@ impl XcbConnection for BasicCon {
     }
 }
 
+#[derive(Debug)]
+struct DummyIo {
+    inner: Vec<u8>,
+    offset: usize,
+}
+impl SocketIo for DummyIo {
+    fn block_for_more_data(&mut self) -> Result<(), &'static str> {
+        todo!()
+    }
+
+    fn use_read_buffer<E, F: FnOnce(&[u8]) -> Result<usize, E>>(
+        &mut self,
+        read_op: F,
+    ) -> Result<(), E>
+    where
+        E: Debug,
+    {
+        todo!()
+    }
+
+    fn use_write_buffer<E, F: FnOnce(&mut [u8]) -> Result<usize, E>>(
+        &mut self,
+        write_op: F,
+    ) -> Result<(), E>
+    where
+        E: Debug,
+    {
+        let val = (write_op)(&mut self.inner).unwrap();
+        self.offset += val;
+        Ok(())
+    }
+}
+
+struct DummyState;
+
+impl XcbState for DummyState {
+    fn major_opcode(&self, extension_name: &'static str) -> Option<u8> {
+        todo!()
+    }
+
+    fn next_seq(&mut self) -> u16 {
+        1
+    }
+
+    fn keep_and_return_next_seq(&mut self) -> u16 {
+        1
+    }
+
+    fn max_request_size(&self) -> usize {
+        todo!()
+    }
+
+    fn setup(&self) -> &Setup {
+        todo!()
+    }
+
+    fn generate_id<IO: SocketIo>(&mut self, io: &mut IO) -> Result<u32, Error> {
+        todo!()
+    }
+
+    fn block_for_reply<IO: SocketIo>(&mut self, io: &mut IO, seq: u16) -> Result<Vec<u8>, Error> {
+        todo!()
+    }
+
+    fn block_check_err<IO: SocketIo>(&mut self, io: &mut IO, seq: u16) -> Result<(), Error> {
+        todo!()
+    }
+
+    fn forget(&mut self, seq: u16) {
+        todo!()
+    }
+}
+
 #[test]
 fn test_one() {
-    let mut con = BasicCon::new();
     let mut buf = vec![0u8; u32::MAX as usize];
-    let cookie = con.get_input_focus(&mut buf, false).unwrap();
-    assert_eq!(4, con.offset);
+    let mut dummy = DummyIo {
+        inner: buf,
+        offset: 0,
+    };
+    let mut cookie = get_input_focus(&mut dummy, &mut DummyState, false).unwrap();
+    assert_eq!(4, dummy.offset);
     assert_eq!(1, cookie.seq);
 }
 

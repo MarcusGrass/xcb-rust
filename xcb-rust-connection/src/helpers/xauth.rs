@@ -18,7 +18,7 @@ pub struct Family(u16);
 impl Family {
     /// IPv4 connection to the server
     pub const INTERNET: Self = Self(0);
-    /// DECnet
+    /// `DECnet`
     pub const DEC_NET: Self = Self(1);
     /// Chaosnet connection
     pub const CHAOS: Self = Self(2);
@@ -132,7 +132,7 @@ mod file {
         pub(crate) fn new(
             auth_file: String,
         ) -> Result<Option<XAuthorityEntries>, tiny_std::error::Error> {
-            tiny_std::fs::read(&auth_file)
+            tiny_std::fs::read(auth_file)
                 .ok()
                 .map(|buf| Ok(XAuthorityEntries(buf, 0)))
                 .transpose()

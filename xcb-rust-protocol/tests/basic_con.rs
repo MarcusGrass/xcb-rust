@@ -10,12 +10,6 @@ pub(crate) struct BasicCon {
     pub(crate) seq: u16,
 }
 
-impl BasicCon {
-    pub fn new() -> Self {
-        Self { offset: 0, seq: 0 }
-    }
-}
-
 impl XcbConnection for BasicCon {
     fn apply_offset<'a>(&mut self, buffer: &'a mut [u8]) -> &'a mut [u8] {
         &mut buffer[self.offset..]
@@ -76,7 +70,7 @@ impl SocketIo for DummyIo {
 
     fn use_read_buffer<E, F: FnOnce(&[u8]) -> Result<usize, E>>(
         &mut self,
-        read_op: F,
+        _read_op: F,
     ) -> Result<(), E>
     where
         E: Debug,
@@ -100,7 +94,7 @@ impl SocketIo for DummyIo {
 struct DummyState;
 
 impl XcbState for DummyState {
-    fn major_opcode(&self, extension_name: &'static str) -> Option<u8> {
+    fn major_opcode(&self, _extension_name: &'static str) -> Option<u8> {
         todo!()
     }
 
@@ -120,31 +114,31 @@ impl XcbState for DummyState {
         todo!()
     }
 
-    fn generate_id<IO: SocketIo>(&mut self, io: &mut IO) -> Result<u32, Error> {
+    fn generate_id<IO: SocketIo>(&mut self, _io: &mut IO) -> Result<u32, Error> {
         todo!()
     }
 
-    fn block_for_reply<IO: SocketIo>(&mut self, io: &mut IO, seq: u16) -> Result<Vec<u8>, Error> {
+    fn block_for_reply<IO: SocketIo>(&mut self, _io: &mut IO, _seq: u16) -> Result<Vec<u8>, Error> {
         todo!()
     }
 
-    fn block_check_err<IO: SocketIo>(&mut self, io: &mut IO, seq: u16) -> Result<(), Error> {
+    fn block_check_err<IO: SocketIo>(&mut self, _io: &mut IO, _seq: u16) -> Result<(), Error> {
         todo!()
     }
 
-    fn forget(&mut self, seq: u16) {
+    fn forget(&mut self, _seq: u16) {
         todo!()
     }
 }
 
 #[test]
 fn test_one() {
-    let mut buf = vec![0u8; u32::MAX as usize];
+    let buf = vec![0u8; u32::MAX as usize];
     let mut dummy = DummyIo {
         inner: buf,
         offset: 0,
     };
-    let mut cookie = get_input_focus(&mut dummy, &mut DummyState, false).unwrap();
+    let cookie = get_input_focus(&mut dummy, &mut DummyState, false).unwrap();
     assert_eq!(4, dummy.offset);
     assert_eq!(1, cookie.seq);
 }

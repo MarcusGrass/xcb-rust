@@ -4,13 +4,14 @@ version = 3
 
 [[package]]
 name = "anyhow"
-version = "1.0.65"
+version = "1.0.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98161a4e3e2184da77bb14f02184cdd111e83bbbcc9979dfee3c44b9a85f5602"
+checksum = "9c7d0618f0e0b7e8ff11427422b64564d5fb0be1940354bfe2e0529b18a9d9b8"
 
 [[package]]
 name = "codegen-rs"
 version = "0.1.0"
+source = "git+https://github.com/MarcusGrass/codegen-rs?branch=main#1fc17faed201e8a76d38b7996396eb0a836f9cb7"
 dependencies = [
  "thiserror",
 ]
@@ -18,7 +19,7 @@ dependencies = [
 [[package]]
 name = "linux-rust-bindings"
 version = "0.1.0"
-source = "git+https://github.com/MarcusGrass/linux-rust-bindings.git?rev=f84e2276f755800221bc60eaf000240998ec93d0#f84e2276f755800221bc60eaf000240998ec93d0"
+source = "git+https://github.com/MarcusGrass/linux-rust-bindings?rev=890044c#890044ce1e40c35b0ad0a1e4be5bbbf8a8a597bd"
 
 [[package]]
 name = "proc-macro2"
@@ -41,7 +42,7 @@ dependencies = [
 [[package]]
 name = "rusl"
 version = "0.1.0"
-source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=d63d70a9439b9c56d4602166538894708075de3c#d63d70a9439b9c56d4602166538894708075de3c"
+source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=77252dde13357372d8220df3e237c94f76e99513#77252dde13357372d8220df3e237c94f76e99513"
 dependencies = [
  "linux-rust-bindings",
  "sc",
@@ -80,8 +81,9 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "smallmap"
-version = "1.4.0"
-source = "git+https://github.com/MarcusGrass/smallmap.git?rev=a0e7399d09a22753ef9c80aa1f1a34009b364357#a0e7399d09a22753ef9c80aa1f1a34009b364357"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "639e0ac36e9820b977840296a3cfd07cc4db677b2bc885549b5713615cd6a4bb"
 dependencies = [
  "rustc_version",
 ]
@@ -120,7 +122,7 @@ dependencies = [
 [[package]]
 name = "tiny-std"
 version = "0.1.0"
-source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=d63d70a9439b9c56d4602166538894708075de3c#d63d70a9439b9c56d4602166538894708075de3c"
+source = "git+https://github.com/MarcusGrass/tiny-std.git?rev=77252dde13357372d8220df3e237c94f76e99513#77252dde13357372d8220df3e237c94f76e99513"
 dependencies = [
  "rusl",
  "sc",

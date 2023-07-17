@@ -143,7 +143,7 @@ pub fn setup<IO: SocketIo>(
     dpy: ParsedDisplay,
 ) -> Result<XcbEventState, ConnectError> {
     let family = Family::LOCAL;
-    let host = tiny_std::env::host_name().unwrap_or_else(|_| "localhost".to_string());
+    let host = tiny_std::unix::host_name::host_name().unwrap_or_else(|_| "localhost".to_string());
     let setup_req = setup_request(xcb_env, family, host.as_bytes(), dpy.display)?;
     io.use_write_buffer(|buf| {
         buf[..setup_req.len()].copy_from_slice(&setup_req);

@@ -87,7 +87,7 @@ where
     Ok(
         Database::new_from_default(
             &send_request(io, state)?,
-            tiny_std::env::host_name().unwrap_or_else(|_| "localhost".to_string()),
+            tiny_std::unix::host_name::host_name().unwrap_or_else(|_| "localhost".to_string()),
             home_dir,
             xenvironment,
         ), // TODO: Maybe fix?

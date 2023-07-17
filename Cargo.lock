@@ -42,7 +42,7 @@ dependencies = [
 [[package]]
 name = "rusl"
 version = "0.1.0"
-source = "git+https://github.com/MarcusGrass/tiny-std?rev=fce20899b891cb07913800dc63fae991f758a819#fce20899b891cb07913800dc63fae991f758a819"
+source = "git+https://github.com/MarcusGrass/tiny-std?rev=d2a00132895f0c080813d1953ab55817a71907bc#d2a00132895f0c080813d1953ab55817a71907bc"
 dependencies = [
  "linux-rust-bindings",
  "sc",
@@ -122,7 +122,7 @@ dependencies = [
 [[package]]
 name = "tiny-std"
 version = "0.1.0"
-source = "git+https://github.com/MarcusGrass/tiny-std?rev=fce20899b891cb07913800dc63fae991f758a819#fce20899b891cb07913800dc63fae991f758a819"
+source = "git+https://github.com/MarcusGrass/tiny-std?rev=d2a00132895f0c080813d1953ab55817a71907bc#d2a00132895f0c080813d1953ab55817a71907bc"
 dependencies = [
  "rusl",
  "sc",

@@ -257,7 +257,7 @@ pub(crate) fn implement_req_name(mut req_name_spec: ReqNameSpec) -> FunctionBuil
     for req in req_name_spec.xproto {
         dump!(
             req_name_body,
-            "{} => return Some(\"{}\"),\n",
+            "#[cfg(feature = \"xproto\")]\n {} => return Some(\"{}\"),\n",
             req.major_opcode,
             req.req_name,
         );
@@ -331,13 +331,14 @@ pub(crate) fn add_evt(mut evt_name_spec: EvtNameSpec, fb: FileBuilder) -> FileBu
         } else {
             "from_bytes(raw)?.0"
         };
-        enum_builder = enum_builder.add_type_member(
+        enum_builder = enum_builder.add_type_member_with_annotations(
             &evt.evt_name,
             Signature::simple(RustType::from_package("xproto", &evt.evt_name)),
+            Annotations::new(vec![Annotation::new(format!("cfg(feature = \"xproto\")",))]),
         );
         dump!(
             parse_evt_body,
-            "{} => return Ok(Self::{}(xproto::{}::{})),\n",
+            "#[cfg(feature = \"xproto\")]\n {} => return Ok(Self::{}(xproto::{}::{})),\n",
             evt.major_opcode,
             evt.evt_name,
             evt.evt_name,

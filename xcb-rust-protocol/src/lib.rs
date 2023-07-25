@@ -13,16 +13,22 @@
 /// Some types has variable lengths that need to go on the head
 extern crate alloc;
 
+#[cfg(feature = "xproto")]
 pub use con::XcbConnection;
+#[cfg(feature = "xproto")]
 pub use helpers::XcbEnv;
 
 pub use crate::error::{Error, Result};
+#[cfg(feature = "xproto")]
 use crate::proto::xproto::{Keysym, Timestamp};
 
+#[cfg(feature = "xproto")]
 pub mod con;
 pub mod connection;
+#[cfg(feature = "xproto")]
 pub mod cookie;
 pub mod error;
+#[cfg(feature = "xproto")]
 pub mod helpers;
 pub mod proto;
 pub mod util;
@@ -42,7 +48,9 @@ pub const COPY_DEPTH_FROM_PARENT: u8 = 0;
 pub const COPY_CLASS_FROM_PARENT: u16 = 0;
 
 /// This constant can be used in most request that take a timestamp argument
+#[cfg(feature = "xproto")]
 pub const CURRENT_TIME: Timestamp = 0;
 
 /// This constant can be used to fill unused entries in `Keysym` tables
+#[cfg(feature = "xproto")]
 pub const NO_SYMBOL: Keysym = 0;

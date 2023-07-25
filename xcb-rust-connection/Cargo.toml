@@ -19,7 +19,7 @@ smallmap = { workspace = true, default-features = false }
 tiny-std = { workspace = true }
 rusl = { workspace = true, features = ["alloc"] }
 unix-print = { workspace = true }
-xcb-rust-protocol = { version = "0.1.0", features = ["xproto", "xc_misc", "render", "bigreq"] }
+xcb-rust-protocol = { path = "../xcb-rust-protocol", features = ["xproto", "xc_misc", "render", "bigreq"] }
 
 [features]
 default = []

@@ -164,22 +164,12 @@ dependencies = [
  "smallmap",
  "tiny-std",
  "unix-print",
- "xcb-rust-protocol 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xcb-rust-protocol",
 ]
 
 [[package]]
 name = "xcb-rust-protocol"
 version = "0.1.0"
-dependencies = [
- "tiny-std",
- "unix-print",
-]
-
-[[package]]
-name = "xcb-rust-protocol"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c835c63e02989ec7ac21e5e9be506a7018a4c2aaf7d8d8bdc88302c008937fe7"
 dependencies = [
  "tiny-std",
  "unix-print",

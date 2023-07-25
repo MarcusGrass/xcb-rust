@@ -1,5 +1,5 @@
 use alloc::vec::Vec;
-use core::fmt::{Debug};
+use core::fmt::Debug;
 
 use crate::proto::xproto::Setup;
 use crate::Error;
@@ -73,14 +73,18 @@ pub trait SocketIo {
     fn use_read_buffer<E, F: FnOnce(&[u8]) -> Result<usize, E>>(
         &mut self,
         read_op: F,
-    ) -> Result<(), E> where E: Debug;
+    ) -> Result<(), E>
+    where
+        E: Debug;
     /// Get a mutable reference to a buffer that should be dumped to the x11-socket
     /// function returns number of bytes written onto it.
     ///
     fn use_write_buffer<E, F: FnOnce(&mut [u8]) -> Result<usize, E>>(
         &mut self,
         write_op: F,
-    ) -> Result<(), E> where E: Debug;
+    ) -> Result<(), E>
+    where
+        E: Debug;
 }
 
 pub trait XcbState {

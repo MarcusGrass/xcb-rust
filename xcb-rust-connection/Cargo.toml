@@ -3,6 +3,13 @@ name = "xcb-rust-connection"
 version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
+readme = "../Readme.md"
+repository = "https://github.com/MarcusGrass/xcb-rust"
+homepage = "https://github.com/MarcusGrass/xcb-rust"
+description = "Rust x11 connection interface layer"
+documentation = "https://docs.rs/xcb-rust-connection"
+categories = ["external-ffi-bindings", "no-std", "os"]
+keywords = ["ffi", "bindings", "operating", "system", "linux"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

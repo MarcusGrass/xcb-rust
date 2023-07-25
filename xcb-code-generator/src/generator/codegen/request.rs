@@ -8,9 +8,7 @@ use codegen_rs::structures::generics::{Bound, Bounds, Generic};
 use codegen_rs::structures::method::Argument;
 use codegen_rs::structures::visibility::Visibility;
 use codegen_rs::structures::{ComponentSignature, Ownership, RustType, Signature};
-use codegen_rs::{
-    FileBuilder, FunctionBuilder, RustCase,
-};
+use codegen_rs::{FileBuilder, FunctionBuilder, RustCase};
 
 use crate::generator::codegen::functions::{
     find_req_derive_fields, from_bytes_length_expr, get_unsorted_required_fields, is_finite_size,

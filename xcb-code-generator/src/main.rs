@@ -8,9 +8,7 @@ use codegen_rs::structures::visibility::Visibility;
 use codegen_rs::structures::{
     Annotation, Annotations, ComponentSignature, Import, Ownership, RustType, Signature,
 };
-use codegen_rs::{
-    FileBuilder, FunctionBuilder, ModuleBuilder,
-};
+use codegen_rs::{FileBuilder, FunctionBuilder, ModuleBuilder};
 
 use xcb_xsd::parse::raw_xml_parse::TagSpec;
 
@@ -170,10 +168,7 @@ fn parse_all() -> Result<Vec<Xcb>> {
     Ok(xcbs)
 }
 
-fn write_cargo_toml(
-    path: impl AsRef<Path>,
-    features: Vec<(String, Vec<String>)>,
-) -> Result<()> {
+fn write_cargo_toml(path: impl AsRef<Path>, features: Vec<(String, Vec<String>)>) -> Result<()> {
     let mut base = "\
 [package]
 name = \"xcb-rust-protocol\"

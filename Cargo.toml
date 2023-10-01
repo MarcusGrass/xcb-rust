@@ -5,4 +5,4 @@ members = ["xcb-code-generator", "xcb-rust-connection", "xcb-rust-protocol", "xc
 [workspace.dependencies]
 smallmap = { version = "1.4.1", default-features = false }
 rusl = { version = "0.2.1" }
-tiny-std = { version = "0.2.1" }
+tiny-std = { version = "0.2.2" }

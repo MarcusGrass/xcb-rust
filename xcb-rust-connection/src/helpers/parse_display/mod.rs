@@ -1,5 +1,6 @@
 //! Utilities for parsing X11 display strings.
 use alloc::string::{String, ToString};
+use rusl::string::unix_str::{UnixStr, UnixString};
 use xcb_rust_protocol::XcbEnv;
 
 mod connect_instruction;
@@ -28,7 +29,7 @@ impl ParsedDisplay {
     /// Get an iterator over `ConnectAddress`es from this parsed display for connecting
     /// to the server.
     #[must_use]
-    pub fn connect_instruction(&self) -> Option<String> {
+    pub fn connect_instruction(&self) -> Option<UnixString> {
         connect_instruction::connect_addresses(self)
     }
 }

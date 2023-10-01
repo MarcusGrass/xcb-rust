@@ -3,20 +3,21 @@
 
 use super::ParsedDisplay;
 use alloc::string::String;
+use rusl::string::unix_str::UnixString;
 
 /// Get an iterator over all of the addresses we should target with a
 /// `ParsedDisplay`.
-pub(super) fn connect_addresses(p: &ParsedDisplay) -> Option<String> {
+pub(super) fn connect_addresses(p: &ParsedDisplay) -> Option<UnixString> {
     let ParsedDisplay {
         protocol, display, ..
     } = p;
 
     if protocol.is_none() || protocol.as_deref() == Some("unix") {
-        let file_name = alloc::format!("/tmp/.X11-unix/X{display}");
+        let file_name = alloc::format!("/tmp/.X11-unix/X{display}\0");
 
         // TODO: Try abstract socket (file name with prepended '\0')
         // Not supported on Rust right now: https://github.com/rust-lang/rust/issues/42048
-        Some(file_name)
+        Some(UnixString::try_from_string(file_name).unwrap())
     } else {
         None
     }
@@ -33,7 +34,8 @@ mod tests {
         let ci = pd.connect_instruction();
         let ci = ci.unwrap();
 
-        assert_eq!(ci, "/tmp/.X11-unix/X0".to_string(),);
+
+        assert_eq!(ci, UnixString::try_from_str("/tmp/.X11-unix/X0\0").unwrap());
     }
 
     #[test]
@@ -43,6 +45,6 @@ mod tests {
 
         let ci = ci.unwrap();
 
-        assert_eq!(ci, "/tmp/.X11-unix/X0".to_string());
+        assert_eq!(ci, UnixString::try_from_str("/tmp/.X11-unix/X0\0").unwrap());
     }
 }

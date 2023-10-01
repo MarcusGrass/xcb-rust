@@ -1,5 +1,6 @@
 use crate::proto::xproto::{Atom, GetPropertyReply, Window, CLIENT_MESSAGE_EVENT};
 use crate::Error;
+use tiny_std::UnixStr;
 
 pub mod cursor;
 pub mod properties;
@@ -8,15 +9,15 @@ pub mod resource_manager;
 #[derive(Debug, Default, Copy, Clone)]
 pub struct XcbEnv<'a> {
     /// `HOME` dir path
-    pub home_dir: Option<&'a str>,
+    pub home_dir: Option<&'a UnixStr>,
     /// `XENVIRONMENT` file path
-    pub x_environment: Option<&'a str>,
+    pub x_environment: Option<&'a UnixStr>,
     /// `XAUTHORITY` file path
-    pub x_authority: Option<&'a str>,
+    pub x_authority: Option<&'a UnixStr>,
     /// `DISPLAY` number
-    pub display: Option<&'a str>,
+    pub display: Option<&'a UnixStr>,
     /// `XCURSOR_SIZE` cursor size
-    pub x_cursor_size: Option<&'a str>,
+    pub x_cursor_size: Option<&'a UnixStr>,
 }
 
 pub fn new_client_message32(window: Window, r#type: Atom, data: [u32; 5]) -> [u8; 32] {

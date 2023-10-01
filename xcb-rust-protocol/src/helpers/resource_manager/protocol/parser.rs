@@ -204,9 +204,13 @@ fn parse_entry(data: &[u8]) -> (Result<Entry, ()>, &[u8]) {
 }
 
 /// Parse the contents of a database
-pub(crate) fn parse_database<F>(mut data: &[u8], result: &mut Vec<Entry>, mut include_callback: F)
+pub(crate) fn parse_database<F>(
+    mut data: &[u8],
+    result: &mut Vec<Entry>,
+    mut include_callback: F,
+) -> Result<(), tiny_std::Error>
 where
-    for<'r> F: FnMut(&'r [u8], &mut Vec<Entry>),
+    for<'r> F: FnMut(&'r [u8], &mut Vec<Entry>) -> Result<(), tiny_std::Error>,
 {
     // Iterate over lines
     while let Some(first) = data.first() {
@@ -230,7 +234,7 @@ where
                             parse_with_matcher(&remaining[1..], |c| c != b'"' && c != b'\n');
                         if let Some(b'\"') = remaining.first() {
                             // Okay, we found a well-formed include directive.
-                            include_callback(file, result);
+                            include_callback(file, result)?;
                         }
                     }
                 }
@@ -243,6 +247,7 @@ where
             }
         }
     }
+    Ok(())
 }
 
 /// Parse a resource query like "foo.bar.baz" (no wildcards allowed, no bindings allowed)
@@ -269,6 +274,7 @@ mod test {
     use alloc::string::{String, ToString};
     use alloc::vec;
     use alloc::vec::Vec;
+    use tiny_std::eprintln;
 
     use super::{parse_database, parse_entry, parse_query, Binding, Component, Entry};
 
@@ -620,7 +626,7 @@ mod test {
         let mut success = true;
         for (data, expected) in tests.iter() {
             let mut result = Vec::new();
-            parse_database(data, &mut result, |_, _| unreachable!());
+            parse_database(data, &mut result, |_, _| unreachable!()).unwrap();
             if &result != expected {
                 eprintln!("While testing {:?}", data);
                 eprintln!("Expected: {:?}", expected);
@@ -653,7 +659,11 @@ mod test {
         for (data, expected) in tests.iter() {
             let mut result = Vec::new();
             let mut calls = Vec::new();
-            parse_database(data, &mut result, |file, _| calls.push(file.to_vec()));
+            parse_database(data, &mut result, |file, _| {
+                calls.push(file.to_vec());
+                Ok(())
+            })
+            .unwrap();
             if &calls != expected {
                 eprintln!("While testing {:?}", data);
                 eprintln!("Expected: {:?}", expected);
@@ -677,7 +687,9 @@ mod test {
         parse_database(b"#include\"test\"", &mut result, |file, result| {
             assert_eq!(file, b"test");
             result.push(entry.clone());
-        });
+            Ok(())
+        })
+        .unwrap();
         assert_eq!(result, [entry]);
     }
 

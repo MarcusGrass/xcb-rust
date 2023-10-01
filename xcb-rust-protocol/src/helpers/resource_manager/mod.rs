@@ -4,6 +4,7 @@
 
 use alloc::string::ToString;
 use protocol::Database;
+use tiny_std::UnixStr;
 
 use crate::con::{SocketIo, XcbState};
 use crate::helpers::resource_manager::protocol::work_around_constant_limitations;
@@ -50,7 +51,7 @@ where
 {
     Ok(Database::new_from_get_property_reply(&send_request(
         io, state,
-    )?))
+    )?)?)
 }
 
 /// Create a new X11 resource database from the default locations.
@@ -77,19 +78,17 @@ where
 pub fn new_from_default<IO, XS>(
     io: &mut IO,
     state: &mut XS,
-    home_dir: Option<&str>,
-    xenvironment: Option<&str>,
+    home_dir: Option<&UnixStr>,
+    xenvironment: Option<&UnixStr>,
 ) -> Result<Database, Error>
 where
     IO: SocketIo,
     XS: XcbState,
 {
-    Ok(
-        Database::new_from_default(
-            &send_request(io, state)?,
-            tiny_std::unix::host_name::host_name().unwrap_or_else(|_| "localhost".to_string()),
-            home_dir,
-            xenvironment,
-        ), // TODO: Maybe fix?
-    )
+    Ok(Database::new_from_default(
+        &send_request(io, state)?,
+        tiny_std::unix::host_name::host_name().unwrap_or_else(|_| "localhost".to_string()),
+        home_dir,
+        xenvironment,
+    )?)
 }

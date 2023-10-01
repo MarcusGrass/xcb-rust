@@ -348,7 +348,10 @@ fn get_cursor_size(
     screen: &xproto::Screen,
     env: XcbEnv,
 ) -> u32 {
-    if let Some(size) = env.x_cursor_size.and_then(|s| s.parse().ok()) {
+    if let Some(size) = env
+        .x_cursor_size
+        .and_then(|s| s.as_str().ok().and_then(|s| s.parse().ok()))
+    {
         return size;
     }
     if rm_cursor_size > 0 {

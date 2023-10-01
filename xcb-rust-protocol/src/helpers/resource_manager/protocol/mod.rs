@@ -13,6 +13,7 @@ use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
 use core::str::FromStr;
+use tiny_std::{UnixStr, UnixString};
 
 use crate::proto::xproto::GetPropertyReply;
 
@@ -122,38 +123,38 @@ impl Database {
     ///
     /// The behaviour of this function is equivalent to xcb-util-xrm's
     /// `xcb_xrm_database_from_default()`.
-    #[must_use]
     pub fn new_from_default(
         reply: &GetPropertyReply,
         hostname: String,
-        home_dir: Option<&str>,
-        xenvironment: Option<&str>,
-    ) -> Self {
+        home_dir: Option<&UnixStr>,
+        xenvironment: Option<&UnixStr>,
+    ) -> Result<Self, tiny_std::Error> {
         let cur_dir = String::from(".");
 
         // 1. Try to load the RESOURCE_MANAGER property
-        let mut entries = if let Some(db) = Self::new_from_get_property_reply(reply) {
+        let mut entries = if let Some(db) = Self::new_from_get_property_reply(reply)? {
             db.entries
         } else {
             let mut entries = Vec::new();
             if let Some(home) = home_dir {
                 // 2. Otherwise, try to load $HOME/.Xresources
-                let mut path = String::from(home);
+                let mut path = String::from(home.as_str()?);
                 path.push_str("/.Xresources\0");
-                let read_something = if let Ok(data) = tiny_std::fs::read(&path) {
-                    parse_data_with_base_directory(&mut entries, &data, home, 0);
-                    true
-                } else {
-                    false
-                };
+                let read_something =
+                    if let Ok(data) = tiny_std::fs::read(UnixStr::try_from_str(&path)?) {
+                        parse_data_with_base_directory(&mut entries, &data, home, 0)?;
+                        true
+                    } else {
+                        false
+                    };
                 // Restore the path so it refers to $HOME again
                 let _ = path.pop();
 
                 if !read_something {
                     // 3. Otherwise, try to load $HOME/.Xdefaults
                     path.push_str("/.Xdefaults\0");
-                    if let Ok(data) = tiny_std::fs::read(path) {
-                        parse_data_with_base_directory(&mut entries, &data, home, 0);
+                    if let Ok(data) = tiny_std::fs::read(UnixStr::try_from_str(&path)?) {
+                        parse_data_with_base_directory(&mut entries, &data, home, 0)?;
                     }
                 }
             }
@@ -163,36 +164,44 @@ impl Database {
         // 4. If XENVIRONMENT is specified, merge the database defined by that file
         if let Some(xenv) = xenvironment {
             if let Ok(data) = tiny_std::fs::read(xenv) {
-                let base = xenv.rsplit_once('/').map(|s| s.0).unwrap_or(&cur_dir);
-                parse_data_with_base_directory(&mut entries, &data, base, 0);
+                let base = xenv
+                    .as_str()?
+                    .rsplit_once('/')
+                    .map(|s| s.0)
+                    .unwrap_or(&cur_dir);
+                let base_unix = UnixString::try_from_str(base)?;
+                parse_data_with_base_directory(&mut entries, &data, &base_unix, 0)?;
             }
         } else {
             // 5. Load `$HOME/.Xdefaults-[hostname]`
             let mut file = String::from(".Xdefaults-");
             file.push_str(&hostname);
             let base_path = match home_dir {
-                Some(home) => String::from(home),
-                None => String::new(),
+                Some(home) => home,
+                None => UnixStr::EMPTY,
             };
-            let path = format!("{base_path}/{file}");
-            if let Ok(data) = tiny_std::fs::read(path) {
-                parse_data_with_base_directory(&mut entries, &data, &base_path, 0);
+            let base_path_utf8 = base_path.as_str()?;
+            let path = format!("{base_path_utf8}/{file}\0");
+            let path_unix = UnixString::try_from_str(&path)?;
+            if let Ok(data) = tiny_std::fs::read(&path_unix) {
+                parse_data_with_base_directory(&mut entries, &data, base_path, 0)?;
             }
         }
 
-        Self { entries }
+        Ok(Self { entries })
     }
 
     /// Construct a new X11 resource database from a [`GetPropertyReply`].
     ///
     /// The reply should come from [`GET_RESOURCE_DATABASE`] with its `window` field set to the
     /// window ID of the first root window.
-    #[must_use]
-    pub fn new_from_get_property_reply(reply: &GetPropertyReply) -> Option<Database> {
+    pub fn new_from_get_property_reply(
+        reply: &GetPropertyReply,
+    ) -> Result<Option<Database>, tiny_std::Error> {
         if reply.format == 8 && !reply.value.is_empty() {
-            Some(Database::new_from_data(&reply.value))
+            Ok(Some(Database::new_from_data(&reply.value)?))
         } else {
-            None
+            Ok(None)
         }
     }
 
@@ -203,11 +212,12 @@ impl Database {
     ///
     /// See [`Self::new_from_data_with_base_directory`] for a version that allows to provide a path that
     /// is used for resolving relative `#include` statements.
-    #[must_use]
-    pub fn new_from_data(data: &[u8]) -> Self {
+    pub fn new_from_data(data: &[u8]) -> Result<Self, tiny_std::Error> {
+        const THIS_DIR: &UnixStr = UnixStr::from_str_checked(".\0");
+
         let mut entries = Vec::new();
-        parse_data_with_base_directory(&mut entries, data, ".", 0);
-        Self { entries }
+        parse_data_with_base_directory(&mut entries, data, THIS_DIR, 0)?;
+        Ok(Self { entries })
     }
 
     /// Construct a new X11 resource database from raw data.
@@ -217,11 +227,14 @@ impl Database {
     ///
     /// When a relative `#include` statement is encountered, the file to include is searched
     /// relative to the given `base_path`.
-    pub fn new_from_data_with_base_directory(data: &[u8], base_path: &str) -> Self {
-        fn helper(data: &[u8], base_path: &str) -> Database {
+    pub fn new_from_data_with_base_directory(
+        data: &[u8],
+        base_path: &UnixStr,
+    ) -> Result<Self, tiny_std::Error> {
+        fn helper(data: &[u8], base_path: &UnixStr) -> Result<Database, tiny_std::Error> {
             let mut entries = Vec::new();
-            parse_data_with_base_directory(&mut entries, data, base_path, 0);
-            Database { entries }
+            parse_data_with_base_directory(&mut entries, data, base_path, 0)?;
+            Ok(Database { entries })
         }
         helper(data, base_path)
     }
@@ -292,25 +305,35 @@ impl Database {
 fn parse_data_with_base_directory(
     result: &mut Vec<Entry>,
     data: &[u8],
-    base_path: &str,
+    base_path: &UnixStr,
     depth: u8,
-) {
+) -> Result<(), tiny_std::Error> {
     if depth > MAX_INCLUSION_DEPTH {
-        return;
+        return Ok(());
     }
     parser::parse_database(data, result, |path, entries| {
         // Construct the name of the file to include
         if let Ok(path) = core::str::from_utf8(path) {
-            let extended = format!("{base_path}/{path}");
+            let base_utf8 = base_path.as_str()?;
+            let extended = format!("{base_utf8}/{path}\0");
             let mut file_buf = Vec::with_capacity(4096);
             // Read the file contents
-            if let Ok(data) = tiny_std::fs::read(&extended) {
+            if let Ok(data) = tiny_std::fs::read(UnixStr::from_str_checked(&extended)) {
                 // Parse the file contents with the new base path
-                let new_base = extended.rsplit_once('/').map(|s| s.0).unwrap_or(base_path);
-                parse_data_with_base_directory(entries, &file_buf, new_base, depth + 1);
+                let new_base = extended.rsplit_once('/').map(|s| s.0).unwrap_or(base_utf8);
+                parse_data_with_base_directory(
+                    entries,
+                    &file_buf,
+                    UnixStr::try_from_str(new_base)?,
+                    depth + 1,
+                )
+            } else {
+                Ok(())
             }
+        } else {
+            Ok(())
         }
-    });
+    })
 }
 
 /// Parse a value to a boolean, returning `None` if this is not possible.
@@ -355,7 +378,7 @@ mod test {
 
     #[test]
     fn test_parse_i32_fail() {
-        let db = Database::new_from_data(b"a:");
+        let db = Database::new_from_data(b"a:").unwrap();
         assert_eq!(db.get_string("a", "a"), Some(""));
         assert!(db.get_value::<i32>("a", "a").is_err());
     }
@@ -369,7 +392,7 @@ mod test {
             (b"a: 100", 100),
         ];
         for (input, expected) in data.iter() {
-            let db = Database::new_from_data(input);
+            let db = Database::new_from_data(input).unwrap();
             let result = db.get_value::<i32>("a", "a");
             assert_eq!(result.unwrap().unwrap(), *expected);
         }

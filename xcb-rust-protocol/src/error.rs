@@ -15,6 +15,7 @@ pub enum Error {
     MissingExtension(&'static str),
     XcbError(XcbError),
     Connection(&'static str),
+    TinyStd(tiny_std::Error),
 }
 
 impl From<TryFromIntError> for Error {
@@ -31,6 +32,12 @@ impl From<TryFromSliceError> for Error {
     }
 }
 
+impl From<tiny_std::Error> for Error {
+    fn from(value: tiny_std::Error) -> Self {
+        Self::TinyStd(value)
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
@@ -42,6 +49,7 @@ impl Display for Error {
             Error::XcbError(e) => f.write_str("Xcb Error"),
             Error::MissingExtension(ext) => f.write_fmt(format_args!("Missing extension {}", ext)),
             Error::Connection(c) => f.write_fmt(format_args!("Connection err {c}")),
+            Error::TinyStd(e) => f.write_fmt(format_args!("Tiny std error: {e}")),
         }
     }
 }

@@ -11,6 +11,7 @@ use alloc::string::{String, ToString};
 use alloc::vec;
 use alloc::vec::Vec;
 use core::fmt::Write;
+use tiny_std::{UnixStr, UnixString};
 
 use crate::XcbEnv;
 
@@ -113,6 +114,24 @@ pub(crate) enum Error {
 
     /// No cursor file could be found
     NothingFound,
+
+    /// Error interfacing with the system
+    TinyStdError(tiny_std::Error),
+
+    /// Error interfacing with the system
+    RuslError(tiny_std::RuslError),
+}
+
+impl From<tiny_std::Error> for Error {
+    fn from(value: tiny_std::Error) -> Self {
+        Self::TinyStdError(value)
+    }
+}
+
+impl From<tiny_std::RuslError> for Error {
+    fn from(value: tiny_std::RuslError) -> Self {
+        Self::RuslError(value)
+    }
 }
 
 /// The result of finding a cursor
@@ -126,7 +145,7 @@ pub(crate) enum Cursor<F> {
 }
 
 // Get the 'Inherits' entry from an index.theme file
-fn parse_inherits(filename: &str) -> Result<Vec<String>, Error> {
+fn parse_inherits(filename: &UnixStr) -> Result<Vec<String>, Error> {
     let file = tiny_std::fs::read(filename).map_err(|_| Error::NothingFound)?;
     parse_inherits_impl(&file)
 }
@@ -224,22 +243,25 @@ mod test_parse_inherits {
 
 /// Find a cursor file based on the name of a cursor theme and the name of the cursor.
 pub(crate) fn find_cursor(theme: &str, name: &str, env: XcbEnv) -> Result<Cursor<Vec<u8>>, Error> {
+    const DEFAULT_CURSOR_PATH: &str =
+        "~/.icons:/usr/share/icons:/usr/share/pixmaps:/usr/X11R6/lib/X11/icons";
     let home = match env.home_dir {
         Some(home) => home,
         None => return Err(Error::NoHomeDir),
     };
     let cursor_path = env
         .x_cursor_size
-        .unwrap_or("~/.icons:/usr/share/icons:/usr/share/pixmaps:/usr/X11R6/lib/X11/icons");
-    let open_cursor = |file: &str| {
-        let buf = tiny_std::fs::read(file).map_err(|_| Error::NothingFound)?;
+        .map(|sz| sz.as_str())
+        .unwrap_or(Ok(DEFAULT_CURSOR_PATH))?;
+    let open_cursor = |file: &UnixStr| {
+        let buf = tiny_std::fs::read(file)?;
         Ok::<_, Error>(buf)
     };
     find_cursor_impl(home, cursor_path, theme, name, open_cursor, parse_inherits)
 }
 
 fn find_cursor_impl<F, G, H>(
-    home: &str,
+    home: &UnixStr,
     cursor_path: &str,
     theme: &str,
     name: &str,
@@ -247,8 +269,8 @@ fn find_cursor_impl<F, G, H>(
     mut parse_inherits: H,
 ) -> Result<Cursor<F>, Error>
 where
-    G: FnMut(&str) -> Result<F, Error>,
-    H: FnMut(&str) -> Result<Vec<String>, Error>,
+    G: FnMut(&UnixStr) -> Result<F, Error>,
+    H: FnMut(&UnixStr) -> Result<Vec<String>, Error>,
 {
     if theme == "core" {
         if let Some(id) = cursor_shape_to_id(name) {
@@ -267,7 +289,8 @@ where
                 let mut theme_dir = String::new();
                 // Does the path begin with '~'?
                 if let Some(mut path) = path.strip_prefix('~') {
-                    let _ = theme_dir.write_fmt(format_args!("{home}"));
+                    let home_utf8 = home.as_str()?;
+                    let _ = theme_dir.write_fmt(format_args!("{home_utf8}"));
                     // Skip a path separator if there is one
                     if path.chars().next().map(|ch| ch == '/') == Some(true) {
                         path = &path[1..];
@@ -285,7 +308,8 @@ where
                 // Find the cursor in the theme
                 let mut cursor_file = theme_dir.clone();
                 cursor_file.push_str("/cursors");
-                let _ = cursor_file.write_fmt(format_args!("/{name}"));
+                let _ = cursor_file.write_fmt(format_args!("/{name}\0"));
+                let cursor_file = UnixString::try_from_string(cursor_file)?;
                 if let Ok(file) = open_cursor(&cursor_file) {
                     return Ok(Cursor::File(file));
                 }
@@ -293,6 +317,7 @@ where
                 // Get the theme's index.theme file and parse its 'Inherits' line
                 let mut index = theme_dir;
                 index.push_str("/index.theme");
+                let index = UnixString::try_from_string(index)?;
                 if let Ok(res) = parse_inherits(&index) {
                     next_inherits.extend(res);
                 }
@@ -312,14 +337,24 @@ mod test_find_cursor {
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
+    use tiny_std::UnixStr;
 
     use super::{find_cursor_impl, Cursor, Error};
 
     #[test]
     fn core_cursor() {
-        let cb1 = |_: &str| -> Result<(), _> { unimplemented!() };
-        let cb2 = |_: &str| unimplemented!();
-        match find_cursor_impl("unused", "unused", "core", "heart", cb1, cb2).unwrap() {
+        let cb1 = |_: &UnixStr| -> Result<(), _> { unimplemented!() };
+        let cb2 = |_: &UnixStr| unimplemented!();
+        match find_cursor_impl(
+            UnixStr::from_str_checked("unused\0"),
+            "unused",
+            "core",
+            "heart",
+            cb1,
+            cb2,
+        )
+        .unwrap()
+        {
             Cursor::CoreChar(31) => {}
             e => panic!("Unexpected result {:?}", e),
         }
@@ -329,16 +364,16 @@ mod test_find_cursor {
     fn nothing_found() {
         let mut opened = Vec::new();
         let mut inherit_parsed = Vec::new();
-        let cb1 = |path: &str| -> Result<(), _> {
-            opened.push(path.to_string());
+        let cb1 = |path: &UnixStr| -> Result<(), _> {
+            opened.push(path.as_str().unwrap().to_string());
             Err(Error::NothingFound)
         };
-        let cb2 = |path: &str| {
-            inherit_parsed.push(path.to_string());
+        let cb2 = |path: &UnixStr| {
+            inherit_parsed.push(path.as_str().unwrap().to_string());
             Ok(Vec::new())
         };
         match find_cursor_impl(
-            "home",
+            UnixStr::from_str_checked("home\0"),
             "path:~/some/:/entries",
             "theme",
             "theCursor",
@@ -369,20 +404,28 @@ mod test_find_cursor {
     #[test]
     fn inherit() {
         let mut opened = Vec::new();
-        let cb1 = |path: &str| -> Result<(), _> {
-            opened.push(path.to_string());
+        let cb1 = |path: &UnixStr| -> Result<(), _> {
+            opened.push(path.as_str().unwrap().to_string());
             Err(Error::NothingFound)
         };
-        let cb2 = |path: &str| {
-            if path.starts_with("base/theTheme") {
+        let cb2 = |path: &UnixStr| {
+            let path_utf8 = path.as_str().unwrap();
+            if path_utf8.starts_with("base/theTheme") {
                 Ok(vec!["inherited".into()])
-            } else if path.starts_with("path/inherited") {
+            } else if path_utf8.starts_with("path/inherited") {
                 Ok(vec!["theEnd".into()])
             } else {
                 Ok(vec![])
             }
         };
-        match find_cursor_impl("home", "path:base:tail", "theTheme", "theCursor", cb1, cb2) {
+        match find_cursor_impl(
+            UnixStr::from_str_checked("home\0"),
+            "path:base:tail",
+            "theTheme",
+            "theCursor",
+            cb1,
+            cb2,
+        ) {
             Err(Error::NothingFound) => {}
             e => panic!("Unexpected result {:?}", e),
         }

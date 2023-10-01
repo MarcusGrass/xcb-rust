@@ -42,9 +42,9 @@ dependencies = [
 
 [[package]]
 name = "rusl"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1032884db15e48ffa3ebdc669457699fdfbf750aa90000b29e302e9f8d14a09"
+checksum = "1b62d21d2959661f369817eb4a5190698682b2601bd110827fbdcc198ab41e90"
 dependencies = [
  "linux-rust-bindings",
  "sc",
@@ -122,13 +122,12 @@ dependencies = [
 
 [[package]]
 name = "tiny-std"
-version = "0.1.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fade72caa88ce1d32651ff6d92288672a329bf0614435b251f98fc4858476d2"
+checksum = "7fc26e23d4a84d241049d017dcb95388fef6682f78ff2adcc866cd333f0e3167"
 dependencies = [
  "rusl",
  "sc",
- "unix-print",
 ]
 
 [[package]]
@@ -136,15 +135,6 @@ name = "unicode-ident"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4f5b37a154999a8f3f98cc23a628d850e154479cd94decf3414696e12e31aaf"
-
-[[package]]
-name = "unix-print"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c50e1866b3de196f1329f6a805771eee750651c83bbebd5dff159e5f033cc16f"
-dependencies = [
- "sc",
-]
 
 [[package]]
 name = "xcb-code-generator"
@@ -163,7 +153,6 @@ dependencies = [
  "sc",
  "smallmap",
  "tiny-std",
- "unix-print",
  "xcb-rust-protocol",
 ]
 
@@ -172,7 +161,6 @@ name = "xcb-rust-protocol"
 version = "0.1.0"
 dependencies = [
  "tiny-std",
- "unix-print",
 ]
 
 [[package]]

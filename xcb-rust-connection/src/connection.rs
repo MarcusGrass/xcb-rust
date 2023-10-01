@@ -5,6 +5,7 @@ use alloc::{format, vec};
 use core::time::Duration;
 use rusl::error::Errno;
 use rusl::platform::{PollEvents, PollFd, TimeSpec};
+use rusl::string::unix_str::{UnixStr, UnixString};
 
 use smallmap::{Map, Set};
 use tiny_std::fs::read;
@@ -12,7 +13,6 @@ use tiny_std::io::{Read, Write};
 use tiny_std::net::UnixStream;
 use tiny_std::time::MonotonicInstant;
 use tiny_std::unix::fd::{AsRawFd, OwnedFd, RawFd};
-use unix_print::unix_eprintln;
 
 use xcb_rust_protocol::con::{SocketIo, XcbBuffer, XcbBuffers, XcbState};
 use xcb_rust_protocol::connection::bigreq::enable;
@@ -126,7 +126,9 @@ impl SeqCount {
     }
 }
 
-pub fn find_socket_path(dpy_name: Option<&str>) -> Result<(String, ParsedDisplay), ConnectError> {
+pub fn find_socket_path(
+    dpy_name: Option<&str>,
+) -> Result<(UnixString, ParsedDisplay), ConnectError> {
     let parsed_display = crate::helpers::parse_display::parse_display(dpy_name)
         .ok_or(ConnectError::DisplayParsingError)?;
     let screen: usize = parsed_display.screen.into();

@@ -71,6 +71,7 @@ mod file {
     use alloc::string::String;
     use alloc::vec;
     use alloc::vec::Vec;
+    use rusl::string::unix_str::UnixStr;
 
     use super::AuthEntry;
 
@@ -130,8 +131,8 @@ mod file {
         /// be determined. If opening the file failed (for example, because it does not exist),
         /// that error is returned.
         pub(crate) fn new(
-            auth_file: String,
-        ) -> Result<Option<XAuthorityEntries>, tiny_std::error::Error> {
+            auth_file: &UnixStr,
+        ) -> Result<Option<XAuthorityEntries>, tiny_std::Error> {
             tiny_std::fs::read(auth_file)
                 .ok()
                 .map(|buf| Ok(XAuthorityEntries(buf, 0)))
@@ -231,9 +232,9 @@ pub fn get_auth(
     family: Family,
     address: &[u8],
     display: u16,
-) -> Result<Option<AuthInfo>, tiny_std::error::Error> {
+) -> Result<Option<AuthInfo>, tiny_std::Error> {
     if let Some(xauth_file) = xcb_env.x_authority {
-        return match file::XAuthorityEntries::new(xauth_file.to_string())? {
+        return match file::XAuthorityEntries::new(xauth_file)? {
             None => Ok(None),
             Some(entries) => Ok(get_auth_impl(entries, family, address, display)),
         };

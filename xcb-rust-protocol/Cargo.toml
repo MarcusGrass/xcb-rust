@@ -13,7 +13,6 @@ keywords = ["ffi", "bindings", "x11", "xorg", "linux"]
 
 [dependencies]
 tiny-std = { workspace = true }
-unix-print = { workspace = true }
 
 [features]
 debug = []

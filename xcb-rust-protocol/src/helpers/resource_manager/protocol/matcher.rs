@@ -594,7 +594,7 @@ mod test {
         let mut failures = 0;
         for &(data, resource, class, expected) in tests.iter() {
             let mut entries = Vec::new();
-            parse_database(data, &mut entries, |_, _| unreachable!());
+            parse_database(data, &mut entries, |_, _| unreachable!()).unwrap();
             let result = match_entry(&entries, resource, class);
             if result != expected {
                 eprintln!(

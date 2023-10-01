@@ -1,7 +1,7 @@
 use alloc::string::String;
 use core::fmt::Formatter;
 
-use tiny_std::error::Error as StdError;
+use tiny_std::Error as StdError;
 use xcb_rust_protocol::proto::xproto::{SetupAuthenticate, SetupFailed};
 use xcb_rust_protocol::Error;
 

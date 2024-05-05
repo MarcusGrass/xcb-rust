@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [v0.2.3] - 2024-05-05
+
+### Fixed
+
+- Some dumb warns I forgot to check
+
+## [v0.2.2] - 2024-05-05
+
+### Fixed
+
+- Upgrade `tiny-std` and `rusl`
+
 ## [v0.2.2] - 2024-05-05
 
 ### Fixed

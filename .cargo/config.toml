@@ -5,7 +5,7 @@ rustflags = [
     "-Wclippy::pedantic",
     "-Aclippy::too_many_arguments",
     "-Aclippy::needless_pass_by_value",
-    "-Aclippy::let_underscore_drop",
+    "-Alet_underscore_drop",
     "-Aclippy::too_many_lines",
     "-Aclippy::cast_lossless",
     "-Aclippy::cast_possible_truncation",

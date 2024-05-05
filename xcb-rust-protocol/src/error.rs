@@ -47,7 +47,7 @@ impl Display for Error {
             Error::TooLargeRequest => f.write_str("Failed to serialize request, too large to send"),
             Error::TryFromSlice => f.write_str("Failed to convert slice to number"),
             Error::XcbError(e) => f.write_str("Xcb Error"),
-            Error::MissingExtension(ext) => f.write_fmt(format_args!("Missing extension {}", ext)),
+            Error::MissingExtension(ext) => f.write_fmt(format_args!("Missing extension {ext}")),
             Error::Connection(c) => f.write_fmt(format_args!("Connection err {c}")),
             Error::TinyStd(e) => f.write_fmt(format_args!("Tiny std error: {e}")),
         }

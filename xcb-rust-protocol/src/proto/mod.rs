@@ -1401,6 +1401,7 @@ pub(crate) fn request_name(
     }
 }
 #[inline]
+#[must_use]
 pub fn find_extension(name: &str) -> Option<&'static str> {
     match name {
         #[cfg(feature = "bigreq")]
@@ -1639,6 +1640,7 @@ impl Event {
     where
         E: crate::util::ExtensionInfoProvider,
     {
+        #[allow(unused_imports)]
         use crate::util::FixedLengthFromBytes;
         let opcode = crate::util::response_type(raw)?;
         match opcode {

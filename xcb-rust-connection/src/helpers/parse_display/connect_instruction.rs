@@ -34,7 +34,6 @@ mod tests {
         let ci = pd.connect_instruction();
         let ci = ci.unwrap();
 
-
         assert_eq!(ci, UnixString::try_from_str("/tmp/.X11-unix/X0\0").unwrap());
     }
 

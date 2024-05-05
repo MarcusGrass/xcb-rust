@@ -147,18 +147,27 @@ dependencies = [
 
 [[package]]
 name = "xcb-rust-connection"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rusl",
  "sc",
  "smallmap",
  "tiny-std",
- "xcb-rust-protocol",
+ "xcb-rust-protocol 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "xcb-rust-protocol"
 version = "0.2.3"
+dependencies = [
+ "tiny-std",
+]
+
+[[package]]
+name = "xcb-rust-protocol"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54257d955e0f4ea8f60c42b0c777c6d5952906a4dbaf8cec2ef54b96e1b9d1c5"
 dependencies = [
  "tiny-std",
 ]

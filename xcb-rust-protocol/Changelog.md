@@ -3,12 +3,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+
 ## [Unreleased]
 ### Fixed
 
 ### Added
 
 ### Changed
+
+## [v0.2.2] - 2024-05-05
+
+### Fixed
+
+- Upgrade `tiny-std` and `rusl`
 
 ## [v0.2.1] - 2023-10-01
 

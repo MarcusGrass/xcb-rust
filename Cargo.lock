@@ -18,9 +18,9 @@ dependencies = [
 
 [[package]]
 name = "linux-rust-bindings"
-version = "0.1.1"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88eeeb1a5ef57ab0d40fb7a256e1b211496f97d6a8664ef52c0a665ce69a4e0f"
+checksum = "109280d660e557dfa6474e3b1bbe04272ba3fa5c5e5ce73b394c7b224f082caa"
 
 [[package]]
 name = "proc-macro2"
@@ -42,9 +42,9 @@ dependencies = [
 
 [[package]]
 name = "rusl"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b62d21d2959661f369817eb4a5190698682b2601bd110827fbdcc198ab41e90"
+checksum = "37cef3b7f9e145a892eede62669c682351b12d2c5152d8428cab41d63c62f8aa"
 dependencies = [
  "linux-rust-bindings",
  "sc",
@@ -122,9 +122,9 @@ dependencies = [
 
 [[package]]
 name = "tiny-std"
-version = "0.2.2"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb2723882f9043517eed85a953b0bf7bdc2c09458ca46dee458ff345a4dcbe6f"
+checksum = "7746a3b6b64a7dbd7e77ba3040dfce6ef3f693aedb0f08ab60b7026f8374cee7"
 dependencies = [
  "rusl",
  "sc",
@@ -158,7 +158,7 @@ dependencies = [
 
 [[package]]
 name = "xcb-rust-protocol"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "tiny-std",
 ]

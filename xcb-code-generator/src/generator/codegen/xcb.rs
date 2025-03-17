@@ -24,12 +24,12 @@ pub(crate) fn implement_from_uints(
     for u in impl_for {
         let body = if let Some(wrap) = wrap_with.clone() {
             if let XcbType::Builtin(_) = wrap.borrow().clone() {
-                format!("Self(val as u{})", size)
+                format!("Self(val as u{size})")
             } else {
                 format!("Self({}::from(val as u{}))", wrap.rust_entity_name(), size)
             }
         } else {
-            format!("Self(val as u{})", size)
+            format!("Self(val as u{size})")
         };
         let impl_body = ImplBuilder::new(Signature::simple(RustType::in_scope(name)))
             .implement_for(Signature::simple(RustType::in_scope(format!("From<{u}>"))))

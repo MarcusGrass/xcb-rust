@@ -182,16 +182,11 @@ pub(crate) fn find_req_derive_fields(
     }
     for member in members {
         if let EntityMember::List(el) = member {
-            if let Some(expr) = &el.length_expr {
-                match expr {
-                    XcbExpression::Fieldref(f) => {
-                        if !exclude.is_empty() {
-                            return (vec![], replace);
-                        }
-                        exclude.push(f.clone());
-                    }
-                    _ => {}
+            if let Some(XcbExpression::Fieldref(f)) = &el.length_expr {
+                if !exclude.is_empty() {
+                    return (vec![], replace);
                 }
+                exclude.push(f.clone());
             }
         }
     }
@@ -233,12 +228,12 @@ pub(crate) fn is_finite_size(members: &[EntityMember]) -> bool {
     for member in members {
         match member {
             EntityMember::Field(f) => {
-                if !f.kind.concrete.byte_size().is_some() {
+                if f.kind.concrete.byte_size().is_none() {
                     return false;
                 }
             }
             EntityMember::List(l) => {
-                if !l.fixed_count.is_some() {
+                if l.fixed_count.is_none() {
                     return false;
                 }
             }
@@ -283,11 +278,11 @@ pub(crate) fn is_finite_switch_enum(switch: &SwitchEnum) -> bool {
 
 #[inline]
 pub(crate) fn is_finite_switch_type(expect_switch: &WrappedType) -> bool {
-    if let XcbType::SwitchStruct(ss) = expect_switch.borrow().deref() {
+    if let XcbType::SwitchStruct(ss) = &*expect_switch.borrow() {
         if !is_finite_switch_struct(ss) {
             return false;
         }
-    } else if let XcbType::SwitchEnum(se) = expect_switch.borrow().deref() {
+    } else if let XcbType::SwitchEnum(se) = &*expect_switch.borrow() {
         if !is_finite_switch_enum(se) {
             return false;
         }
@@ -378,7 +373,6 @@ pub(crate) fn probe_num_types(expr: &XcbExpression) -> Vec<EntityField> {
 
 pub(crate) fn from_bytes_length_expr(
     expr: &XcbExpression,
-    list_name: &str,
     rev: bool,
     ref_self_fields: bool,
 ) -> String {
@@ -401,12 +395,11 @@ pub(crate) fn from_bytes_length_expr(
     let ty = largest_builtin
         .map(|lb| format!(" as {}", lb.rust_entity_name()))
         .unwrap_or_default();
-    do_write_length_expr(expr, list_name, rev, ref_self_fields, &ty, &short_ty)
+    do_write_length_expr(expr, rev, ref_self_fields, &ty, &short_ty)
 }
 
 pub(crate) fn do_write_length_expr(
     expr: &XcbExpression,
-    list_name: &str,
     rev: bool,
     ref_self_fields: bool,
     ty: &str,
@@ -418,36 +411,15 @@ pub(crate) fn do_write_length_expr(
             let _ = out.write_fmt(format_args!(
                 "{}({}{ty}, {}{ty})",
                 b.op.into_op_expr(rev),
-                do_write_length_expr(
-                    b.left.as_ref(),
-                    list_name,
-                    rev,
-                    ref_self_fields,
-                    ty,
-                    short_ty,
-                ),
-                do_write_length_expr(
-                    b.right.as_ref(),
-                    list_name,
-                    rev,
-                    ref_self_fields,
-                    ty,
-                    short_ty,
-                ),
+                do_write_length_expr(b.left.as_ref(), rev, ref_self_fields, ty, short_ty,),
+                do_write_length_expr(b.right.as_ref(), rev, ref_self_fields, ty, short_ty,),
             ));
         }
         XcbExpression::Unop(u) => {
             let _ = out.write_fmt(format_args!(
                 "{}({})",
                 u.op.into_op_expr(rev),
-                do_write_length_expr(
-                    u.tgt.as_ref(),
-                    list_name,
-                    rev,
-                    ref_self_fields,
-                    ty,
-                    short_ty,
-                )
+                do_write_length_expr(u.tgt.as_ref(), rev, ref_self_fields, ty, short_ty,)
             ));
         }
         XcbExpression::Fieldref(f) => {
@@ -465,27 +437,13 @@ pub(crate) fn do_write_length_expr(
                 "{}.count_ones()",
                 maybe_self_ref(
                     ref_self_fields,
-                    &do_write_length_expr(
-                        pc.as_ref(),
-                        list_name,
-                        rev,
-                        ref_self_fields,
-                        ty,
-                        short_ty,
-                    ),
+                    &do_write_length_expr(pc.as_ref(), rev, ref_self_fields, ty, short_ty,),
                 )
             ));
         }
         XcbExpression::Sumof(so) => {
             if let Some(expr) = so.expr.as_ref() {
-                let le = do_write_length_expr(
-                    expr.as_ref(),
-                    list_name,
-                    rev,
-                    ref_self_fields,
-                    ty,
-                    short_ty,
-                );
+                let le = do_write_length_expr(expr.as_ref(), rev, ref_self_fields, ty, short_ty);
                 let dot = if le.starts_with('.') { "" } else { "." };
                 dump!(
                     out,
@@ -605,7 +563,7 @@ pub(crate) fn do_write_ser_length_expr(
         }
         XcbExpression::Fieldref(f) => {
             let prefix = if ref_self_fields { "self." } else { "" };
-            replace_with_expr.insert(f.name.clone(), format!("{}{}.len()", prefix, list_name));
+            replace_with_expr.insert(f.name.clone(), format!("{prefix}{list_name}.len()"));
             dump!(out, "{}{}.len()", prefix, list_name);
         }
         XcbExpression::Paramref(pr) => {
@@ -621,7 +579,7 @@ pub(crate) fn do_write_ser_length_expr(
                 short_ty,
             );
             let ins = if expr.is_empty() {
-                "".to_string()
+                String::new()
             } else {
                 format!("{}.", maybe_self_ref(ref_self_fields, expr))
             };
@@ -639,9 +597,9 @@ pub(crate) fn do_write_ser_length_expr(
                 );
                 let dot = if le.starts_with('.') { "" } else { "." };
                 let ins = if le.is_empty() {
-                    "".to_string()
+                    String::new()
                 } else {
-                    format!("{dot}{}", le)
+                    format!("{dot}{le}")
                 };
                 dump!(
                     out,
@@ -740,8 +698,7 @@ pub(crate) fn get_sorted_required_fields(field: &[EntityField]) -> Vec<EntityFie
         .cloned()
         .map(|ef| (ef.name.to_rust_snake(), ef))
         .collect::<HashMap<String, EntityField>>()
-        .into_iter()
-        .map(|(_, ef)| ef)
+        .into_values()
         .collect::<Vec<EntityField>>();
     to_sort.sort_by(|a, b| a.name.cmp(&b.name));
     to_sort

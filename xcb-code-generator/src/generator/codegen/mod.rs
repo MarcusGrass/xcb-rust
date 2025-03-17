@@ -119,7 +119,7 @@ pub(crate) fn generate_proto(
             ConstantBuilder::const_builder(
                 "EXTENSION_NAME",
                 RustType::in_scope("&str"),
-                format!("\"{}\"", ext_name),
+                format!("\"{ext_name}\""),
             )
             .set_visibility(Visibility::Public),
         );
@@ -176,8 +176,7 @@ pub(crate) fn generate_proto(
                 fb = fb.add_impl(
                     ImplBuilder::new(Signature::simple(RustType::in_scope(&struct_name)))
                         .implement_for(Signature::simple(RustType::in_scope(format!(
-                            "{}<32>",
-                            FIX_LEN_SERIALIZE
+                            "{FIX_LEN_SERIALIZE}<32>"
                         ))))
                         .add_method(
                             MethodBuilder::new("serialize_fixed")
@@ -190,8 +189,7 @@ pub(crate) fn generate_proto(
                     ,
                 ).add_impl(ImplBuilder::new(Signature::simple(RustType::in_scope(&struct_name)))
                     .implement_for(Signature::simple(RustType::in_scope(format!(
-                        "{}<32>",
-                        FIX_LEN_FROM_BYTES
+                        "{FIX_LEN_FROM_BYTES}<32>"
                     ))))
 
                     .add_method(
@@ -199,7 +197,7 @@ pub(crate) fn generate_proto(
                             .add_argument_in_scope_simple_type(Ownership::Ref, "buf", "[u8]")
                             .set_body("Ok(Self(buf.get(0..32).ok_or(crate::error::Error::FromBytes)?.try_into().map_err(|_| crate::error::Error::FromBytes)?))")
                             .set_return_type(ComponentSignature::Signature(Signature::simple(
-                                RustType::in_scope(format!("{}<Self>", RESULT)),
+                                RustType::in_scope(format!("{RESULT}<Self>")),
                             ))),
                     ));
             }
@@ -294,7 +292,7 @@ pub(crate) fn add_evt(mut evt_name_spec: EvtNameSpec, fb: FileBuilder) -> FileBu
             )),
         )
         .set_return_type(ComponentSignature::Signature(Signature::simple(
-            RustType::in_scope(format!("{}<Event>", RESULT)),
+            RustType::in_scope(format!("{RESULT}<Event>")),
         )));
 
     let mut parse_evt_body = "use crate::util::FixedLengthFromBytes;\n".to_string();
@@ -318,7 +316,9 @@ pub(crate) fn add_evt(mut evt_name_spec: EvtNameSpec, fb: FileBuilder) -> FileBu
         enum_builder = enum_builder.add_type_member_with_annotations(
             &evt.evt_name,
             Signature::simple(RustType::from_package("xproto", &evt.evt_name)),
-            Annotations::new(vec![Annotation::new(format!("cfg(feature = \"xproto\")",))]),
+            Annotations::new(vec![Annotation::new(
+                "cfg(feature = \"xproto\")".to_string(),
+            )]),
         );
         dump!(
             parse_evt_body,
@@ -359,8 +359,7 @@ pub(crate) fn add_evt(mut evt_name_spec: EvtNameSpec, fb: FileBuilder) -> FileBu
                 &case_name,
                 Signature::simple(RustType::from_package(&ext_name, &r.evt_name)),
                 Annotations::new(vec![Annotation::new(format!(
-                    "cfg(feature = \"{}\")",
-                    ext_name
+                    "cfg(feature = \"{ext_name}\")"
                 ))]),
             );
             let from_bytes = if r.fixed {

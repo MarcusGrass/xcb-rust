@@ -204,7 +204,7 @@ pub(crate) fn implement_switch_struct(
                     field.em.rust_field_name(),
                     field.em.rust_field_name()
                 )),
-        )
+        );
     }
     if copy_type {
         sb = sb.add_derive_in_scope("Copy");
@@ -230,7 +230,7 @@ pub(crate) fn find_switch_enum_ref_type(switch_struct: &SwitchStruct) -> Wrapped
                 }
             })
             .unwrap();
-        e = Some(enum_ref)
+        e = Some(enum_ref);
     }
     e.unwrap()
 }
@@ -255,7 +255,7 @@ fn impl_switch(
             ),
         ))
         .set_return_type(ComponentSignature::Signature(Signature::simple(
-            RustType::in_scope(format!("{}<(Self, usize)>", RESULT)),
+            RustType::in_scope(format!("{RESULT}<(Self, usize)>")),
         )));
     let serialize_into_builder = MethodBuilder::new("serialize_into")
         .set_visibility(Visibility::Public)
@@ -269,7 +269,7 @@ fn impl_switch(
             ),
         ))
         .set_return_type(ComponentSignature::Signature(Signature::simple(
-            RustType::in_scope(format!("{}<usize>", RESULT)),
+            RustType::in_scope(format!("{RESULT}<usize>")),
         )));
     let mut serialize_into_body = String::new();
     let mut switch_expr_builder = MethodBuilder::new("switch_expr")
@@ -400,22 +400,19 @@ fn impl_switch(
                         .write_fmt(format_args!("if mask & {}.0 != 0 {{\n", member.enum_ref));
                     let expr = l.length_expr.as_ref().unwrap();
                     req_fields.extend(expr.required_fields());
-                    let expr =
-                        from_bytes_length_expr(expr, &l.field.name.to_rust_snake(), false, false);
-                    let _ = from_bytes_body
-                        .write_fmt(format_args!("let length = {} as usize;\n", expr));
+                    let expr = from_bytes_length_expr(expr, false, false);
+                    let _ =
+                        from_bytes_body.write_fmt(format_args!("let length = {expr} as usize;\n"));
                     if sz == 1
                         && (l.field.kind.use_field().is_builtin()
                             || l.field.kind.use_field().is_builtin_alias())
                     {
                         let _ = from_bytes_body.write_fmt(format_args!(
-                            "slf.{} = Some({}(buf_ptr.get(offset..).ok_or({FROM_BYTES_ERROR})?, length)?);\n",
-                            fname, BYTE_VEC_FROM_BYTES
+                            "slf.{fname} = Some({BYTE_VEC_FROM_BYTES}(buf_ptr.get(offset..).ok_or({FROM_BYTES_ERROR})?, length)?);\n"
                         ));
                     } else {
                         let _ = from_bytes_body.write_fmt(format_args!(
-                            "slf.{} = Some({}(buf_ptr.get(offset..).ok_or({FROM_BYTES_ERROR})?, {}, length, {}));\n",
-                            fname, FIX_LEN_FROM_BYTES_MACRO, use_type, sz
+                            "slf.{fname} = Some({FIX_LEN_FROM_BYTES_MACRO}(buf_ptr.get(offset..).ok_or({FROM_BYTES_ERROR})?, {use_type}, length, {sz}));\n"
                         ));
                     }
 
@@ -430,12 +427,11 @@ fn impl_switch(
                     );
                     let expr = l.length_expr.as_ref().unwrap();
                     req_fields.extend(expr.required_fields());
-                    let expr =
-                        from_bytes_length_expr(expr, &l.field.name.to_rust_snake(), false, false);
+                    let expr = from_bytes_length_expr(expr, false, false);
                     let _ = from_bytes_body
                         .write_fmt(format_args!("if mask & {}.0 != 0 {{\n", member.enum_ref));
-                    let _ = from_bytes_body
-                        .write_fmt(format_args!("let length = {} as usize;\n", expr));
+                    let _ =
+                        from_bytes_body.write_fmt(format_args!("let length = {expr} as usize;\n"));
                     let _ = from_bytes_body.write_fmt(format_args!(
                         "let {} = {}(buf_ptr.get(offset..).ok_or({})?, {}, offset, length);\n",
                         l.field.name.to_rust_snake(),
@@ -456,10 +452,8 @@ fn impl_switch(
     }
     let switch_expr_raw = switch_expr_type.unwrap();
     let switch_type = switch_expr_raw.rsplit_once("::").unwrap().0;
-    let switch_expr_body = format!(
-        "let mut mask = {}::default();\n{}mask",
-        switch_type, switch_expr_body
-    );
+    let switch_expr_body =
+        format!("let mut mask = {switch_type}::default();\n{switch_expr_body}mask");
     switch_expr_builder = switch_expr_builder
         .set_body(switch_expr_body)
         .set_return_type(ComponentSignature::Signature(Signature::simple(
@@ -563,7 +557,7 @@ pub(crate) fn implement_switch_enum(
     let mut from_bytes_builder = MethodBuilder::new("from_bytes")
         .set_visibility(Visibility::Public)
         .set_return_type(ComponentSignature::Signature(Signature::simple(
-            RustType::in_scope(format!("{}<(Self, usize)>", RESULT)),
+            RustType::in_scope(format!("{RESULT}<(Self, usize)>")),
         )))
         .add_argument_in_scope_simple_type(Ownership::Ref, "bytes", "[u8]");
 
@@ -631,7 +625,7 @@ pub(crate) fn implement_switch_enum(
             .set_body(serialize_body)
             .add_argument_in_scope_simple_type(Ownership::MutRef, "buf", "[u8]")
             .set_return_type(ComponentSignature::Signature(Signature::simple(
-                RustType::in_scope(format!("{}<usize>", RESULT)),
+                RustType::in_scope(format!("{RESULT}<usize>")),
             )))
             .set_self_ownership(Ownership::Owned),
     );
@@ -657,6 +651,6 @@ mod tests {
             affect_which,
             core::ops::BitAnd::bitand(core::ops::Not::not(clear), core::ops::Not::not(select_all)),
         );
-        eprintln!("{}", res);
+        eprintln!("{res}");
     }
 }

@@ -27,7 +27,8 @@ use crate::generator::type_resolve::TypeResolver;
     clippy::needless_return,
     clippy::needless_borrow,
     clippy::vec_box,
-    clippy::collapsible_else_if
+    clippy::collapsible_else_if,
+    clippy::struct_field_names
 )]
 mod generated_parse_template;
 mod generator;
@@ -67,7 +68,7 @@ fn main() -> Result<()> {
     let mut ext_fun_body = "match name {\n".to_string();
     for (feat, _) in &all_features {
         if feat != "xproto" {
-            let rf = format!("{}::EXTENSION_NAME", feat);
+            let rf = format!("{feat}::EXTENSION_NAME");
             dump!(
                 ext_fun_body,
                 "#[cfg(feature = \"{}\")]\n{} => Some({}),\n",

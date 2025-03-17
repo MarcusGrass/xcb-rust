@@ -5,6 +5,7 @@
     clippy::unnecessary_cast,
     clippy::derive_partial_eq_without_eq,
     clippy::too_many_arguments,
+    clippy::enum_variant_names,
     unused_variables,
     unused_mut,
     unsafe_code

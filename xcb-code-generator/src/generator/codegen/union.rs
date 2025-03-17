@@ -33,7 +33,7 @@ pub(crate) fn implement_union(s: &XcbUnion, fb: FileBuilder) -> FileBuilder {
     }
     let rust_name = s.name.to_rust_valid_pascal();
     // eprintln!("Union {} size {}", s.name, biggest);
-    let byte_type = format!("[u8; {}]", biggest);
+    let byte_type = format!("[u8; {biggest}]");
     let builder = ContainerStructBuilder::new(&rust_name)
         .set_visibility(Visibility::Public)
         .add_derive_in_scope("Debug")
@@ -45,21 +45,20 @@ pub(crate) fn implement_union(s: &XcbUnion, fb: FileBuilder) -> FileBuilder {
     fb.add_container_struct(builder).add_impl(
         ImplBuilder::new(Signature::simple(RustType::in_scope(&rust_name)))
             .implement_for(Signature::simple(RustType::in_scope(format!(
-                "FixedLengthFromBytes<{}>",
-                biggest
+                "FixedLengthFromBytes<{biggest}>"
             ))))
             .add_method(
                 MethodBuilder::new("from_bytes")
                     .add_argument_in_scope_simple_type(Ownership::Ref, "bytes", "[u8]")
                     .set_return_type(ComponentSignature::Signature(Signature::simple(
-                        RustType::in_scope(format!("{}<Self>", RESULT)),
+                        RustType::in_scope(format!("{RESULT}<Self>")),
                     )))
-                    .set_body(format!("// SAFETY: Checked that the bytes are available\n Ok(Self(unsafe {{bytes.get(..{}).ok_or({})?.try_into().unwrap_unchecked()}}))", biggest, FROM_BYTES_ERROR)),
+                    .set_body(format!("// SAFETY: Checked that the bytes are available\n Ok(Self(unsafe {{bytes.get(..{biggest}).ok_or({FROM_BYTES_ERROR})?.try_into().unwrap_unchecked()}}))")),
             ),
     )
         .add_impl(ImplBuilder::new(Signature::simple(RustType::in_scope(&rust_name)))
             .implement_for(Signature::simple(RustType::in_scope(
-                format!("FixedLengthSerialize<{}>", biggest)
+                format!("FixedLengthSerialize<{biggest}>")
             )))
             .add_method(MethodBuilder::new("serialize_fixed")
                 .set_self_ownership(Ownership::Owned)

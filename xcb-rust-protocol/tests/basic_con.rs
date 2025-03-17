@@ -1,62 +1,9 @@
 use std::fmt::Debug;
-use xcb_rust_protocol::con::{SocketIo, XcbBuffers, XcbState};
+use xcb_rust_protocol::con::{SocketIo, XcbState};
 use xcb_rust_protocol::connection::xproto::get_input_focus;
 use xcb_rust_protocol::proto::xproto::{Setup, VisualClassEnum};
 use xcb_rust_protocol::util::VariableLengthFromBytes;
-use xcb_rust_protocol::{Error, XcbConnection};
-
-pub(crate) struct BasicCon {
-    pub(crate) offset: usize,
-    pub(crate) seq: u16,
-}
-
-impl XcbConnection for BasicCon {
-    fn apply_offset<'a>(&mut self, buffer: &'a mut [u8]) -> &'a mut [u8] {
-        &mut buffer[self.offset..]
-    }
-
-    fn max_request_size(&self) -> usize {
-        usize::MAX
-    }
-
-    fn next_seq(&mut self) -> u16 {
-        self.seq += 1;
-        self.seq
-    }
-
-    fn keep_and_return_next_seq(&mut self) -> u16 {
-        self.seq += 1;
-        self.seq
-    }
-
-    fn forget(&mut self, _seq: u16) {}
-
-    fn advance_reader(&mut self, _step: usize) {}
-
-    fn advance_writer(&mut self, step: usize) {
-        self.offset += step;
-    }
-
-    fn generate_id(&mut self, _buffers: &mut XcbBuffers) -> Result<u32, Error> {
-        todo!()
-    }
-
-    fn block_for_reply(&mut self, _buffers: &mut XcbBuffers, _seq: u16) -> Result<Vec<u8>, Error> {
-        todo!()
-    }
-
-    fn block_check_for_err(&mut self, _buffers: &mut XcbBuffers, _seq: u16) -> Result<(), Error> {
-        Ok(())
-    }
-
-    fn major_opcode(&self, _extension_name: &'static str) -> Option<u8> {
-        None
-    }
-
-    fn setup(&self) -> &Setup {
-        todo!()
-    }
-}
+use xcb_rust_protocol::Error;
 
 #[derive(Debug)]
 struct DummyIo {
@@ -224,7 +171,7 @@ fn get_setup_data() -> Vec<u8> {
 #[test]
 fn parse_setup() {
     let setup = get_setup_data();
-    let (setup, _offset) = Setup::from_bytes(&*setup).unwrap();
+    let (setup, _offset) = Setup::from_bytes(&setup).unwrap();
 
     //assert_eq!(offset, setup.length);
 
@@ -275,9 +222,9 @@ fn parse_setup() {
 
 /// A canary for the cases where we transmute stuff between byte arrays
 #[test]
-#[allow(unsafe_code, clippy::drop_copy)]
+#[allow(unsafe_code, dropping_copy_types)]
 fn ensure_safe_transmute_u32_to_u8_arr_len_known() {
-    let orig: [u32; 3] = [8179234, 559, 58928];
+    let orig: [u32; 3] = [8_179_234, 559, 58928];
     let want: [u8; 12] = [34, 206, 124, 0, 47, 2, 0, 0, 48, 230, 0, 0];
     unsafe {
         let u8_res: [u8; 12] = core::mem::transmute(orig);
@@ -286,10 +233,10 @@ fn ensure_safe_transmute_u32_to_u8_arr_len_known() {
 }
 
 #[test]
-#[allow(unsafe_code, clippy::drop_copy)]
+#[allow(unsafe_code, dropping_copy_types)]
 fn ensure_safe_transmute_u8_to_u32_len_known() {
     let orig: [u8; 12] = [34, 206, 124, 0, 47, 2, 0, 0, 48, 230, 0, 0];
-    let want: [u32; 3] = [8179234, 559, 58928];
+    let want: [u32; 3] = [8_179_234, 559, 58928];
     unsafe {
         let u32_res: [u32; 3] = core::mem::transmute(orig);
         assert_eq!(u32_res, want);

@@ -26,10 +26,10 @@ enum RenderSupport {
     /// Render extension not available
     None,
 
-    /// Static cursor support (CreateCursor added in RENDER 0.5)
+    /// Static cursor support (`CreateCursor` added in RENDER 0.5)
     StaticCursor,
 
-    /// Animated cursor support (CreateAnimCursor added in RENDER 0.8)
+    /// Animated cursor support (`CreateAnimCursor` added in RENDER 0.8)
     AnimatedCursor,
 }
 
@@ -130,7 +130,7 @@ impl Handle {
 }
 
 fn open_cursor(
-    theme: &Option<String>,
+    theme: Option<&str>,
     name: &str,
     env: XcbEnv,
 ) -> Option<find_cursor::Cursor<Vec<u8>>> {
@@ -274,7 +274,7 @@ where
     XS: XcbState,
 {
     // Find the right cursor, load it directly if it is a core cursor
-    let cursor_file = match open_cursor(&handle.theme, name, env) {
+    let cursor_file = match open_cursor(handle.theme.as_deref(), name, env) {
         None => return Ok(NONE),
         Some(find_cursor::Cursor::CoreChar(c)) => {
             return create_core_cursor(io, state, handle.cursor_font, c);

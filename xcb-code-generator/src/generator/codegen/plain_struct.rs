@@ -50,13 +50,13 @@ pub(crate) fn implement_plain(
         .add_derive_in_scope("Debug")
         .add_derive_in_scope("Clone")
         .add_derive_in_scope("PartialEq");
-    let excl_names = if !exclude {
+    let excl_names = if exclude {
+        HashSet::new()
+    } else {
         let excl = find_derive_fields(members);
         excl.iter()
             .map(|e| e.name.clone())
             .collect::<HashSet<String>>()
-    } else {
-        HashSet::new()
     };
 
     sb = add_fields(sb, members, None, &excl_names, xcb);
@@ -85,8 +85,7 @@ pub(crate) fn implement_plain(
         if source_type.should_serialize() {
             let fix_len_ser = ImplBuilder::new(Signature::simple(RustType::in_scope(&rust_name)))
                 .implement_for(Signature::simple(RustType::in_scope(format!(
-                    "{}<{}>",
-                    FIX_LEN_SERIALIZE, bytes
+                    "{FIX_LEN_SERIALIZE}<{bytes}>"
                 ))))
                 .add_method(
                     MethodBuilder::new("serialize_fixed")
@@ -94,7 +93,7 @@ pub(crate) fn implement_plain(
                         .add_simple_annotation("inline")
                         .set_self_ownership(Ownership::Owned)
                         .set_return_type(ComponentSignature::Signature(Signature::simple(
-                            RustType::in_scope(format!("[u8; {}]", bytes)),
+                            RustType::in_scope(format!("[u8; {bytes}]")),
                         ))),
                 );
             impls.push(fix_len_ser);
@@ -103,8 +102,7 @@ pub(crate) fn implement_plain(
             let fix_len_from_bytes =
                 ImplBuilder::new(Signature::simple(RustType::in_scope(&rust_name)))
                     .implement_for(Signature::simple(RustType::in_scope(format!(
-                        "{}<{}>",
-                        FIX_LEN_FROM_BYTES, bytes
+                        "{FIX_LEN_FROM_BYTES}<{bytes}>"
                     ))))
                     .add_method(
                         MethodBuilder::new("from_bytes")
@@ -118,7 +116,7 @@ pub(crate) fn implement_plain(
                             .add_simple_annotation("inline")
                             .set_body(fixed_members_parse_impl(&rust_name, members, xcb))
                             .set_return_type(ComponentSignature::Signature(Signature::simple(
-                                RustType::in_scope(format!("{}<Self>", RESULT)),
+                                RustType::in_scope(format!("{RESULT}<Self>")),
                             ))),
                     );
             impls.push(fix_len_from_bytes);
@@ -186,11 +184,10 @@ pub(crate) enum VarRef {
 impl FixedField {
     pub(crate) fn put_in_var(&self) -> Option<String> {
         match &self.var_ref {
-            VarRef::FixedValue(_) => None,
             VarRef::RefValue(rv, _) => {
                 (self.byte_size > 1 || self.needs_serialize).then(|| rv.clone())
             }
-            VarRef::FixedList(_, _) => None,
+            VarRef::FixedValue(_) | VarRef::FixedList(_, _) => None,
         }
     }
     pub(crate) fn push_insert_expr(&self, out: &mut String, self_ref: bool) {
@@ -198,16 +195,16 @@ impl FixedField {
         if self.byte_size == 1 {
             match &self.var_ref {
                 VarRef::FixedValue(v) => {
-                    let _ = out.write_fmt(format_args!("{},\n", v));
+                    let _ = out.write_fmt(format_args!("{v},\n"));
                 }
                 VarRef::RefValue(rv, wrap) => {
                     if *wrap {
-                        let _ = out.write_fmt(format_args!("{ins_self}{}.0", rv));
+                        let _ = out.write_fmt(format_args!("{ins_self}{rv}.0"));
                         out.push_str(" as u8,\n");
                     } else if self.needs_serialize {
-                        let _ = out.write_fmt(format_args!("{}_bytes[0],\n", rv));
+                        let _ = out.write_fmt(format_args!("{rv}_bytes[0],\n"));
                     } else {
-                        let _ = out.write_fmt(format_args!("{ins_self}{},\n", rv));
+                        let _ = out.write_fmt(format_args!("{ins_self}{rv},\n"));
                     }
                 }
                 VarRef::FixedList(member, _) => {
@@ -218,10 +215,10 @@ impl FixedField {
             for i in 0..self.byte_size {
                 match &self.var_ref {
                     VarRef::FixedValue(f) => {
-                        let _ = out.write_fmt(format_args!("{},\n", f));
+                        let _ = out.write_fmt(format_args!("{f},\n"));
                     }
                     VarRef::RefValue(rv, _) => {
-                        let _ = out.write_fmt(format_args!("{}_bytes[{i}],\n", rv));
+                        let _ = out.write_fmt(format_args!("{rv}_bytes[{i}],\n"));
                     }
                     VarRef::FixedList(member, sz) => {
                         if *sz == 1 {
@@ -315,23 +312,13 @@ fn fixed_members_parse_impl(_name: &str, members: &[EntityMember], xcb: &Xcb) ->
                     continue;
                 }
                 if let Some(_ref_type) = &f.kind.reference_type {
-                    if f.kind.concrete.is_builtin() || f.kind.concrete.is_builtin_alias() {
-                        let _ = out.write_fmt(format_args!(
-                            "{}: {}::from_bytes(bytes.get({offset}..{}).ok_or({})?)?.into(),\n",
-                            f.name.to_rust_snake(),
-                            f.kind.concrete.deref().borrow().import_name(&xcb.header),
-                            offset + sz,
-                            FROM_BYTES_ERROR,
-                        ));
-                    } else {
-                        let _ = out.write_fmt(format_args!(
-                            "{}: {}::from_bytes(bytes.get({offset}..{}).ok_or({})?)?.into(),\n",
-                            f.name.to_rust_snake(),
-                            f.kind.concrete.deref().borrow().import_name(&xcb.header),
-                            offset + sz,
-                            FROM_BYTES_ERROR,
-                        ));
-                    }
+                    let _ = out.write_fmt(format_args!(
+                        "{}: {}::from_bytes(bytes.get({offset}..{}).ok_or({})?)?.into(),\n",
+                        f.name.to_rust_snake(),
+                        f.kind.concrete.deref().borrow().import_name(&xcb.header),
+                        offset + sz,
+                        FROM_BYTES_ERROR,
+                    ));
                 } else {
                     let _ = out.write_fmt(format_args!(
                         "{}: {}::from_bytes(bytes.get({offset}..{}).ok_or({FROM_BYTES_ERROR})?)?,\n",
@@ -508,7 +495,7 @@ fn var_member_from_bytes(
 ) -> MethodBuilder {
     let mut mb = MethodBuilder::new("from_bytes")
         .set_return_type(ComponentSignature::Signature(Signature::simple(
-            RustType::in_scope(format!("{}<(Self, usize)>", RESULT)),
+            RustType::in_scope(format!("{RESULT}<(Self, usize)>")),
         )))
         .add_argument(Argument::new(
             Ownership::Ref,
@@ -586,16 +573,14 @@ fn var_member_from_bytes(
                         ));
                         set_fields.push((fname, false));
                         continue;
-                    } else {
-                        unimplemented!("Not in spec afaik");
                     }
+                    unimplemented!("Not in spec afaik");
                 }
                 let offset =
                     from_bytes_dump_fixed(&mut out, core::mem::take(&mut fixed_chunks), no_offset);
                 let use_type = l.field.kind.use_field().import_name(&xcb.header);
                 if let Some(l_expr) = &l.length_expr {
-                    let expr =
-                        from_bytes_length_expr(l_expr, &l.field.name.to_rust_snake(), false, false);
+                    let expr = from_bytes_length_expr(l_expr, false, false);
                     if matches!(
                         &*l.field.kind.concrete.deref().borrow(),
                         XcbType::Builtin(XcbBuiltin::Fd)
@@ -827,7 +812,7 @@ fn var_member_serialize(variable: &[EntityMember], switches: &[WrappedType]) -> 
     let mb = MethodBuilder::new("serialize_into")
         .set_self_ownership(Ownership::Owned)
         .set_return_type(ComponentSignature::Signature(Signature::simple(
-            RustType::in_scope(format!("{}<usize>", RESULT)),
+            RustType::in_scope(format!("{RESULT}<usize>")),
         )))
         .add_argument(Argument::new(
             Ownership::MutRef,
@@ -845,10 +830,7 @@ fn var_member_serialize(variable: &[EntityMember], switches: &[WrappedType]) -> 
                 for (field, list) in repl {
                     replace.insert(
                         field,
-                        (
-                            list.clone(),
-                            from_bytes_length_expr(expr, &list, true, false),
-                        ),
+                        (list.clone(), from_bytes_length_expr(expr, true, false)),
                     );
                 }
             }
@@ -887,7 +869,7 @@ fn var_member_serialize(variable: &[EntityMember], switches: &[WrappedType]) -> 
                     } else {
                         (var_name, true)
                     };
-                    fixed_chunks.push(FixedChunk::Field(name, "".to_string(), sz, self_ref));
+                    fixed_chunks.push(FixedChunk::Field(name, String::new(), sz, self_ref));
                 } else {
                     let offset = serialize_into_dump_fixed(
                         &mut out,
@@ -996,7 +978,7 @@ fn var_member_serialize(variable: &[EntityMember], switches: &[WrappedType]) -> 
                             l.field.name.to_rust_snake()
                         );
                     }
-                } else if let Some(_) = l.field.kind.concrete.byte_size() {
+                } else if l.field.kind.concrete.byte_size().is_some() {
                     dump!(out, "let list_len = self.{}.len();\n", fname);
                     if no_offset {
                         dump!(

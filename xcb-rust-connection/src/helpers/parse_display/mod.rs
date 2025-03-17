@@ -101,7 +101,7 @@ mod test {
         assert_eq!(
             parse_display(None),
             Some(ParsedDisplay {
-                host: "".to_string(),
+                host: String::new(),
                 protocol: None,
                 display: 0,
                 screen: 0
@@ -143,8 +143,7 @@ mod test {
             assert_eq!(
                 do_parse_display(input).as_ref(),
                 Some(output),
-                "Failed parsing correctly: {}",
-                input
+                "Failed parsing correctly: {input}"
             );
         }
     }
@@ -156,7 +155,7 @@ mod test {
             (
                 ":0",
                 ParsedDisplay {
-                    host: "".to_string(),
+                    host: String::new(),
                     protocol: None,
                     display: 0,
                     screen: 0,
@@ -165,7 +164,7 @@ mod test {
             (
                 ":1",
                 ParsedDisplay {
-                    host: "".to_string(),
+                    host: String::new(),
                     protocol: None,
                     display: 1,
                     screen: 0,
@@ -174,7 +173,7 @@ mod test {
             (
                 ":0.1",
                 ParsedDisplay {
-                    host: "".to_string(),
+                    host: String::new(),
                     protocol: None,
                     display: 0,
                     screen: 1,
@@ -404,8 +403,7 @@ mod test {
             assert_eq!(
                 do_parse_display(input).as_ref(),
                 Some(output),
-                "Failed parsing correctly: {}",
-                input
+                "Failed parsing correctly: {input}"
             );
         }
     }
@@ -441,8 +439,7 @@ mod test {
             assert_eq!(
                 do_parse_display(input),
                 None,
-                "Unexpectedly parsed: {}",
-                input
+                "Unexpectedly parsed: {input}"
             );
         }
     }

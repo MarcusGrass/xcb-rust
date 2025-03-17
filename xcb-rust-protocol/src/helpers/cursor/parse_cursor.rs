@@ -277,7 +277,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match Image::read(&mut vb, IMAGE_TYPE, 4) {
             Err(Error::CorruptImage) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -297,7 +297,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match Image::read(&mut vb, IMAGE_TYPE, 42) {
             Err(Error::CorruptImage) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -317,7 +317,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match Image::read(&mut vb, IMAGE_TYPE, 4) {
             Err(Error::ImageTooLarge) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -337,7 +337,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match Image::read(&mut vb, IMAGE_TYPE, 4) {
             Err(Error::ImageTooLarge) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -347,7 +347,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match Image::read(&mut vb, IMAGE_TYPE, 4) {
             Err(Error::Io) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -356,7 +356,7 @@ mod test {
         let res = find_best_size(&[], 42);
         match res {
             Err(Error::NoImages) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -408,7 +408,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match parse_cursor(&mut vb, 10) {
             Err(Error::Io) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -423,7 +423,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match parse_cursor(&mut vb, 10) {
             Err(Error::InvalidMagic) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -438,7 +438,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match parse_cursor(&mut vb, 10) {
             Err(Error::TooManyEntries) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -453,7 +453,7 @@ mod test {
         let mut vb = VecBuffer::new(data.to_vec());
         match parse_cursor(&mut vb, 10) {
             Err(Error::NoImages) => {}
-            r => panic!("Unexpected result {:?}", r),
+            r => panic!("Unexpected result {r:?}"),
         }
     }
 
@@ -544,7 +544,7 @@ mod test {
     }
 
     fn assert_same_images(a: &[Image], b: &[Image]) {
-        assert_eq!(a.len(), b.len(), "{:?} == {:?}", a, b);
+        assert_eq!(a.len(), b.len(), "{a:?} == {b:?}");
         for (i, (im1, im2)) in a.iter().zip(b.iter()).enumerate() {
             assert_eq!(
                 im1.width,

@@ -123,22 +123,22 @@ mod test {
         let err = IdAllocator::new(1234, 0).unwrap_err();
         if let super::ConnectError::ZeroIdMask = err {
         } else {
-            panic!("Wrong error: {:?}", err);
+            panic!("Wrong error: {err:?}");
         }
     }
 
     #[test]
     fn invalid_update_arg() {
-        fn check_ids_exhausted(arg: &Result<(), IdsExhausted>) {
+        fn check_ids_exhausted(arg: Result<(), IdsExhausted>) {
             if let Err(IdsExhausted) = arg {
             } else {
-                panic!("Expected IdsExhausted, got {:?}", arg);
+                panic!("Expected IdsExhausted, got {arg:?}");
             }
         }
 
         let mut allocator = IdAllocator::new(0x420, 2).unwrap();
-        check_ids_exhausted(&allocator.update_xid_range(&generate_get_xid_range_reply(0, 1)));
-        check_ids_exhausted(&allocator.update_xid_range(&generate_get_xid_range_reply(1, 0)));
+        check_ids_exhausted(allocator.update_xid_range(&generate_get_xid_range_reply(0, 1)));
+        check_ids_exhausted(allocator.update_xid_range(&generate_get_xid_range_reply(1, 0)));
     }
 
     fn generate_get_xid_range_reply(start_id: u32, count: u32) -> GetXIDRangeReply {

@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::ops::Deref;
 use std::rc::Rc;
 
 use codegen_rs::structures::visibility::Visibility;
@@ -111,7 +110,7 @@ pub(crate) fn implement_event_copy(
         "{}Event",
         RustCase::convert_to_valid_rust(&event.name, RustCase::Pascal).unwrap()
     );
-    if let XcbType::Event(evt) = event.copy_type.borrow().deref() {
+    if let XcbType::Event(evt) = &*event.copy_type.borrow() {
         let evt_s = EvtSpec {
             major_opcode: event.opcode,
             evt_name: rust_name.clone(),

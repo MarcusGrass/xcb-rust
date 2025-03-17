@@ -214,6 +214,11 @@ impl XcbType {
             | XcbType::Event(_)
             | XcbType::EventCopy(_)
             | XcbType::EventStruct(_)
+            | XcbType::Xid(_)
+            | XcbType::XidUnion(_)
+            | XcbType::Alias(_)
+            | XcbType::Const(_)
+            | XcbType::Constructed(_)
             | XcbType::Builtin(_) => {}
             XcbType::SwitchStruct(ss) => {
                 ss.used_by.deref().borrow_mut().push(used_by);
@@ -233,11 +238,6 @@ impl XcbType {
             XcbType::UnionStruct(ps) => {
                 ps.used_by.deref().borrow_mut().push(used_by);
             }
-            XcbType::Xid(_) => {}
-            XcbType::XidUnion(_) => {}
-            XcbType::Alias(_) => {}
-            XcbType::Const(_) => {}
-            XcbType::Constructed(_) => {}
         }
     }
 }
@@ -382,11 +382,10 @@ impl TypeHelpers for XcbType {
         match self {
             XcbType::Request(_) => SourceType::Request,
             XcbType::Reply(_) => SourceType::Reply,
-            XcbType::Error(_) => SourceType::Error,
-            XcbType::ErrorCopy(_) => SourceType::Error,
-            XcbType::Event(_) => SourceType::Event,
-            XcbType::EventCopy(_) => SourceType::Event,
-            XcbType::EventStruct(_) => SourceType::Event,
+            XcbType::Error(_) | XcbType::ErrorCopy(_) => SourceType::Error,
+            XcbType::Event(_) | XcbType::EventCopy(_) | XcbType::EventStruct(_) => {
+                SourceType::Event
+            }
             XcbType::Builtin(_) => SourceType::Other,
             XcbType::SwitchStruct(e) => e.source_type.resolve_effective_source(e.used_by.clone()),
             XcbType::SwitchEnum(e) => e.source_type.resolve_effective_source(e.used_by.clone()),
@@ -643,13 +642,11 @@ pub(crate) struct XcbUnion {
 
 impl From<XcbStruct> for XcbUnion {
     fn from(s: XcbStruct) -> Self {
-        if s.switch.is_some() {
-            panic!("Tried to convert XcbUnion with switch");
-        }
+        assert!(s.switch.is_none(), "Tried to convert XcbUnion with switch");
         Self {
             name: s.name.clone(),
             source: s.source.clone(),
-            source_type: s.source_type.clone(),
+            source_type: s.source_type,
             used_by: s.used_by.clone(),
             members: s.members.clone(),
         }
@@ -766,9 +763,9 @@ impl TypeHelpers for EntityMember {
                     .unwrap_or_else(|| l.field.kind.concrete.clone())
                     .rust_entity_name();
                 if let Some(count) = l.fixed_count {
-                    format!("[{}; {count}]", use_type)
+                    format!("[{use_type}; {count}]")
                 } else {
-                    format!("alloc::vec::Vec<{}>", use_type)
+                    format!("alloc::vec::Vec<{use_type}>")
                 }
             }
             _ => panic!("Tried to get entity name of invalid member"),
@@ -791,7 +788,7 @@ impl TypeHelpers for EntityMember {
                     .clone()
                     .unwrap_or_else(|| l.field.kind.concrete.clone())
                     .import_name(current_package);
-                format!("alloc::vec::Vec<{}>", use_type)
+                format!("alloc::vec::Vec<{use_type}>")
             }
             _ => panic!("Tried to get entity name of invalid member"),
         }

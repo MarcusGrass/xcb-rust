@@ -166,13 +166,12 @@ fn parse_inherits_impl(input: &[u8]) -> Result<Vec<String>, Error> {
             offset += 1;
             if input[i] == b'\n' {
                 break;
-            } else {
-                buffer.push(input[i]);
             }
+            buffer.push(input[i]);
         }
         if buffer.is_empty() {
             // End of file, return an empty result
-            return Ok(Default::default());
+            return Ok(Vec::default());
         }
 
         // Remove end of line marker
@@ -247,14 +246,12 @@ mod test_parse_inherits {
 pub(crate) fn find_cursor(theme: &str, name: &str, env: XcbEnv) -> Result<Cursor<Vec<u8>>, Error> {
     const DEFAULT_CURSOR_PATH: &str =
         "~/.icons:/usr/share/icons:/usr/share/pixmaps:/usr/X11R6/lib/X11/icons";
-    let home = match env.home_dir {
-        Some(home) => home,
-        None => return Err(Error::NoHomeDir),
+    let Some(home) = env.home_dir else {
+        return Err(Error::NoHomeDir);
     };
     let cursor_path = env
         .x_cursor_size
-        .map(|sz| sz.as_str())
-        .unwrap_or(Ok(DEFAULT_CURSOR_PATH))?;
+        .map_or(Ok(DEFAULT_CURSOR_PATH), |sz| sz.as_str())?;
     let open_cursor = |file: &UnixStr| {
         let buf = tiny_std::fs::read(file)?;
         Ok::<_, Error>(buf)
@@ -358,7 +355,7 @@ mod test_find_cursor {
         .unwrap()
         {
             Cursor::CoreChar(31) => {}
-            e => panic!("Unexpected result {:?}", e),
+            e => panic!("Unexpected result {e:?}"),
         }
     }
 
@@ -383,7 +380,7 @@ mod test_find_cursor {
             cb2,
         ) {
             Err(Error::NothingFound) => {}
-            e => panic!("Unexpected result {:?}", e),
+            e => panic!("Unexpected result {e:?}"),
         }
         assert_eq!(
             opened,
@@ -429,7 +426,7 @@ mod test_find_cursor {
             cb2,
         ) {
             Err(Error::NothingFound) => {}
-            e => panic!("Unexpected result {:?}", e),
+            e => panic!("Unexpected result {e:?}"),
         }
         assert_eq!(
             opened,

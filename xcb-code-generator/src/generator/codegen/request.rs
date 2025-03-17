@@ -233,7 +233,7 @@ pub(crate) fn implement_fixed_req_serialize(
     for field in sorted {
         let use_type = field.kind.use_field().import_name("NONE");
         let t = if list_field_names.contains(&field.name) {
-            format!("&[{}]", use_type)
+            format!("&[{use_type}]")
         } else {
             use_type
         };
@@ -254,7 +254,7 @@ pub(crate) fn implement_fixed_req_serialize(
 fn add_major_opcode(xproto: bool, body: &mut String, xcb: &Xcb) {
     if !xproto {
         let ext_name_source = format!("crate::proto::{}::EXTENSION_NAME", xcb.header);
-        let _ = body.write_fmt(format_args!("let major_opcode = xcb_state.major_opcode({}).ok_or(crate::error::Error::MissingExtension({}))?;\n", ext_name_source, ext_name_source));
+        let _ = body.write_fmt(format_args!("let major_opcode = xcb_state.major_opcode({ext_name_source}).ok_or(crate::error::Error::MissingExtension({ext_name_source}))?;\n"));
     }
 }
 
@@ -289,7 +289,7 @@ fn set_return_type(
         let _ = body.write_str(constructor);
     } else {
         fb = fb.set_return_type(ComponentSignature::Signature(Signature::simple(
-            RustType::in_scope(format!("{}<VoidCookie>", RESULT)),
+            RustType::in_scope(format!("{RESULT}<VoidCookie>")),
         )));
         let _ = body.write_str("Ok(VoidCookie::new(seq))");
     }
@@ -342,8 +342,7 @@ pub(crate) fn implement_var_len_req_serialize(
     reply: Option<WrappedType>,
     xcb: &Xcb,
 ) -> FunctionBuilder {
-    let finite =
-        is_finite_size(&members) && switch.as_ref().map(is_finite_switch_type).unwrap_or(true);
+    let finite = is_finite_size(members) && switch.as_ref().is_none_or(is_finite_switch_type);
 
     let xproto = xcb.header == "xproto";
     let switch_ref_type = if let Some(switch) = &switch {
@@ -451,10 +450,7 @@ pub(crate) fn implement_var_len_req_serialize(
                 for (field, list) in repl {
                     replace.insert(
                         field,
-                        (
-                            list.clone(),
-                            from_bytes_length_expr(expr, &list, true, false),
-                        ),
+                        (list.clone(), from_bytes_length_expr(expr, true, false)),
                     );
                 }
             }
@@ -496,12 +492,10 @@ pub(crate) fn implement_var_len_req_serialize(
                         } else if let Some((repl, expr)) = replace.get(&field.name) {
                             let name_expr = if excl_names.contains(&field.name) {
                                 repl.clone()
+                            } else if field.kind.reference_type.is_some() {
+                                format!("{}.0", field.name.to_rust_snake())
                             } else {
-                                if field.kind.reference_type.is_some() {
-                                    format!("{}.0", field.name.to_rust_snake())
-                                } else {
-                                    field.name.to_rust_snake()
-                                }
+                                field.name.to_rust_snake()
                             };
                             dump!(
                                 body,
@@ -586,7 +580,7 @@ pub(crate) fn implement_var_len_req_serialize(
                         }
                     } else {
                         let length_mult = if sz == 1 {
-                            "".to_string()
+                            String::new()
                         } else {
                             format!("* {sz}")
                         };

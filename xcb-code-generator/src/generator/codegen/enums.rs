@@ -141,7 +141,7 @@ pub(crate) fn implement_bitmask_enum(be: &BitmaskEnum, mut fb: FileBuilder) -> F
         wrap_with,
         fb,
     );
-    fb = fb.add_any(format!("crate::implement_bit_ops!({});\n", rust_name));
+    fb = fb.add_any(format!("crate::implement_bit_ops!({rust_name});\n"));
     fb
 }
 
@@ -221,8 +221,7 @@ pub(crate) fn implement_value_enum(ve: &ValueEnum, xcb: &Xcb, mut fb: FileBuilde
     let bytes = format!("[u8; {byte_size}]");
     let fix_len_ser_impl = ImplBuilder::new(Signature::simple(RustType::in_scope(&rust_name)))
         .implement_for(Signature::simple(RustType::in_scope(format!(
-            "{}<{}>",
-            FIX_LEN_SERIALIZE, byte_size
+            "{FIX_LEN_SERIALIZE}<{byte_size}>"
         ))))
         .add_method(
             MethodBuilder::new("serialize_fixed")
@@ -237,8 +236,7 @@ pub(crate) fn implement_value_enum(ve: &ValueEnum, xcb: &Xcb, mut fb: FileBuilde
     let fix_len_from_bytes_impl =
         ImplBuilder::new(Signature::simple(RustType::in_scope(&rust_name)))
             .implement_for(Signature::simple(RustType::in_scope(format!(
-                "{}<{}>",
-                FIX_LEN_FROM_BYTES, byte_size
+                "{FIX_LEN_FROM_BYTES}<{byte_size}>"
             ))))
             .add_method(
                 MethodBuilder::new("from_bytes")

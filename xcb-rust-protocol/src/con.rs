@@ -50,6 +50,7 @@ impl XcbBuffer {
     }
 
     #[inline]
+    #[must_use]
     pub fn space_left(&self) -> usize {
         self.bytes.len() - self.committed_offset
     }

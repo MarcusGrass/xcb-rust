@@ -21,7 +21,7 @@ where
     pub(crate) fn new(seq: u16) -> Self {
         Cookie {
             seq,
-            _data: PhantomData::default(),
+            _data: PhantomData,
         }
     }
 
@@ -63,7 +63,7 @@ where
     pub(crate) fn new(seq: u16) -> Self {
         FixedCookie {
             seq,
-            _data: PhantomData::default(),
+            _data: PhantomData,
         }
     }
 

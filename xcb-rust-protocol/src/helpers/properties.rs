@@ -250,7 +250,7 @@ impl WmSizeHints {
     /// Get a new, empty `WmSizeHints` structure.
     #[must_use]
     pub fn new() -> Self {
-        Default::default()
+        WmSizeHints::default()
     }
 
     /// Send a `GetProperty` request for the given property of the given window
@@ -641,7 +641,7 @@ impl WmHints {
     /// Get a new, empty `WmSizeHints` structure.
     #[must_use]
     pub fn new() -> Self {
-        Default::default()
+        WmHints::default()
     }
 
     /// Send a `GetProperty` request for the `WM_HINTS` property of the given window
@@ -933,7 +933,7 @@ mod test {
         assert_eq!(wm_hints.input, Some(true));
         match wm_hints.initial_state {
             Some(WmHintsState::Normal) => {}
-            value => panic!("Expected Some(Normal), but got {:?}", value),
+            value => panic!("Expected Some(Normal), but got {value:?}"),
         }
         assert_eq!(wm_hints.icon_pixmap, None);
         assert_eq!(wm_hints.icon_window, None);

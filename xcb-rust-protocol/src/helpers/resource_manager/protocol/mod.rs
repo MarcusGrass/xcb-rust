@@ -391,7 +391,7 @@ mod test {
             (b"a: -1", -1),
             (b"a: 100", 100),
         ];
-        for (input, expected) in data.iter() {
+        for (input, expected) in &data {
             let db = Database::new_from_data(input).unwrap();
             let result = db.get_value::<i32>("a", "a");
             assert_eq!(result.unwrap().unwrap(), *expected);

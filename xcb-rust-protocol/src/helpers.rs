@@ -20,6 +20,7 @@ pub struct XcbEnv<'a> {
     pub x_cursor_size: Option<&'a UnixStr>,
 }
 
+#[must_use]
 pub fn new_client_message32(window: Window, r#type: Atom, data: [u32; 5]) -> [u8; 32] {
     let window = window.to_ne_bytes();
     let kind = r#type.to_ne_bytes();
@@ -64,6 +65,7 @@ pub fn new_client_message32(window: Window, r#type: Atom, data: [u32; 5]) -> [u8
     ]
 }
 
+#[must_use]
 pub fn new_client_message16(window: Window, r#type: Atom, data: [u16; 10]) -> [u8; 32] {
     let window = window.to_ne_bytes();
     let kind = r#type.to_ne_bytes();
@@ -113,6 +115,7 @@ pub fn new_client_message16(window: Window, r#type: Atom, data: [u16; 10]) -> [u
     ]
 }
 
+#[must_use]
 pub fn new_client_message8(window: Window, r#type: Atom, data: [u8; 20]) -> [u8; 32] {
     let window = window.to_ne_bytes();
     let kind = r#type.to_ne_bytes();
@@ -207,12 +210,13 @@ pub struct Iter32<'a> {
 }
 
 impl<'a> Iter32<'a> {
+    #[must_use]
     pub fn new(buf: &'a [u8]) -> Self {
         Self { buf, ind: 0 }
     }
 }
 
-impl<'a> Iterator for Iter32<'a> {
+impl Iterator for Iter32<'_> {
     type Item = u32;
 
     #[allow(unsafe_code)]
@@ -233,12 +237,13 @@ pub struct Iter16<'a> {
 }
 
 impl<'a> Iter16<'a> {
+    #[must_use]
     pub fn new(buf: &'a [u8]) -> Self {
         Self { buf, ind: 0 }
     }
 }
 
-impl<'a> Iterator for Iter16<'a> {
+impl Iterator for Iter16<'_> {
     type Item = u32;
 
     #[allow(unsafe_code)]

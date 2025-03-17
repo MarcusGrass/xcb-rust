@@ -304,7 +304,6 @@ impl TypeResolver {
                         &mut avail,
                         namespace.clone(),
                         &imports,
-                        xcb,
                         self,
                     ) {
                         let name = format!(
@@ -374,7 +373,6 @@ fn resolve_struct(
         &mut avail,
         namespace.clone(),
         imports,
-        xcb,
         resolver,
     )?;
     let switch: Option<WrappedType> = if let Some(sw) = &s.switch {
@@ -476,7 +474,6 @@ fn resolve_request(
         &mut avail,
         namespace.clone(),
         imports,
-        xcb,
         resolver,
     )?;
     let switch: Option<WrappedType> = if let Some(s) = &req.switch {
@@ -535,7 +532,6 @@ fn resolve_reply(
         &mut avail,
         namespace.clone(),
         imports,
-        xcb,
         resolver,
     )?;
     let switch: Option<WrappedType> = if let Some(switch) = &reply.switch {
@@ -581,14 +577,13 @@ fn resolve_event(
         &mut avail,
         namespace,
         imports,
-        xcb,
         resolver,
     )?;
     Some((
         XcbEvent {
             name: event.packet_struct.name.clone(),
             source: xcb.header.clone(),
-            has_sequence: event.no_sequence_number.map_or(true, |n| !n),
+            has_sequence: event.no_sequence_number.is_none_or(|n| !n),
             opcode: event.packet_struct.number as u8,
             members,
             generic: event.xge.unwrap_or_default(),
@@ -603,7 +598,6 @@ fn resolve_fields(
     avail_fields: &mut HashMap<String, WrappedType>,
     namespace: Option<String>,
     imports: &[String],
-    xcb: &Xcb,
     resolver: &TypeResolver,
 ) -> Option<(Vec<EntityMember>, Vec<WrappedType>)> {
     let mut members = vec![];
@@ -621,7 +615,6 @@ fn resolve_fields(
             avail_fields,
             namespace.clone(),
             imports,
-            xcb,
             resolver,
         )?;
         match &resolved {
@@ -642,7 +635,6 @@ fn resolve_fields(
             avail_fields,
             namespace.clone(),
             imports,
-            xcb,
             resolver,
         )?;
         match &resolved {
@@ -665,7 +657,6 @@ fn resolve_field(
     avail_fields: &HashMap<String, WrappedType>,
     namespace: Option<String>,
     imports: &[String],
-    xcb: &Xcb,
     resolver: &TypeResolver,
 ) -> Option<EntityMember> {
     match fields {
@@ -700,7 +691,6 @@ fn resolve_field(
                     avail_fields,
                     namespace.clone(),
                     imports,
-                    xcb,
                     resolver,
                 )?)
             } else {
@@ -747,7 +737,6 @@ fn resolve_field(
             avail_fields,
             namespace,
             imports,
-            xcb,
             resolver,
         )?)),
     }
@@ -802,7 +791,6 @@ fn resolve_switch(
         avail_fields,
         namespace.clone(),
         imports,
-        xcb,
         resolver,
     )?;
     match &switch.switchexpr_choice {
@@ -886,7 +874,6 @@ fn resolve_case_expr(
         avail_fields,
         namespace.clone(),
         imports,
-        xcb,
         resolver,
     )?;
     for expr in &case_expr.expression {
@@ -896,7 +883,6 @@ fn resolve_case_expr(
             avail_fields,
             namespace.clone(),
             imports,
-            xcb,
             resolver,
         )?);
     }
@@ -937,7 +923,6 @@ fn resolve_expr(
     avail_fields: &HashMap<String, WrappedType>,
     namespace: Option<String>,
     imports: &[String],
-    xcb: &Xcb,
     resolver: &TypeResolver,
 ) -> Option<XcbExpression> {
     match expression {
@@ -949,7 +934,6 @@ fn resolve_expr(
                 avail_fields,
                 namespace.clone(),
                 imports,
-                xcb,
                 resolver,
             )?;
             let right = resolve_expr(
@@ -958,7 +942,6 @@ fn resolve_expr(
                 avail_fields,
                 namespace,
                 imports,
-                xcb,
                 resolver,
             )?;
             Some(XcbExpression::Binop(Binop {
@@ -975,7 +958,6 @@ fn resolve_expr(
                 avail_fields,
                 namespace,
                 imports,
-                xcb,
                 resolver,
             )?;
             Some(XcbExpression::Unop(Unop {
@@ -1034,7 +1016,6 @@ fn resolve_expr(
             avail_fields,
             namespace,
             imports,
-            xcb,
             resolver,
         )?))),
         Expression::Sumof(so) => {
@@ -1049,7 +1030,6 @@ fn resolve_expr(
                     avail_fields,
                     namespace,
                     imports,
-                    xcb,
                     resolver,
                 )?))
             } else {

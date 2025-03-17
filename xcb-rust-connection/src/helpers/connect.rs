@@ -310,9 +310,7 @@ mod tests {
         let mut i = 0;
         loop {
             i += 1;
-            if i > 500 {
-                panic!("too many iterations");
-            }
+            assert!((i <= 500), "too many iterations");
 
             // copy bytes to connect
             let buffer = connect.buffer();
@@ -338,7 +336,7 @@ mod tests {
 
         match b {
             Ok(s) => assert_eq!(s, setup),
-            Err(e) => panic!("{:?}", e),
+            Err(e) => panic!("{e:?}"),
         }
     }
 
@@ -349,9 +347,9 @@ mod tests {
 
         let b = try_receive_bytes(setup.clone());
         match b {
-            Ok(s) => panic!("{:?}", s),
+            Ok(s) => panic!("{s:?}"),
             Err(ConnectError::SetupAuthenticate(e)) => assert_eq!(e, setup),
-            Err(e) => panic!("{:?}", e),
+            Err(e) => panic!("{e:?}"),
         }
     }
 
@@ -370,9 +368,9 @@ mod tests {
 
         let b = try_receive_bytes(setup.clone());
         match b {
-            Ok(s) => panic!("{:?}", s),
+            Ok(s) => panic!("{s:?}"),
             Err(ConnectError::SetupFailed(e)) => assert_eq!(e, setup),
-            Err(e) => panic!("{:?}", e),
+            Err(e) => panic!("{e:?}"),
         }
     }
 }

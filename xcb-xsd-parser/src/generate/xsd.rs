@@ -214,7 +214,7 @@ fn parse_choice(tag: &TagItem) -> ParsedTag {
                 p = p.parent.as_ref().unwrap();
             };
             let name = p.attrs[NAME].clone();
-            let enum_name = format!("{}Choice", name);
+            let enum_name = format!("{name}Choice");
             let enum_name = RustCase::convert_to_valid_rust(&enum_name, RustCase::Pascal).unwrap();
             let mut any_name = vec![];
             for inner in &tag.inner {
@@ -407,11 +407,10 @@ impl ParsedTag {
     }
 
     fn merge_full(&mut self, other: Self) {
-        self.built_structs.extend(other.built_structs.into_iter());
-        self.built_enums.extend(other.built_enums.into_iter());
-        self.built_type_defs
-            .extend(other.built_type_defs.into_iter());
-        self.fields.extend(other.fields.into_iter());
+        self.built_structs.extend(other.built_structs);
+        self.built_enums.extend(other.built_enums);
+        self.built_type_defs.extend(other.built_type_defs);
+        self.fields.extend(other.fields);
     }
 
     fn generate_and_push_struct(
@@ -482,7 +481,7 @@ pub(crate) struct ParsedAttribute {
 fn merge_struct_valid_tag(a: &str, b: &str) -> String {
     let elem_a = RustCase::convert_to_valid_rust(a, RustCase::Snake).unwrap();
     let elem_b = RustCase::convert_to_valid_rust(b, RustCase::Snake).unwrap();
-    format!("tag_name == \"{}\" || tag_name == \"{}\"", elem_a, elem_b)
+    format!("tag_name == \"{elem_a}\" || tag_name == \"{elem_b}\"")
 }
 
 fn gen_document(main: ParsedTag) -> ModuleBuilder {
@@ -501,7 +500,7 @@ fn gen_document(main: ParsedTag) -> ModuleBuilder {
         };
         if let Some(tr) = dup_type_defs.get(&inner.builder.name) {
             let mut cloned_struct = inner.builder.clone();
-            cloned_struct.name = tr.name.clone();
+            cloned_struct.name.clone_from(&tr.name);
             fb = fb.add_struct(cloned_struct).add_impl(struct_impl_builder(
                 &tr.name,
                 &struct_valid_tag_body,
@@ -651,7 +650,7 @@ impl Occurrence {
         } else if min == 1 && max_str == "1" {
             Self::Once
         } else {
-            panic!("Unrecognized min/max {}/{}", min, max_str);
+            panic!("Unrecognized min/max {min}/{max_str}");
         }
     }
 }
@@ -705,7 +704,7 @@ fn generate_struct(elem_name: String, name: String, fields: &mut [FieldDef]) -> 
         if let Some(s) = &last_field_name {
             if s == &field.suggested_name {
                 ident_field_count += 1;
-                let n = format!("{}_{}", s, ident_field_count);
+                let n = format!("{s}_{ident_field_count}");
                 field.suggested_name = n;
             } else {
                 last_field_name = Some(field.suggested_name.clone());
@@ -734,7 +733,7 @@ fn generate_enum(name: String, fields: &[FieldDef]) -> (EnumBuild, bool) {
     for field in fields {
         let (type_name, tag_name) = match &field.df {
             DirectField::Attr(parsed_attr) => {
-                panic!("Attr in enum {:?}", parsed_attr);
+                panic!("Attr in enum {parsed_attr:?}");
             }
             DirectField::Element(e) => {
                 let elem_ref = match &e.element_name {
@@ -881,7 +880,7 @@ fn impl_struct_from_tag(fields: &[FieldDef]) -> String {
 fn convert(tgt: &str, e: &ElementFieldType) -> String {
     match &e {
         ElementFieldType::Builtin(b) => {
-            format!("{tgt}.extract_value_as::<{}>().unwrap()", b)
+            format!("{tgt}.extract_value_as::<{b}>().unwrap()")
         }
         ElementFieldType::Constructed(c, inherits_tag_index) => {
             if *inherits_tag_index {
@@ -900,7 +899,7 @@ fn convert(tgt: &str, e: &ElementFieldType) -> String {
 }
 
 fn implement_struct_valid_tag(elem_name: String) -> String {
-    format!("tag_name == \"{}\"", elem_name)
+    format!("tag_name == \"{elem_name}\"")
 }
 
 fn implement_struct(elem_name: String, fields: &[FieldDef]) -> (String, String) {
@@ -925,7 +924,7 @@ impl ElementNameComparisonTarget {
             }
             ElementNameComparisonTarget::SingleNamed(n) => match e {
                 ElementFieldType::Builtin(_) => {
-                    format!("tag.inner.len() > tag_index && \"{}\" == {tgt}.name", n)
+                    format!("tag.inner.len() > tag_index && \"{n}\" == {tgt}.name")
                 }
                 ElementFieldType::Constructed(c, _) => {
                     format!("tag.inner.len() > tag_index && {c}::valid_tag(&{tgt}.name)")
@@ -933,7 +932,7 @@ impl ElementNameComparisonTarget {
             },
             ElementNameComparisonTarget::MultiNamed(n, _mn) => match e {
                 ElementFieldType::Builtin(_) => {
-                    format!("tag.inner.len() > tag_index && \"{}\" == {tgt}.name", n)
+                    format!("tag.inner.len() > tag_index && \"{n}\" == {tgt}.name")
                 }
                 ElementFieldType::Constructed(c, _) => {
                     format!("tag.inner.len() > tag_index && {c}::valid_tag(&{tgt}.name)")
@@ -944,7 +943,7 @@ impl ElementNameComparisonTarget {
 }
 
 fn implement_enum(fields: &[FieldDef], inherits_tag_index: bool) -> (String, String) {
-    let mut ret = "".to_string();
+    let mut ret = String::new();
     if !inherits_tag_index {
         ret.push_str("let mut tag_index = 0;\n");
     }
@@ -977,17 +976,14 @@ fn implement_enum(fields: &[FieldDef], inherits_tag_index: bool) -> (String, Str
                             RustCase::convert_to_valid_rust(&element_name, RustCase::Pascal)
                                 .unwrap();
                         if is_vec {
-                            let _ = ret.write_fmt(format_args!(
-                                "if tag_name == \"{}\" {{\n",
-                                element_name
-                            ));
+                            let _ = ret
+                                .write_fmt(format_args!("if tag_name == \"{element_name}\" {{\n"));
                             let _ = ret.write_fmt(format_args!(
                                 "let mut {} = vec![];\n",
                                 field.suggested_name
                             ));
                             let _ = ret.write_fmt(format_args!(
-                                "while tag.inner.len() > tag_index && tag.inner[tag_index].name == \"{}\"{{\n",
-                                element_name
+                                "while tag.inner.len() > tag_index && tag.inner[tag_index].name == \"{element_name}\"{{\n"
                             ));
                             let _ = ret.write_fmt(format_args!(
                                 "{}.push(tag.inner[tag_index].extract_value_as::<{}>().unwrap());\n",
@@ -1001,13 +997,10 @@ fn implement_enum(fields: &[FieldDef], inherits_tag_index: bool) -> (String, Str
                             ));
                             ret.push_str("}\n");
                         } else {
+                            let _ = ret
+                                .write_fmt(format_args!("if tag_name == \"{element_name}\" {{\n"));
                             let _ = ret.write_fmt(format_args!(
-                                "if tag_name == \"{}\" {{\n",
-                                element_name
-                            ));
-                            let _ = ret.write_fmt(format_args!(
-                                "return Self::{}(tag.extract_value_as::<{}>().unwrap());\n",
-                                kind_name, b
+                                "return Self::{kind_name}(tag.extract_value_as::<{b}>().unwrap());\n"
                             ));
                             ret.push_str("}\n");
                         }
@@ -1020,21 +1013,19 @@ fn implement_enum(fields: &[FieldDef], inherits_tag_index: bool) -> (String, Str
                         if is_vec {
                             ret.push_str("if tag.inner.len() <= tag_index {\n");
                             let _ =
-                                ret.write_fmt(format_args!("return Self::{}(vec![]);", kind_name));
+                                ret.write_fmt(format_args!("return Self::{kind_name}(vec![]);"));
                             ret.push_str("}\n");
                             // TODO: Actually not always valid if constructed, but w/e it's valid for
                             // x11
                             let _ = ret.write_fmt(format_args!(
-                                "if tag.inner[tag_index].name == \"{}\"{{\n",
-                                element_name
+                                "if tag.inner[tag_index].name == \"{element_name}\"{{\n"
                             ));
                             let _ = ret.write_fmt(format_args!(
                                 "let mut {} = vec![];\n",
                                 field.suggested_name
                             ));
                             let _ = ret.write_fmt(format_args!(
-                                "while tag.inner.len() > tag_index && tag.inner[tag_index].name == \"{}\"{{\n",
-                                element_name
+                                "while tag.inner.len() > tag_index && tag.inner[tag_index].name == \"{element_name}\"{{\n"
                             ));
                             if c == "Expression" {
                                 let _ = ret.write_fmt(format_args!(
@@ -1062,13 +1053,11 @@ fn implement_enum(fields: &[FieldDef], inherits_tag_index: bool) -> (String, Str
                                     .unwrap();
                             if c.ends_with(&elem_rust_name) {
                                 let _ = ret.write_fmt(format_args!(
-                                    "if {c}::valid_tag(tag_name) {{ return Self::{}(Box::new({}::from_tag(tag))); }}\n",
-                                    kind_name, c
+                                    "if {c}::valid_tag(tag_name) {{ return Self::{kind_name}(Box::new({c}::from_tag(tag))); }}\n"
                                 ));
                             } else {
                                 let _ = ret.write_fmt(format_args!(
-                                    "if tag_name == \"{}\" {{ return Self::{}(Box::new({}::from_tag(tag))); }}\n",
-                                    element_name, kind_name, c
+                                    "if tag_name == \"{element_name}\" {{ return Self::{kind_name}(Box::new({c}::from_tag(tag))); }}\n"
                                 ));
                             }
                         } else {
@@ -1078,13 +1067,11 @@ fn implement_enum(fields: &[FieldDef], inherits_tag_index: bool) -> (String, Str
                                     .unwrap();
                             if c.ends_with(&elem_rust_name) {
                                 let _ = ret.write_fmt(format_args!(
-                                    "if {c}::valid_tag(tag_name) {{ return Self::{}({}::from_tag(tag)); }}\n",
-                                    kind_name, c
+                                    "if {c}::valid_tag(tag_name) {{ return Self::{kind_name}({c}::from_tag(tag)); }}\n"
                                 ));
                             } else {
                                 let _ = ret.write_fmt(format_args!(
-                                    "if tag_name == \"{}\" {{ return Self::{}({}::from_tag(tag)); }}\n",
-                                    element_name, kind_name, c
+                                    "if tag_name == \"{element_name}\" {{ return Self::{kind_name}({c}::from_tag(tag)); }}\n"
                                 ));
                             }
                         }
@@ -1102,19 +1089,16 @@ fn implement_enum(fields: &[FieldDef], inherits_tag_index: bool) -> (String, Str
                 RustCase::convert_to_valid_rust(&element, RustCase::Pascal).unwrap();
             if struct_name.ends_with(&elem_rust_name) {
                 let _ = is_valid_tag_name_for_enum.write_fmt(format_args!(
-                    "if {}::valid_tag(tag_name) {{return true;}}",
-                    struct_name
+                    "if {struct_name}::valid_tag(tag_name) {{return true;}}"
                 ));
             } else {
                 let _ = is_valid_tag_name_for_enum.write_fmt(format_args!(
-                    "if tag_name == \"{}\" {{return true;}}",
-                    element
+                    "if tag_name == \"{element}\" {{return true;}}"
                 ));
             }
         } else {
             let _ = is_valid_tag_name_for_enum.write_fmt(format_args!(
-                "if tag_name == \"{}\" {{return true;}}",
-                element
+                "if tag_name == \"{element}\" {{return true;}}"
             ));
         }
     }

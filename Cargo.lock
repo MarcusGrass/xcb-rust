@@ -149,7 +149,7 @@ dependencies = [
 
 [[package]]
 name = "xcb-rust-protocol"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "tiny-std",
 ]

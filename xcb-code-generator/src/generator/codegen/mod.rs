@@ -30,7 +30,6 @@ use crate::{dump, ReqNameSpec, Xcb};
 pub(crate) mod enums;
 mod error;
 pub(crate) mod event;
-mod format;
 pub(crate) mod functions;
 mod plain_struct;
 mod reply;
@@ -59,10 +58,6 @@ pub(crate) const FROM_BYTES_ERROR: &str = "crate::error::Error::FromBytes";
 pub(crate) const TRY_FROM_INT_ERROR: &str = "crate::error::Error::TryFromInt";
 pub(crate) const REQ_TO_BIG_ERROR: &str = "crate::error::Error::TooLargeRequest";
 
-trait ProtoImported {
-    fn rust_type_maybe_imported(&self, name: &str, current_pkg: &str) -> RustType;
-}
-
 pub(crate) trait AsRustFormatted {
     fn to_rust_valid_pascal(&self) -> String;
     fn to_rust_snake(&self) -> String;
@@ -87,17 +82,6 @@ impl AsRustFormatted for String {
         } else {
             RustCase::convert_to_valid_rust(&self.to_lowercase(), RustCase::Snake).unwrap()
         }
-    }
-}
-
-impl ProtoImported for Option<String> {
-    fn rust_type_maybe_imported(&self, name: &str, current_pkg: &str) -> RustType {
-        if let Some(pkg) = self {
-            if pkg != current_pkg {
-                return RustType::from_package(format!("crate::proto::{}", pkg), name);
-            }
-        }
-        RustType::in_scope(name)
     }
 }
 

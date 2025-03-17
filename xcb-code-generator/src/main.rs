@@ -178,7 +178,6 @@ license = \"MPL-2.0\"
 
 [dependencies]
 tiny-std = { workspace = true }
-unix-print = { workspace = true }
 
 [features]
 debug = []

@@ -1112,6 +1112,7 @@ pub(crate) enum XcbExpression {
     ListLengthExpr,
     ListForeignFieldRef(String),
     Value(i32),
+    #[expect(dead_code)]
     Bit(u8),
 }
 

@@ -115,9 +115,11 @@ pub(crate) enum Error {
     /// No cursor file could be found
     NothingFound,
 
+    #[expect(dead_code)]
     /// Error interfacing with the system
     TinyStdError(tiny_std::Error),
 
+    #[expect(dead_code)]
     /// Error interfacing with the system
     RuslError(tiny_std::RuslError),
 }

@@ -3,6 +3,6 @@ resolver = "2"
 members = ["xcb-code-generator", "xcb-rust-connection", "xcb-rust-protocol", "xcb-xsd", "xcb-xsd-parser"]
 
 [workspace.dependencies]
-smallmap = { version = "1.4.1", default-features = false }
-rusl = { version = "0.3.0" }
-tiny-std = { version = "0.2.4" }
+smallmap = { version = "1.4.2", default-features = false }
+rusl = { version = "0.4.0" }
+tiny-std = { version = "0.3.0" }

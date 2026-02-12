@@ -42,9 +42,9 @@ dependencies = [
 
 [[package]]
 name = "rusl"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96190c2d0a6b0e6e17dabdd02f0730dba4ad574e1f7c41e738ac7b8047847f6c"
+checksum = "38aa30073959cd36f07d06f2428db411e9e951cd5efd439fe2ebe69d8c91915d"
 dependencies = [
  "linux-rust-bindings",
  "sc",
@@ -113,9 +113,9 @@ dependencies = [
 
 [[package]]
 name = "tiny-std"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6fce9102b398c2293fa161affec4b54827821f8602f8e54e20e403ff2d2dad3"
+checksum = "c6a800fdc5d631ed908ce48fb4c60288792e9acc336869a509eeb69b03c05163"
 dependencies = [
  "rusl",
  "sc",
@@ -141,7 +141,6 @@ name = "xcb-rust-connection"
 version = "0.2.3"
 dependencies = [
  "rusl",
- "sc",
  "smallmap",
  "tiny-std",
  "xcb-rust-protocol",
@@ -169,7 +168,6 @@ dependencies = [
  "anyhow",
  "codegen-rs",
  "xcb-xsd",
- "xml-rs",
 ]
 
 [[package]]

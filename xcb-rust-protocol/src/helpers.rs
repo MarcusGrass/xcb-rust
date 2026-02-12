@@ -185,17 +185,17 @@ pub fn client_message_32(data: &[u32]) -> crate::Result<[u8; 20]> {
 }
 
 pub trait CanIterFormats {
-    fn value32(&self) -> Option<Iter32>;
-    fn value16(&self) -> Option<Iter16>;
+    fn value32(&self) -> Option<Iter32<'_>>;
+    fn value16(&self) -> Option<Iter16<'_>>;
     fn value8(&self) -> Option<&[u8]>;
 }
 
 impl CanIterFormats for GetPropertyReply {
-    fn value32(&self) -> Option<Iter32> {
+    fn value32(&self) -> Option<Iter32<'_>> {
         (self.format == 32).then(|| Iter32::new(&self.value))
     }
 
-    fn value16(&self) -> Option<Iter16> {
+    fn value16(&self) -> Option<Iter16<'_>> {
         (self.format == 16).then(|| Iter16::new(&self.value))
     }
 

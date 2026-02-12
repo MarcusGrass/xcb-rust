@@ -314,11 +314,11 @@ impl<'a> Iterator for Iter32<'a> {
 }
 
 pub trait AsIter32 {
-    fn as_iter_32(&self) -> Iter32;
+    fn as_iter_32(&self) -> Iter32<'_>;
 }
 
 impl<const N: usize> AsIter32 for [u8; N] {
-    fn as_iter_32(&self) -> Iter32 {
+    fn as_iter_32(&self) -> Iter32<'_> {
         Iter32 {
             ind: 0,
             inner: self,
@@ -327,7 +327,7 @@ impl<const N: usize> AsIter32 for [u8; N] {
 }
 
 impl<'a> AsIter32 for &'a [u8] {
-    fn as_iter_32(&self) -> Iter32 {
+    fn as_iter_32(&self) -> Iter32<'_> {
         Iter32 {
             ind: 0,
             inner: self,

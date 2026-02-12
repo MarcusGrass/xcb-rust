@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [v0.2.4] - 2026-02-12
+
+### Changed
+
+- fix new lints and project housekeeping
+- update `xcb-rust-protocol`
+
 ## [v0.2.2] - 2024-05-05
 
 ### fixed

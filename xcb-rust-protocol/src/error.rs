@@ -13,6 +13,7 @@ pub enum Error {
     TryFromSlice,
     TooLargeRequest,
     MissingExtension(&'static str),
+    User(&'static str),
     XcbError(XcbError),
     Connection(&'static str),
     TinyStd(tiny_std::Error),
@@ -50,6 +51,7 @@ impl Display for Error {
             Error::MissingExtension(ext) => f.write_fmt(format_args!("Missing extension {ext}")),
             Error::Connection(c) => f.write_fmt(format_args!("Connection err {c}")),
             Error::TinyStd(e) => f.write_fmt(format_args!("Tiny std error: {e}")),
+            Error::User(e) => f.write_fmt(format_args!("User error: {e}")),
         }
     }
 }

@@ -15,25 +15,26 @@ impl SocketIo for DummyIo {
         todo!()
     }
 
-    fn use_read_buffer<E, F: FnOnce(&[u8]) -> Result<usize, E>>(
+    fn use_read_buffer<F: FnOnce(&[u8]) -> Result<usize, xcb_rust_protocol::Error>>(
         &mut self,
         _read_op: F,
-    ) -> Result<(), E>
-    where
-        E: Debug,
+    ) -> Result<(), xcb_rust_protocol::Error>
     {
         todo!()
     }
 
-    fn use_write_buffer<E, F: FnOnce(&mut [u8]) -> Result<usize, E>>(
+    fn use_write_buffer<F: FnOnce(&mut [u8]) -> Result<usize, xcb_rust_protocol::Error>>(
         &mut self,
         write_op: F,
-    ) -> Result<(), E>
-    where
-        E: Debug,
+    ) -> Result<(), xcb_rust_protocol::Error>
     {
         let val = (write_op)(&mut self.inner).unwrap();
         self.offset += val;
+        Ok(())
+    }
+    #[inline]
+    fn ensure_flushed(&mut self) -> Result<(), xcb_rust_protocol::Error>
+    {
         Ok(())
     }
 }

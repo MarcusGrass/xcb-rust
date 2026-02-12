@@ -71,21 +71,19 @@ pub trait SocketIo {
     fn block_for_more_data(&mut self) -> Result<(), &'static str>;
     /// Get a reference to a read buffer, function will return consumed bytes which can
     /// then be considered spent
-    fn use_read_buffer<E, F: FnOnce(&[u8]) -> Result<usize, E>>(
+    fn use_read_buffer<F: FnOnce(&[u8]) -> Result<usize, crate::Error>>(
         &mut self,
         read_op: F,
-    ) -> Result<(), E>
-    where
-        E: Debug;
+    ) -> Result<(), crate::Error>;
     /// Get a mutable reference to a buffer that should be dumped to the x11-socket
     /// function returns number of bytes written onto it.
     ///
-    fn use_write_buffer<E, F: FnOnce(&mut [u8]) -> Result<usize, E>>(
+    fn use_write_buffer<F: FnOnce(&mut [u8]) -> Result<usize, crate::Error>>(
         &mut self,
         write_op: F,
-    ) -> Result<(), E>
-    where
-        E: Debug;
+    ) -> Result<(), crate::Error>;
+
+    fn ensure_flushed(&mut self) -> Result<(), crate::Error>;
 }
 
 pub trait XcbState {

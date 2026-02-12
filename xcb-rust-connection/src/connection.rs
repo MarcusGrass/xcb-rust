@@ -149,13 +149,13 @@ pub fn setup<IO: SocketIo>(
     let setup_req = setup_request(xcb_env, family, host.as_bytes(), dpy.display)?;
     io.use_write_buffer(|buf| {
         buf[..setup_req.len()].copy_from_slice(&setup_req);
-        Ok::<usize, ConnectError>(setup_req.len())
+        Ok::<usize, _>(setup_req.len())
     })?;
     let mut read_bytes = 0;
     while read_bytes < 8 {
         io.use_read_buffer(|buf| {
             read_bytes = buf.len();
-            Ok::<usize, ConnectError>(0)
+            Ok::<usize, _>(0)
         })?;
         if read_bytes < 8 {
             io.block_for_more_data().unwrap();
@@ -164,12 +164,12 @@ pub fn setup<IO: SocketIo>(
     let mut required_length = 0;
     io.use_read_buffer(|buf| {
         required_length = get_setup_length(buf);
-        Ok::<usize, ConnectError>(0)
+        Ok::<usize, _>(0)
     })?;
     while read_bytes < required_length {
         io.use_read_buffer(|buf| {
             read_bytes = buf.len();
-            Ok::<usize, ConnectError>(0)
+            Ok::<usize, _>(0)
         })?;
         if read_bytes < required_length {
             io.block_for_more_data().unwrap();
@@ -177,10 +177,10 @@ pub fn setup<IO: SocketIo>(
     }
     let mut setup = None;
     io.use_read_buffer(|buf| {
-        setup = Some(parse_setup(buf)?);
-        Ok::<usize, ConnectError>(required_length)
+        setup = Some(parse_setup(buf));
+        Ok::<usize, _>(required_length)
     })?;
-    let setup = setup.unwrap();
+    let setup = setup.transpose()?.unwrap();
 
     // resolve the setup
     crate::debug!("Setup completed.");
@@ -429,6 +429,7 @@ impl XcbState for XcbEventState {
         } else {
             let mut target = None;
             self.keep_seqs.remove(&seq);
+            let mut needs_flush = true;
             while target.is_none() {
                 for rr in do_drain(io) {
                     match rr {
@@ -456,6 +457,11 @@ impl XcbState for XcbEventState {
                 }
                 if target.is_some() {
                     continue;
+                }
+                if needs_flush {
+                    // Don't need to flush events every time this loops, just once will do it
+                    io.ensure_flushed()?;
+                    needs_flush = false;
                 }
                 crate::debug!("No drain in current buffer, try read.");
                 for rr in read_next(io).map_err(|e| {
@@ -525,7 +531,7 @@ fn do_drain<IO: SocketIo>(io: &mut IO) -> Vec<ReadResult> {
             read_results.push(rr);
             offset = new_offset;
         }
-        Ok::<usize, ()>(offset)
+        Ok::<usize, _>(offset)
     });
 
     read_results

@@ -1,6 +1,6 @@
 [package]
 name = "xcb-rust-connection"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 license = "MPL-2.0"
 readme = "../Readme.md"
@@ -17,7 +17,7 @@ keywords = ["ffi", "bindings", "operating", "system", "linux"]
 smallmap = { workspace = true, default-features = false }
 tiny-std = { workspace = true }
 rusl = { workspace = true, features = ["alloc"] }
-xcb-rust-protocol = { path = "../xcb-rust-protocol", features = ["xproto", "xc_misc", "render", "bigreq"] }
+xcb-rust-protocol = { version = "0.3.0", features = ["xproto", "xc_misc", "render", "bigreq"] }
 
 [features]
 default = []

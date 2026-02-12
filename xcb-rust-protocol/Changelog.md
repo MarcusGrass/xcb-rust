@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [v0.3.0] - 2026-02-12
+
+### Changed
+
+- Added a new error type that the User can supply
+- Added a new mandatory trait method that IO needs to implement
+
+### Fixed
+
+- a bunch of new lints and general project housekeeping
+
 ## [v0.2.3] - 2024-05-05
 
 ### Fixed

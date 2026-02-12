@@ -14,7 +14,6 @@ keywords = ["ffi", "bindings", "operating", "system", "linux"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sc = { version = "0.2.7" }
 smallmap = { workspace = true, default-features = false }
 tiny-std = { workspace = true }
 rusl = { workspace = true, features = ["alloc"] }

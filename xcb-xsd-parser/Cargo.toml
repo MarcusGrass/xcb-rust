@@ -10,5 +10,4 @@ license = "MPL-2.0"
 anyhow = { version = "1.0.71" }
 codegen-rs = { git = "https://github.com/MarcusGrass/codegen-rs", branch = "main" }
 xcb-xsd = { path = "../xcb-xsd" }
-xml-rs = "0.8.4"
 

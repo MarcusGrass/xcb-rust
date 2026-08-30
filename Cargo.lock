@@ -138,7 +138,7 @@ dependencies = [
 
 [[package]]
 name = "xcb-rust-connection"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "rusl",
  "smallmap",
@@ -148,7 +148,7 @@ dependencies = [
 
 [[package]]
 name = "xcb-rust-protocol"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "tiny-std",
 ]

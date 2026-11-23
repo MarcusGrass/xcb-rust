@@ -11,12 +11,7 @@ unmaintained = "deny"
 unsound = "deny"
 yanked = "deny"
 notice = "deny"
-ignore = [
-    # `xml-rs` unmaintained, at least before ownership is transferred https://github.com/netvl/xml-rs/issues/221
-    # We're the data we're parsing isn't really untrusted, and it's not part of the application code.
-    # If the maintainer-change doesn't happen migrating to quick-xml isn't too harsch but a bit of a pain
-    "RUSTSEC-2022-0048",
-]
+ignore = []
 
 [bans]
 multiple-versions = "deny"
